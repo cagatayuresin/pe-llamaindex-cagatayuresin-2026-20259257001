@@ -5,172 +5,172 @@ title: [Pipeshift](https://pipeshift.com)
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-pipeshift
 ```
 
-```
+```python
 %pip install llama-index
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-Head on to the [models](https://dashboard.pipeshift.com/models) section of pipeshift dashboard to see the list of available models.
+Mevcut modellerin listesini görmek için Pipeshift panosundaki [model](https://dashboard.pipeshift.com/models) bölümüne gidin.
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` çağrısı
 
-```
+```python
 from llama_index.llms.pipeshift import Pipeshift
 
 
 # import os
-# os.environ["PIPESHIFT_API_KEY"] = "your_api_key"
+# os.environ["PIPESHIFT_API_KEY"] = "api_anahtarınız"
 
 
 llm = Pipeshift(
     model="meta-llama/Meta-Llama-3.1-8B-Instruct",
-    # api_key="YOUR_API_KEY" # alternative way to pass api_key if not specified in environment variable
+    # api_key="API_ANAHTARINIZ" # ortam değişkeninde belirtilmemişse api_key geçmenin alternatif yolu
 )
-res = llm.complete("supercars are ")
+res = llm.complete("süper arabalar ")
 ```
 
-```
+```python
 print(res)
 ```
 
+```python
+Süper arabalar! İşte bu yüksek performanslı araçlar hakkında bazı ilginç gerçekler ve bilgiler:
+
+
+**Süper Araba Nedir?**
+
+
+Süper araba, tipik olarak olağanüstü hızı, yol tutuşu ve lüks özellikleriyle tanımlanan yüksek performanslı bir spor otomobildir. Süper arabalar genellikle seçkin, nadir ve pahalı olacak şekilde tasarlanır; fiyatları yüz binlerce dolardan milyonlarca dolara kadar değişebilir.
+
+
+**Süper Araba Türleri:**
+
+
+1. **Ekzotik Süper Arabalar**: Bunlar, genellikle benzersiz tasarımlara ve sınırlı üretim serilerine sahip olan en seçkin ve pahalı süper arabalardır. Örnekler arasında Bugatti Chiron, Koenigsegg Agera ve Pagani Huayra bulunur.
+2. **Hiper Arabalar**: Bunlar, genellikle gelişmiş teknoloji ve yenilikçi tasarımlara sahip olan en hızlı ve en güçlü süper arabalardır. Örnekler arasında Bugatti Veyron, Hennessey Venom F5 ve Rimac C_Two bulunur.
+3. **Süper GT'ler**: Bunlar, genellikle konfor ve lüks odaklı olan grand tourer'ların yüksek performanslı versiyonlarıdır. Örnekler arasında Ferrari 812 Superfast, Lamborghini Aventador ve Aston Martin DBS Superleggera bulunur.
+
+
+**Dikkat Çeken Süper Arabalar:**
+
+
+1. **Bugatti Chiron**: 1.479 beygir güç üreten 8.0L W16 motora sahip bir hiper araba.
+2. **Koenigsegg Agera RS**: 1.340 beygir güç üreten 5.0L V8 motora sahip bir İsveç süper arabası.
+3. **Porsche 918 Spyder**: 887 beygir güç üreten 4.6L V8 motora sahip hibrit bir süper araba.
+4. **Lamborghini Aventador**: 759 beygir güç üreten 6.5L V12 motora sahip bir süper araba.
+5. **Ferrari 488 GTB**: 661 beygir güç üreten 3.9L V8 orta motorlu bir süper araba.
+
+
+**Süper Araba Özellikleri:**
+
+
+1. **Gelişmiş Malzemeler**: Süper arabalar, ağırlığı azaltmak ve performansı artırmak için genellikle karbon fiber, alüminyum ve titanyum gibi hafif malzemeler içerir.
+2. **Yüksek Performanslı Motorlar**: Süper arabalar, olağanüstü güç ve tork üretmek için genellikle çoklu turboşarjlı veya süperşarjlı güçlü motorlarla donatılmıştır.
+3. **Gelişmiş Aerodinamik**: Süper arabalar, yere basma kuvvetini (downforce) artırmak ve sürtünmeyi azaltmak için genellikle rüzgarlıklar (spoilers) ve hava girişleri gibi aerodinamik tasarımlara sahiptir.
+4. **Lüks İç Mekanlar**: Süper arabalar genellikle birinci sınıf malzemelerle gelir.
 ```
-Supercars! Here are some interesting facts and tidbits about these high-performance vehicles:
 
+#### Mesaj listesi ile `chat` çağrısı
 
-**What is a Supercar?**
-
-
-A supercar is a high-performance sports car that is typically characterized by its exceptional speed, handling, and luxury features. Supercars are often designed to be exclusive, rare, and expensive, with prices ranging from hundreds of thousands to millions of dollars.
-
-
-**Types of Supercars:**
-
-
-1. **Exotic Supercars**: These are the most exclusive and expensive supercars, often with unique designs and limited production runs. Examples include the Bugatti Chiron, Koenigsegg Agera, and Pagani Huayra.
-2. **Hypercars**: These are the fastest and most powerful supercars, often with advanced technology and innovative designs. Examples include the Bugatti Veyron, Hennessey Venom F5, and Rimac C_Two.
-3. **Super GTs**: These are high-performance versions of grand tourers, often with a focus on comfort and luxury. Examples include the Ferrari 812 Superfast, Lamborghini Aventador, and Aston Martin DBS Superleggera.
-
-
-**Notable Supercars:**
-
-
-1. **Bugatti Chiron**: A hypercar with an 8.0L W16 engine producing 1,479 horsepower.
-2. **Koenigsegg Agera RS**: A Swedish supercar with a 5.0L V8 engine producing 1,340 horsepower.
-3. **Porsche 918 Spyder**: A hybrid supercar with a 4.6L V8 engine producing 887 horsepower.
-4. **Lamborghini Aventador**: A supercar with a 6.5L V12 engine producing 759 horsepower.
-5. **Ferrari 488 GTB**: A mid-engined supercar with a 3.9L V8 engine producing 661 horsepower.
-
-
-**Supercar Features:**
-
-
-1. **Advanced Materials**: Supercars often feature lightweight materials like carbon fiber, aluminum, and titanium to reduce weight and improve performance.
-2. **High-Performance Engines**: Supercars are equipped with powerful engines, often with multiple turbochargers or superchargers, to produce exceptional power and torque.
-3. **Advanced Aerodynamics**: Supercars often feature aerodynamic designs, such as spoilers and air intakes, to improve downforce and reduce drag.
-4. **Luxury Interiors**: Supercars often come with premium materials
-```
-
-#### Call `chat` with a list of messages
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.pipeshift import Pipeshift
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are sales person at supercar showroom"
+        role="system", content="Sen bir süper araba galerisinde satış görevlisisin"
     ),
-    ChatMessage(role="user", content="why should I pick porsche 911 gt3 rs"),
+    ChatMessage(role="user", content="neden porsche 911 gt3 rs seçmeliyim"),
 ]
 res = Pipeshift(
     model="meta-llama/Meta-Llama-3.1-8B-Instruct", max_tokens=50
 ).chat(messages)
 ```
 
-```
+```python
 print(res)
 ```
 
+```python
+assistant: Eşsiz bir sürüş deneyimi sunacak yüksek performanslı bir araç arıyorsunuz, değil mi? Şunu söylememe izin verin, Porsche 911 GT3 RS her sürüş tutkunu için nihai seçimdir.
+
+
+Her şeyden önce, 911
 ```
-assistant: You're looking for a high-performance vehicle that's going to deliver an unparalleled driving experience, right? Well, let me tell you, the Porsche 911 GT3 RS is the ultimate choice for any driving enthusiast.
 
+## Akış (Streaming)
 
-First of all, the 911
-```
+`stream_complete` uç noktasını kullanma
 
-## Streaming
-
-Using `stream_complete` endpoint
-
-```
+```python
 from llama_index.llms.pipeshift import Pipeshift
 
 
 llm = Pipeshift(model="meta-llama/Meta-Llama-3.1-8B-Instruct")
-resp = llm.stream_complete("porsche GT3 RS is ")
+resp = llm.stream_complete("porsche GT3 RS ")
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
+```python
+Porsche 911 GT3 RS!
+
+
+Porsche 911 GT3 RS, Porsche 911 spor otomobilinin pist sürüşü ve meraklıları için tasarlanmış yüksek performanslı bir varyantıdır. İşte Porsche 911 GT3 RS hakkında bazı temel özellikler ve gerçekler:
+
+
+**Temel Özellikler:**
+
+
+1. **Motor:** GT3 RS, 8.250 dev/dak'da 520 beygir gücü (386 kW) ve 6.250 dev/dak'da 346 lb-ft (470 Nm) tork üreten 4.0 litrelik atmosferik bir düz altı silindirli (flat-six) motordan güç alır.
+2. **Şanzıman:** 7 vitesli çift kavramalı şanzıman (PDK) standarttır, bazı modellerde manuel şanzıman seçeneği mevcuttur.
+3. **Süspansiyon:** GT3 RS, geliştirilmiş yol tutuşu ve stabilite sağlayan bir arka aks yönlendirme sistemine sahiptir.
+4. **Aerodinamik:** Otomobil, önemli ölçüde yere basma kuvveti oluşturan ve yüksek hız stabilitesini artıran kendine özgü bir ön ayırıcı (splitter), yan etekler ve bir arka kanada sahiptir.
+5. **Ağırlık Azaltma:** GT3 RS, karbon fiber ve alüminyum gibi hafif malzemelerin kullanımı sayesinde yaklaşık 3.020 pound (1.370 kg) kuru ağırlığa sahip hafif bir yapıya sahiptir.
+
+
+**Performans:**
+
+
+1. **0-60 mil/saat (0-97 km/saat):** 3,2 saniye
+2. **Maksimum hız:** 193 mil/saat (311 km/saat)
+3. **Tur süresi:** GT3 RS, Nürburgring Nordschleife'de 6:56,4 dakikalık bir tur süresine sahip olup, onu pistteki en hızlı seri üretim otomobillerden biri yapar.
+
+
+**Tasarım ve İç Mekan:**
+
+
+1. **Dış Görünüm:** GT3 RS, daha agresif bir ön tampon, yan etekler ve arka kanat ile kendine özgü bir tasarıma sahiptir.
+2. **İç Mekan:** İç mekan, 7 inçlik dokunmatik ekranlı ekran, spor direksiyon simidi ve çeşitli kaplama seçenekleriyle sportif bir tasarıma sahiptir.
+
+
+**Tarihçe:**
+
+
+1. **Birinci nesil (2019):** İlk nesil GT3 RS, 991.2 911 platformuna dayanarak 2019 yılında piyasaya sürüldü.
+2. **İkinci nesil (2022):** İkinci nesil GT3 RS, 992 911 platformuna dayanarak 2022 yılında tanıtıldı.
+
+
+**Fiyat:**
+
+
+Porsche 911 GT3 RS'nin fiyatı pazara ve donanım seviyesine bağlı olarak değişir, ancak tipik olarak Amerika Birleşik Devletleri'nde 175.000 dolardan başlar.
 ```
-The Porsche 911 GT3 RS!
 
+`stream_chat` uç noktasını kullanma
 
-The Porsche 911 GT3 RS is a high-performance variant of the Porsche 911 sports car, designed for track driving and enthusiasts. Here are some key features and facts about the Porsche 911 GT3 RS:
-
-
-**Key Features:**
-
-
-1. **Engine:** The GT3 RS is powered by a naturally aspirated 4.0-liter flat-six engine, producing 520 horsepower (386 kW) at 8,250 rpm and 346 lb-ft (470 Nm) of torque at 6,250 rpm.
-2. **Transmission:** A 7-speed dual-clutch transmission (PDK) is standard, with a manual transmission option available on some models.
-3. **Suspension:** The GT3 RS features a rear-axle steering system, which provides improved handling and stability.
-4. **Aerodynamics:** The car has a distinctive front splitter, side skirts, and a rear wing, which generate significant downforce and improve high-speed stability.
-5. **Weight reduction:** The GT3 RS has a lightweight construction, with a dry weight of around 3,020 pounds (1,370 kg), thanks to the use of lightweight materials such as carbon fiber and aluminum.
-
-
-**Performance:**
-
-
-1. **0-60 mph (0-97 km/h):** 3.2 seconds
-2. **Top speed:** 193 mph (311 km/h)
-3. **Lap time:** The GT3 RS has a lap time of 6:56.4 minutes at the Nürburgring Nordschleife, making it one of the fastest production cars on the track.
-
-
-**Design and Interior:**
-
-
-1. **Exterior:** The GT3 RS has a distinctive design, with a more aggressive front bumper, side skirts, and a rear wing.
-2. **Interior:** The interior features a sporty design, with a 7-inch touchscreen display, a sport steering wheel, and a range of trim options.
-
-
-**History:**
-
-
-1. **First generation (2019):** The first-generation GT3 RS was introduced in 2019, based on the 991.2 911 platform.
-2. **Second generation (2022):** The second-generation GT3 RS was introduced in 2022, based on the 992 911 platform.
-
-
-**Price:**
-
-
-The price of the Porsche 911 GT3 RS varies depending on the market and trim level, but it typically starts around $175,000 in the United States
-```
-
-Using `stream_chat` endpoint
-
-```
+```python
 from llama_index.llms.pipeshift import Pipeshift
 from llama_index.core.llms import ChatMessage
 
@@ -178,33 +178,33 @@ from llama_index.core.llms import ChatMessage
 llm = Pipeshift(model="meta-llama/Meta-Llama-3.1-8B-Instruct")
 messages = [
     ChatMessage(
-        role="system", content="You are sales person at supercar showroom"
+        role="system", content="Sen bir süper araba galerisinde satış görevlisisin"
     ),
-    ChatMessage(role="user", content="how fast can porsche gt3 rs it go?"),
+    ChatMessage(role="user", content="porsche gt3 rs ne kadar hızlı gidebilir?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-You're interested in the Porsche GT3 RS, eh? That's a beast of a car!
+```python
+Porsche GT3 RS ile ilgileniyorsunuz, ha? O tam bir canavar!
 
 
-The Porsche 911 GT3 RS is a track-focused variant of the 911, and it's a real rocket ship. It's powered by a 4.0-liter naturally aspirated flat-six engine that produces a whopping 520 horsepower and 346 lb-ft of torque.
+Porsche 911 GT3 RS, 911'in pist odaklı bir varyantıdır ve gerçek bir roket gemisidir. Muazzam 520 beygir gücü ve 346 lb-ft tork üreten 4.0 litrelik atmosferik düz altı silindirli bir motordan güç alır.
 
 
-As for its top speed, the GT3 RS can reach an electronically limited top speed of 193 mph (311 km/h). But, if you were to remove the limiter, it's rumored to be capable of reaching speeds of up to 200 mph (322 km/h).
+Maksimum hızına gelince, GT3 RS elektronik olarak sınırlandırılmış 193 mil/saat (311 km/saat) hıza ulaşabilir. Ancak sınırlayıcıyı kaldırırsanız, 200 mil/saat (322 km/saat) hıza kadar çıkabileceği söyleniyor.
 
 
-But what's even more impressive is its acceleration. The GT3 RS can go from 0-60 mph in just 3.2 seconds, and it can lap the Nürburgring Nordschleife in a blistering 6:40.3 minutes. That's some serious performance right there!
+Ancak daha da etkileyici olanı hızlanmasıdır. GT3 RS sadece 3,2 saniyede 0-60 mil/saat hıza çıkabilir ve Nürburgring Nordschleife pistini 6:40,3 dakikalık rekor bir sürede dönebilir. İşte bu ciddi bir performansdır!
 
 
-Now, I know what you're thinking: "Is it worth the price tag?" Well, let me tell you, this car is a true driver's car, and it's an investment piece for those who truly appreciate the art of driving. The GT3 RS starts at around $175,000, but trust me, it's worth every penny.
+Şimdi ne düşündüğünüzü biliyorum: "Fiyat etiketine değer mi?" Şunu söyleyeyim, bu araba gerçek bir sürücü arabasıdır ve sürüş sanatını gerçekten takdir edenler için bir yatırım parçasıdır. GT3 RS yaklaşık 175.000 dolardan başlıyor ama inanın bana, her kuruşuna değer.
 
 
-Would you like to take a look at our current inventory? We have a few GT3 RS models available, and I'd be happy to give you a tour.
+Mevcut envanterimize göz atmak ister misiniz? Elimizde birkaç GT3 RS modeli var ve size gezdirmekten mutluluk duyarım.
 ```

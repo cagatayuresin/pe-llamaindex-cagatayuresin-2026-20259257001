@@ -1,84 +1,84 @@
-# OpenAI JSON Mode vs. Function Calling for Data Extraction
+# Veri Çıkarma için OpenAI JSON Modu vs. Fonksiyon Çağırma
 
 ---
-title: OpenAI JSON Mode vs. Function Calling for Data Extraction 
+title: Veri Çıkarma için OpenAI JSON Modu vs. Fonksiyon Çağırma
  | LlamaIndex OSS Documentation
 ---
 
-OpenAI just released [JSON Mode](https://platform.openai.com/docs/guides/text-generation/json-mode): This new config constrain the LLM to only generate strings that parse into valid JSON (but no guarantee on validation against any schema).
+OpenAI kısa süre önce [JSON Modu](https://platform.openai.com/docs/guides/text-generation/json-mode)'nu yayınladı: Bu yeni yapılandırma, LLM'yi yalnızca geçerli JSON'a ayrıştırılan (ancak herhangi bir şemaya karşı doğrulama garantisi olmayan) dizeler oluşturmaya zorlar.
 
-Before this, the best way to extract structured data from text is via [function calling](https://platform.openai.com/docs/guides/function-calling).
+Bundan önce, metinden yapılandırılmış veri çıkarmanın en iyi yolu [fonksiyon çağırma](https://platform.openai.com/docs/guides/function-calling) yöntemiydi.
 
-In this notebook, we explore the tradeoff between the latest [JSON Mode](https://platform.openai.com/docs/guides/text-generation/json-mode) and function calling feature for structured output & extraction.
+Bu not defterinde, yapılandırılmış çıktı ve veri çıkarma için en son [JSON Modu](https://platform.openai.com/docs/guides/text-generation/json-mode) ile fonksiyon çağırma özelliği arasındaki dengeyi/takasları inceliyoruz.
 
-*Update*: OpenAI has clarified that JSON mode is always enabled for function calling, it’s opt-in for regular messages (<https://community.openai.com/t/json-mode-vs-function-calling/476994/4>)
+*Güncelleme*: OpenAI, fonksiyon çağırma için JSON modunun her zaman etkinleştirildiğini, normal mesajlar için ise isteğe bağlı olduğunu açıklamıştır (<https://community.openai.com/t/json-mode-vs-function-calling/476994/4>)
 
-### Generate synthetic data
+### Sentetik veri oluşturma
 
-We’ll start by generating some synthetic data for our data extraction task. Let’s ask our LLM for a hypothetical sales transcript.
+Veri çıkarma görevimiz için bazı sentetik veriler oluşturarak başlayacağız. LLM'mizden varsayımsal bir satış görüşmesi transkripti isteyelim.
 
-```
+```python
 %pip install llama-index-llms-openai
 %pip install llama-index-program-openai
 ```
 
-```
+```python
 from llama_index.llms.openai import OpenAI
 
 
 llm = OpenAI(model="gpt-3.5-turbo-1106")
 response = llm.complete(
-    "Generate a sales call transcript, use real names, talk about a product, discuss some action items"
+    "Bir satış araması transkripti oluşturun, gerçek isimler kullanın, bir ürün hakkında konuşun, bazı eylem maddelerini tartışın"
 )
 ```
 
-```
+```python
 transcript = response.text
 print(transcript)
 ```
 
+```python
+[Telefon çalıyor]
+
+
+John: Merhaba, ben John.
+
+
+Sarah: Merhaba John, ben XYZ Şirketi'nden Sarah. Yeni ürünümüz olan XYZ Widget'ı tartışmak ve işletmeniz için uygun olup olmayacağını görmek için arıyorum.
+
+
+John: Merhaba Sarah, ulaştığın için teşekkürler. XYZ Widget hakkında daha fazla bilgi edinmekle kesinlikle ilgileniyorum. Ne yaptığına dair bana hızlı bir genel bakış verebilir misin?
+
+
+Sarah: Elbette! XYZ Widget, işletmelerin iş akışlarını kolaylaştırmalarına ve üretkenliği artırmalarına yardımcı olan son teknoloji bir araçtır. Tekrarlanan görevleri otomatikleştirmek ve bilinçli kararlar vermenize yardımcı olmak için gerçek zamanlı veri analitiği sağlamak üzere tasarlanmıştır.
+
+
+John: Kulağa gerçekten ilginç geliyor. Bunun ekibimize nasıl fayda sağlayabileceğini görebiliyorum. XYZ Widget'ı kullanan diğer şirketlerden herhangi bir vaka çalışmanız veya başarı hikayeniz var mı?
+
+
+Sarah: Kesinlikle, sizinle paylaşabileceğim birkaç vaka çalışmamız var. Bunları ürünle ilgili bazı ek bilgilerle birlikte göndereceğim. Ayrıca XYZ Widget'ı iş başında görmeniz için size ve ekibinize bir demo planlamayı çok isterim.
+
+
+John: Bu harika olur. Vaka çalışmalarını incelediğimden emin olacağım ve ardından demo için bir zaman ayarlayabiliriz. Bu arada, yapmamız gereken belirli eylem maddeleri veya sonraki adımlar var mı?
+
+
+Sarah: Evet, bilgileri göndereceğim ve ardından demoyu planlamak için sizi takip edeceğim. Bu arada, herhangi bir sorunuz olursa veya daha fazla bilgiye ihtiyaç duyarsanız ulaşmaktan çekinmeyin.
+
+
+John: Kulağa hoş geliyor, yardımın için teşekkürler Sarah. XYZ Widget hakkında daha fazla bilgi edinmeyi ve işletmemize nasıl fayda sağlayabileceğini görmeyi dört gözle bekliyorum.
+
+
+Sarah: Teşekkürler John. Yakında iletişime geçeceğim. İyi günler!
+
+
+John: Size de, hoşça kalın.
 ```
-[Phone rings]
 
+### İstediğimiz şemayı kurma
 
-John: Hello, this is John.
+İstediğimiz çıktı "biçimini" bir Pydantic Modeli olarak belirtelim.
 
-
-Sarah: Hi John, this is Sarah from XYZ Company. I'm calling to discuss our new product, the XYZ Widget, and see if it might be a good fit for your business.
-
-
-John: Hi Sarah, thanks for reaching out. I'm definitely interested in learning more about the XYZ Widget. Can you give me a quick overview of what it does?
-
-
-Sarah: Of course! The XYZ Widget is a cutting-edge tool that helps businesses streamline their workflow and improve productivity. It's designed to automate repetitive tasks and provide real-time data analytics to help you make informed decisions.
-
-
-John: That sounds really interesting. I can see how that could benefit our team. Do you have any case studies or success stories from other companies who have used the XYZ Widget?
-
-
-Sarah: Absolutely, we have several case studies that I can share with you. I'll send those over along with some additional information about the product. I'd also love to schedule a demo for you and your team to see the XYZ Widget in action.
-
-
-John: That would be great. I'll make sure to review the case studies and then we can set up a time for the demo. In the meantime, are there any specific action items or next steps we should take?
-
-
-Sarah: Yes, I'll send over the information and then follow up with you to schedule the demo. In the meantime, feel free to reach out if you have any questions or need further information.
-
-
-John: Sounds good, I appreciate your help Sarah. I'm looking forward to learning more about the XYZ Widget and seeing how it can benefit our business.
-
-
-Sarah: Thank you, John. I'll be in touch soon. Have a great day!
-
-
-John: You too, bye.
-```
-
-### Setup our desired schema
-
-Let’s specify our desired output “shape”, as a Pydantic Model.
-
-```
+```python
 from pydantic import BaseModel, Field
 from typing import List
 
@@ -86,43 +86,43 @@ from typing import List
 
 
 class CallSummary(BaseModel):
-    """Data model for a call summary."""
+    """Bir çağrı özeti için veri modeli."""
 
 
     summary: str = Field(
-        description="High-level summary of the call transcript. Should not exceed 3 sentences."
+        description="Çağrı transkriptinin üst düzey özeti. 3 cümleyi geçmemelidir."
     )
     products: List[str] = Field(
-        description="List of products discussed in the call"
+        description="Görüşmede tartışılan ürünlerin listesi"
     )
-    rep_name: str = Field(description="Name of the sales rep")
-    prospect_name: str = Field(description="Name of the prospect")
-    action_items: List[str] = Field(description="List of action items")
+    rep_name: str = Field(description="Satış temsilcisinin adı")
+    prospect_name: str = Field(description="Potansiyel müşterinin adı")
+    action_items: List[str] = Field(description="Eylem maddelerinin listesi")
 ```
 
-### Data extraction with function calling
+### Fonksiyon çağırma ile veri çıkarma
 
-We can use the `OpenAIPydanticProgram` module in LlamaIndex to make things super easy, simply define a prompt template, and pass in the LLM and pydantic model we’ve definied.
+LlamaIndex'teki `OpenAIPydanticProgram` modülünü kullanarak işleri çok kolaylaştırabiliriz; sadece bir istem şablonu tanımlayın ve tanımladığımız LLM'yi ve pydantic modelini iletin.
 
-```
+```python
 from llama_index.program.openai import OpenAIPydanticProgram
 from llama_index.core import ChatPromptTemplate
 from llama_index.core.llms import ChatMessage
 ```
 
-```
+```python
 prompt = ChatPromptTemplate(
     message_templates=[
         ChatMessage(
             role="system",
             content=(
-                "You are an expert assitant for summarizing and extracting insights from sales call transcripts."
+                "Satış araması transkriptlerini özetleme ve bunlardan içgörü çıkarma konusunda uzman bir asistansınız."
             ),
         ),
         ChatMessage(
             role="user",
             content=(
-                "Here is the transcript: \n"
+                "İşte transkript: \n"
                 "------\n"
                 "{transcript}\n"
                 "------"
@@ -138,47 +138,47 @@ program = OpenAIPydanticProgram.from_defaults(
 )
 ```
 
-```
+```python
 output = program(transcript=transcript)
 ```
 
-```
-Function call: CallSummary with args: {"summary":"Sarah from XYZ Company called to discuss the new product, the XYZ Widget, which John expressed interest in. Sarah offered to share case studies and schedule a demo. They agreed to review the case studies and set up a time for the demo. The next steps include Sarah sending over information and following up to schedule the demo.","products":["XYZ Widget"],"rep_name":"Sarah","prospect_name":"John","action_items":["Review case studies","Schedule demo"]}
+```python
+Fonksiyon çağrısı: CallSummary şu argümanlarla: {"summary":"XYZ Şirketi'nden Sarah, John'un ilgisini çeken yeni ürün XYZ Widget'ı tartışmak üzere aradı. Sarah vaka çalışmalarını paylaşmayı ve bir demo planlamayı teklif etti. Vaka çalışmalarını incelemek ve demo için bir zaman ayarlamak konusunda anlaştılar. Sonraki adımlar arasında Sarah'nın bilgi göndermesi ve demoyu planlamak için takip etmesi yer alıyor.","products":["XYZ Widget"],"rep_name":"Sarah","prospect_name":"John","action_items":["Vaka çalışmalarını incele","Demo planla"]}
 ```
 
-We now have the desired structured data, as a Pydantic Model. Quick inspection shows that the results are as we expected.
+Şu anda bir Pydantic Modeli olarak istediğimiz yapılandırılmış veriye sahibiz. Hızlı bir inceleme, sonuçların beklediğimiz gibi olduğunu göstermektedir.
 
-```
+```python
 output.dict()
 ```
 
-```
-{'summary': 'Sarah from XYZ Company called to discuss the new product, the XYZ Widget, which John expressed interest in. Sarah offered to share case studies and schedule a demo. They agreed to review the case studies and set up a time for the demo. The next steps include Sarah sending over information and following up to schedule the demo.',
+```python
+{'summary': 'XYZ Şirketi\'nden Sarah, John\'un ilgisini çeken yeni ürün XYZ Widget\'ı tartışmak üzere aradı. Sarah vaka çalışmalarını paylaşmayı ve bir demo planlamayı teklif etti. Vaka çalışmalarını incelemek ve demo için bir zaman ayarlamak konusunda anlaştılar. Sonraki adımlar arasında Sarah\'nın bilgi göndermesi ve demoyu planlamak için takip etmesi yer alıyor.',
  'products': ['XYZ Widget'],
  'rep_name': 'Sarah',
  'prospect_name': 'John',
- 'action_items': ['Review case studies', 'Schedule demo']}
+ 'action_items': ['Vaka çalışmalarını incele', 'Demo planla']}
 ```
 
-### Data extraction with JSON mode
+### JSON modu ile veri çıkarma
 
-Let’s try to do the same with JSON mode, instead of function calling
+Aynı şeyi fonksiyon çağırma yerine JSON modu ile yapmaya çalışalım.
 
-```
+```python
 prompt = ChatPromptTemplate(
     message_templates=[
         ChatMessage(
             role="system",
             content=(
-                "You are an expert assitant for summarizing and extracting insights from sales call transcripts.\n"
-                "Generate a valid JSON following the given schema below:\n"
+                "Satış araması transkriptlerini özetleme ve bunlardan içgörü çıkarma konusunda uzman bir asistansınız.\n"
+                "Aşağıdaki şemayı takip eden geçerli bir JSON oluşturun:\n"
                 "{json_schema}"
             ),
         ),
         ChatMessage(
             role="user",
             content=(
-                "Here is the transcript: \n"
+                "İşte transkript: \n"
                 "------\n"
                 "{transcript}\n"
                 "------"
@@ -188,25 +188,25 @@ prompt = ChatPromptTemplate(
 )
 ```
 
-```
+```python
 messages = prompt.format_messages(
     json_schema=CallSummary.schema_json(), transcript=transcript
 )
 ```
 
-```
+```python
 output = llm.chat(
     messages, response_format={"type": "json_object"}
 ).message.content
 ```
 
-We get a vaid JSON, but it’s only regurgitating the schema we specified, and not actually doing the extraction.
+Geçerli bir JSON alıyoruz ancak bu sadece belirttiğimiz şemayı tekrarlıyor ve aslında çıkarma işlemini gerçekleştirmiyor.
 
-```
+```python
 print(output)
 ```
 
-```
+```json
 {
   "title": "CallSummary",
   "description": "Data model for a call summary.",
@@ -248,9 +248,9 @@ print(output)
 }
 ```
 
-Let’s try again by just showing the JSON format we want, instead of specifying the schema
+Şemayı belirtmek yerine sadece istediğimiz JSON formatını göstererek tekrar deneyelim.
 
-```
+```python
 import json
 
 
@@ -259,15 +259,15 @@ prompt = ChatPromptTemplate(
         ChatMessage(
             role="system",
             content=(
-                "You are an expert assitant for summarizing and extracting insights from sales call transcripts.\n"
-                "Generate a valid JSON in the following format:\n"
+                "Satış araması transkriptlerini özetleme ve bunlardan içgörü çıkarma konusunda uzman bir asistansınız.\n"
+                "Aşağıdaki formatta geçerli bir JSON oluşturun:\n"
                 "{json_example}"
             ),
         ),
         ChatMessage(
             role="user",
             content=(
-                "Here is the transcript: \n"
+                "İşte transkript: \n"
                 "------\n"
                 "{transcript}\n"
                 "------"
@@ -278,46 +278,46 @@ prompt = ChatPromptTemplate(
 
 
 dict_example = {
-    "summary": "High-level summary of the call transcript. Should not exceed 3 sentences.",
-    "products": ["product 1", "product 2"],
-    "rep_name": "Name of the sales rep",
-    "prospect_name": "Name of the prospect",
-    "action_items": ["action item 1", "action item 2"],
+    "summary": "Çağrı transkriptinin üst düzey özeti. 3 cümleyi geçmemelidir.",
+    "products": ["ürün 1", "ürün 2"],
+    "rep_name": "Satış temsilcisinin adı",
+    "prospect_name": "Potansiyel müşterinin adı",
+    "action_items": ["eylem maddesi 1", "eylem maddesi 2"],
 }
 
 
 json_example = json.dumps(dict_example)
 ```
 
-```
+```python
 messages = prompt.format_messages(
     json_example=json_example, transcript=transcript
 )
 ```
 
-```
+```python
 output = llm.chat(
     messages, response_format={"type": "json_object"}
 ).message.content
 ```
 
-Now we are able to get the extracted structured data as we expected.
+Artık beklediğimiz gibi çıkarılmış yapılandırılmış verileri alabiliyoruz.
 
-```
+```python
 print(output)
 ```
 
-```
+```json
 {
-  "summary": "Sarah from XYZ Company called John to discuss the new product, the XYZ Widget, which is designed to streamline workflow and improve productivity. They discussed case studies and scheduling a demo for John and his team. The next steps include Sarah sending over information and following up to schedule the demo.",
+  "summary": "XYZ Şirketi'nden Sarah, iş akışını kolaylaştırmak ve üretkenliği artırmak için tasarlanan yeni ürün XYZ Widget'ı tartışmak üzere John'u aradı. Vaka çalışmalarını ve John ve ekibi için bir demo planlamayı tartıştılar. Sonraki adımlar arasında Sarah'nın bilgi göndermesi ve demoyu planlamak için takip etmesi yer alıyor.",
   "products": ["XYZ Widget"],
   "rep_name": "Sarah",
   "prospect_name": "John",
-  "action_items": ["Review case studies", "Schedule demo"]
+  "action_items": ["Vaka çalışmalarını incele", "Demo planla"]
 }
 ```
 
-### Quick Takeaways
+### Önemli Çıkarımlar
 
-- Function calling remains easier to use for structured data extraction (especially if you have already specified your schema as e.g. a pydantic model)
-- While JSON mode enforces the format of the output, it does not help with validation against a specified schema. Directly passing in a schema may not generate expected JSON and may require additional careful formatting and prompting.
+- Fonksiyon çağırma, yapılandırılmış veri çıkarma için kullanımı daha kolay olmaya devam ediyor (özellikle şemanızı önceden bir pydantic modeli olarak belirttiyseniz).
+- JSON modu çıktının formatını zorunlu kılsa da, belirtilen bir şemaya karşı doğrulamaya yardımcı olmaz. Bir şemayı doğrudan iletmek beklenen JSON'u oluşturmayabilir ve ek dikkatli formatlama ve istemleme (prompting) gerektirebilir.

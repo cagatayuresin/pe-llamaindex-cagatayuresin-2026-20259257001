@@ -1,33 +1,33 @@
-# Optimum Intel LLMs optimized with IPEX backend
+# IPEX arka ucu ile optimize edilmiş Optimum Intel LLM'ler
 
 ---
-title: Optimum Intel LLMs optimized with IPEX backend
+title: IPEX arka ucu ile optimize edilmiş Optimum Intel LLM'ler
  | LlamaIndex OSS Documentation
 ---
 
-[Optimum Intel](https://github.com/rbrugaro/optimum-intel) accelerates Hugging Face pipelines on Intel architectures leveraging [Intel Extension for Pytorch, (IPEX)](https://github.com/intel/intel-extension-for-pytorch) optimizations
+[Optimum Intel](https://github.com/rbrugaro/optimum-intel), [Intel Extension for Pytorch (IPEX)](https://github.com/intel/intel-extension-for-pytorch) optimizasyonlarından yararlanarak Intel mimarilerindeki Hugging Face işlem hatlarını (pipelines) hızlandırır.
 
-Optimum Intel models can be run locally through `OptimumIntelLLM` entitiy wrapped by LlamaIndex :
+Optimum Intel modelleri, LlamaIndex tarafından sarmalanan `OptimumIntelLLM` varlığı aracılığıyla yerel olarak çalıştırılabilir:
 
-In the below line, we install the packages necessary for this demo:
+Aşağıdaki satırda, bu demo için gerekli paketleri kuruyoruz:
 
-```
+```python
 %pip install llama-index-llms-optimum-intel
 ```
 
-Now that we’re set up, let’s play around:
+Kurulumu tamamladığımıza göre biraz deneme yapalım:
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.optimum_intel import OptimumIntelLLM
 ```
 
-```
+```python
 def messages_to_prompt(messages):
     prompt = ""
     for message in messages:
@@ -39,12 +39,12 @@ def messages_to_prompt(messages):
             prompt += f"<|assistant|>\n{message.content}</s>\n"
 
 
-    # ensure we start with a system prompt, insert blank if needed
+    # bir sistem istemiyle başladığımızdan emin olun, gerekirse boş ekleyin
     if not prompt.startswith("<|system|>\n"):
         prompt = "<|system|>\n</s>\n" + prompt
 
 
-    # add final assistant prompt
+    # son asistan istemini ekle
     prompt = prompt + "<|assistant|>\n"
 
 
@@ -57,11 +57,11 @@ def completion_to_prompt(completion):
     return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
 ```
 
-### Model Loading
+### Model Yükleme
 
-Models can be loaded by specifying the model parameters using the `OptimumIntelLLM` method.
+Modeller, `OptimumIntelLLM` yöntemi kullanılarak model parametreleri belirtilerek yüklenebilir.
 
-```
+```python
 oi_llm = OptimumIntelLLM(
     model_name="Intel/neural-chat-7b-v3-3",
     tokenizer_name="Intel/neural-chat-7b-v3-3",
@@ -74,33 +74,33 @@ oi_llm = OptimumIntelLLM(
 )
 ```
 
-```
-response = oi_llm.complete("What is the meaning of life?")
+```python
+response = oi_llm.complete("Hayatın anlamı nedir?")
 print(str(response))
 ```
 
-### Streaming
+### Akış (Streaming)
 
-Using `stream_complete` endpoint
+`stream_complete` uç noktasını kullanma
 
-```
-response = oi_llm.stream_complete("Who is Mother Teresa?")
+```python
+response = oi_llm.stream_complete("Rahibe Teresa kimdir?")
 for r in response:
     print(r.delta, end="")
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
         role="system",
-        content="You are an American chef in a small restaurant in New Orleans",
+        content="Sen New Orleans'ta küçük bir restoranda çalışan Amerikalı bir şefsin",
     ),
-    ChatMessage(role="user", content="What is your dish of the day?"),
+    ChatMessage(role="user", content="Günün yemeği nedir?"),
 ]
 resp = oi_llm.stream_chat(messages)
 

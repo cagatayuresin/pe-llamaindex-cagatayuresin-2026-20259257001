@@ -5,124 +5,124 @@ title: PremAI LlamaIndex
  | LlamaIndex OSS Documentation
 ---
 
-[PremAI](https://premai.io/) is an all-in-one platform that simplifies the creation of robust, production-ready applications powered by Generative AI. By streamlining the development process, PremAI allows you to concentrate on enhancing user experience and driving overall growth for your application. You can quickly start using our platform [here](https://docs.premai.io/quick-start).
+**[PremAI](https://premai.io/)**, Üretken Yapay Zeka (Generative AI) tarafından desteklenen sağlam, üretime hazır uygulamaların oluşturulmasını basitleştiren hepsi bir arada bir platformdur. PremAI, geliştirme sürecini kolaylaştırarak kullanıcı deneyimini iyileştirmeye ve uygulamanızın genel büyümesini artırmaya odaklanmanıza olanak tanır. Platformumuzu kullanmaya [buradan](https://docs.premai.io/quick-start) hızlıca başlayabilirsiniz.
 
-## Installation and setup
+## Kurulum ve yapılandırma
 
-We start by installing `llama-index` and `premai-sdk`. You can type the following command to install:
+`llama-index` ve `premai-sdk` kurulumu ile başlıyoruz. Kurulum için aşağıdaki komutu yazabilirsiniz:
 
-Terminal window
+Terminal penceresi
 
-```
+```bash
 pip install premai llama-index
 ```
 
-Before proceeding further, please make sure that you have made an account on PremAI and already created a project. If not, please refer to the [quick start](https://docs.premai.io/introduction) guide to get started with the PremAI platform. Create your first project and grab your API key.
+Devam etmeden önce lütfen PremAI üzerinde bir hesap oluşturduğunuzdan ve bir proje oluşturduğunuzdan emin olun. Değilse, PremAI platformuna başlamak için lütfen [hızlı başlangıç](https://docs.premai.io/introduction) kılavuzuna bakın. İlk projenizi oluşturun ve API anahtarınızı alın.
 
-```
+```python
 %pip install llama-index-llms-premai
 ```
 
-```
+```python
 from llama_index.llms.premai import PremAI
 from llama_index.core.llms import ChatMessage
 ```
 
-## Setup PremAI client with LlamaIndex
+## LlamaIndex ile PremAI istemcisini kurma
 
-Once we imported our required modules, let’s setup our client. For now let’s assume that our `project_id` is `8`. But make sure you use your project-id, otherwise it will throw error.
+Gerekli modülleri içe aktardıktan sonra istemcimizi kuralım. Şimdilik `project_id` değerimizin `8` olduğunu varsayalım. Ancak kendi proje id'nizi kullandığınızdan emin olun, aksi takdirde hata verecektir.
 
-In order to use llama-index with PremAI, you do not need to pass any model name or set any parameters with our chat-client. By default it will use the model name and parameters used in the [LaunchPad](https://docs.premai.io/get-started/launchpad).
+PremAI ile LlamaIndex'i kullanmak için sohbet istemcimizde herhangi bir model adı geçmeniz veya herhangi bir parametre ayarlamanız gerekmez. Varsayılan olarak [LaunchPad](https://docs.premai.io/get-started/launchpad) içinde kullanılan model adını ve parametrelerini kullanacaktır.
 
-> If you change the `model` or any other parameters like `temperature` or `max_tokens` while setting the client, it will override existing default configurations, that was used in LaunchPad.
+> İstemciyi ayarlarken `model` veya `temperature` veya `max_tokens` gibi diğer parametreleri değiştirirseniz, LaunchPad'de kullanılan mevcut varsayılan yapılandırmaların üzerine yazacaktır.
 
-```
+```python
 import os
 import getpass
 
 
 if os.environ.get("PREMAI_API_KEY") is None:
-    os.environ["PREMAI_API_KEY"] = getpass.getpass("PremAI API Key:")
+    os.environ["PREMAI_API_KEY"] = getpass.getpass("PremAI API Anahtarı:")
 
 
 prem_chat = PremAI(project_id=8)
 ```
 
-## Chat Completions
+## Sohbet Tamamlamaları (Chat Completions)
 
-Now you are all set. We can now start with interacting with our application. Let’s start by building simple chat request and responses using llama-index.
+Artık her şey hazır. Uygulamamızla etkileşime geçmeye başlayabiliriz. LlamaIndex kullanarak basit sohbet istekleri ve yanıtları oluşturarak başlayalım.
 
-```
+```python
 messages = [
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
     ChatMessage(
-        role="user", content="Write an essay about your school in 500 words"
+        role="user", content="Okulun hakkında 500 kelimelik bir makale yaz"
     ),
 ]
 ```
 
-Please note that: You can provide system prompt in `ChatMessage` like this:
+Lütfen unutmayın: `ChatMessage` içinde sistem istemini şu şekilde sağlayabilirsiniz:
 
-```
+```python
 messages = [
-    ChatMessage(role="system", content="Act like a pirate"),
-    ChatMessage(role="user", content="What is your name"),
-    ChatMessage(role="user", content="Where do you live, write an essay in 500 words"),
+    ChatMessage(role="system", content="Bir korsan gibi davran"),
+    ChatMessage(role="user", content="Adın ne?"),
+    ChatMessage(role="user", content="Nerede yaşıyorsun, 500 kelimelik bir makale yaz"),
 ]
 ```
 
-Additionally, you can also instantiate your client with system prompt like this:
+Ek olarak, istemcinizi şu şekilde sistem istemiyle de oluşturabilirsiniz:
 
+```python
+chat = PremAI(project_id=8, system_prompt="Kayıp Balık Nemo gibi davran")
 ```
-chat = PremAI(project_id=8, system_prompt="Act like nemo fish")
-```
 
-> In both of the scenarios, you are going to override your system prompt that was fixed while deploying the application from the platform. And, specifically in this case, if you override system prompt while instantiating the **PremAI** class then system message in `ChatMessage` won’t provide any affect.
+> Her iki senaryoda da, uygulamayı platformdan dağıtırken sabitlenen sistem isteminizin üzerine yazacaksınız. Ve özellikle bu durumda, **PremAI** sınıfını örneklendirirken sistem isteminin üzerine yazarsanız, `ChatMessage` içindeki sistem mesajı herhangi bir etki sağlamayacaktır.
 
-> So if you want to override system prompt for any experimental cases, either you need to provide that while instantiating the client or while writing it in `ChatMessage` with a role `system`.
+> Dolayısıyla, herhangi bir deneysel durum için sistem isteminin üzerine yazmak istiyorsanız, bunu ya istemciyi örneklendirirken sağlamanız ya da `ChatMessage` içinde `system` rolüyle yazmanız gerekir.
 
-Now let’s call the model
+Şimdi modeli çağıralım
 
-```
+```python
 response = prem_chat.chat(messages)
 print(response)
 ```
 
-```
-[ChatResponse(message=ChatMessage(role=<MessageRole.ASSISTANT: 'assistant'>, content="I'm here to assist you with any questions or tasks you have, but I'm not able to write essays. However, if you need help brainstorming ideas or organizing your thoughts for your essay about your school, I'd be happy to help with that. Just let me know how I can assist you further!", additional_kwargs={}), raw={'role': <RoleEnum.ASSISTANT: 'assistant'>, 'content': "I'm here to assist you with any questions or tasks you have, but I'm not able to write essays. However, if you need help brainstorming ideas or organizing your thoughts for your essay about your school, I'd be happy to help with that. Just let me know how I can assist you further!"}, delta=None, additional_kwargs={})]
-```
-
-You can also convert your chat function to a completion function. Here’s how it works
-
-```
-completion = prem_chat.complete("Paul Graham is ")
+```python
+[ChatResponse(message=ChatMessage(role=<MessageRole.ASSISTANT: 'assistant'>, content="Sorularınız veya görevleriniz konusunda size yardımcı olmak için buradayım ancak makale yazamıyorum. Ancak, okulunuz hakkındaki makaleniz için fikir fırtınası yapmanıza veya düşüncelerinizi düzenlemenize yardımcı olmamı isterseniz, size bu konuda yardımcı olmaktan mutluluk duyarım. Size başka nasıl yardımcı olabileceğimi bildirmeniz yeterli!", additional_kwargs={}), raw={'role': <RoleEnum.ASSISTANT: 'assistant'>, 'content': "Sorularınız veya görevleriniz konusunda size yardımcı olmak için buradayım ancak makale yazamıyorum. Ancak, okulunuz hakkındaki makaleniz için fikir fırtınası yapmanıza veya düşüncelerinizi düzenlemenize yardımcı olmamı isterseniz, size bu konuda yardımcı olmaktan mutluluk duyarım. Size başka nasıl yardımcı olabileceğimi bildirmeniz yeterli!"}, delta=None, additional_kwargs={})]
 ```
 
-> If you are going to place system prompt here, then it will override your system prompt that was fixed while deploying the application from the platform.
+Ayrıca sohbet fonksiyonunuzu bir tamamlama (completion) fonksiyonuna da dönüştürebilirsiniz. İşte nasıl çalıştığı
 
-> You can find all the optional parameters [here](https://docs.premai.io/get-started/sdk#optional-parameters). Any parameters other than [these supported parameters](https://docs.premai.io/get-started/sdk#optional-parameters) will be automatically removed before calling the model.
-
-## Native RAG Support with Prem Repositories
-
-Prem Repositories which allows users to upload documents (.txt, .pdf etc) and connect those repositories to the LLMs. You can think Prem repositories as native RAG, where each repository can be considered as a vector database. You can connect multiple repositories. You can learn more about repositories [here](https://docs.premai.io/get-started/repositories).
-
-Repositories are also supported in langchain premai. Here is how you can do it.
-
+```python
+completion = prem_chat.complete("Paul Graham ")
 ```
-query = "what is the diameter of individual Galaxy"
+
+> Buraya sistem istemi yerleştirecekseniz, uygulamayı platformdan dağıtırken sabitlenen sistem isteminizin üzerine yazacaktır.
+
+> Tüm isteğe bağlı parametreleri [burada](https://docs.premai.io/get-started/sdk#optional-parameters) bulabilirsiniz. [Bu desteklenen parametreler](https://docs.premai.io/get-started/sdk#optional-parameters) dışındaki herhangi bir parametre, model çağrılmadan önce otomatik olarak kaldırılacaktır.
+
+## Prem Depoları ile Yerel RAG Desteği
+
+Prem Depoları, kullanıcıların belge (.txt, .pdf vb.) yüklemesine ve bu depoları LLM'lere bağlamasına olanak tanır. Prem depolarını, her bir deponun bir vektör veritabanı olarak kabul edilebileceği yerel RAG olarak düşünebilirsiniz. Birden fazla depo bağlayabilirsiniz. Depolar hakkında [buradan](https://docs.premai.io/get-started/repositories) daha fazla bilgi edinebilirsiniz.
+
+Depolar LlamaIndex PremAI'da da desteklenmektedir. İşte nasıl yapabileceğiniz.
+
+```python
+query = "Bireysel bir Galaksinin çapı nedir?"
 repository_ids = [
     1991,
 ]
 repositories = dict(ids=repository_ids, similarity_threshold=0.3, limit=3)
 ```
 
-First we start by defining our repository with some repository ids. Make sure that the ids are valid repository ids. You can learn more about how to get the repository id [here](https://docs.premai.io/get-started/repositories).
+Öncelikle depomuzu bazı depo id'leri ile tanımlayarak başlıyoruz. Id'lerin geçerli depo id'leri olduğundan emin olun. Depo id'sini nasıl alacağınız hakkında [buradan](https://docs.premai.io/get-started/repositories) daha fazla bilgi edinebilirsiniz.
 
-> Please note: Similar like `model_name` when you invoke the argument `repositories`, then you are potentially overriding the repositories connected in the launchpad.
+> Lütfen unutmayın: `model_name`'e benzer şekilde, `repositories` bağımsız değişkenini çağırdığınızda, LaunchPad'de bağlanan depoların üzerine yazma potansiyeline sahipsiniz.
 
-Now, we connect the repository with our chat object to invoke RAG based generations.
+Şimdi, RAG tabanlı üretimleri başlatmak için depoyu sohbet nesnemize bağlıyoruz.
 
-```
+```python
 messages = [
     ChatMessage(role="user", content=query),
 ]
@@ -132,28 +132,28 @@ response = prem_chat.chat(messages, repositories=repositories)
 print(response)
 ```
 
-So, this also means that you do not need to make your own RAG pipeline when using the Prem Platform. Prem uses it’s own RAG technology to deliver best in class performance for Retrieval Augmented Generations.
+Yani bu, Prem Platformunu kullanırken kendi RAG hattınızı oluşturmanıza gerek olmadığı anlamına da gelir. Prem, Geri Getirme Artırılmış Üretimler (RAG) için sınıfının en iyisi performansı sunmak üzere kendi RAG teknolojisini kullanır.
 
-> Ideally, you do not need to connect Repository IDs here to get Retrieval Augmented Generations. You can still get the same result if you have connected the repositories in prem platform.
+> İdeal olarak, Geri Getirme Artırılmış Üretimler almak için buraya Depo ID'lerini bağlamanıza gerek yoktur. Depoları Prem platformunda bağladıysanız aynı sonucu yine alabilirsiniz.
 
-## Prem Templates
+## Prem Şablonları (Templates)
 
-Writing Prompt Templates can be super messy. Prompt templates are long, hard to manage, and must be continuously tweaked to improve and keep the same throughout the application.
+İstem Şablonları (Prompt Templates) yazmak çok karmaşık olabilir. İstem şablonları uzundur, yönetilmesi zordur ve iyileştirmek ve uygulama boyunca aynı tutmak için sürekli olarak ayarlanmalıdır.
 
-With **Prem**, writing and managing prompts can be super easy. The ***Templates*** tab inside the [launchpad](https://docs.premai.io/get-started/launchpad) helps you write as many prompts templates you need and use it inside the SDK to make your application running using those prompts. You can read more about Prompt Templates [here](https://docs.premai.io/get-started/prem-templates).
+**Prem** ile istemleri yazmak ve yönetmek çok kolay olabilir. [LaunchPad](https://docs.premai.io/get-started/launchpad) içindeki ***Templates*** sekmesi, ihtiyacınız olan kadar istem şablonu yazmanıza ve bu istemleri kullanarak uygulamanızı çalıştırmak için SDK içinde kullanmanıza yardımcı olur. İstem Şablonları hakkında [buradan](https://docs.premai.io/get-started/prem-templates) daha fazla bilgi okuyabilirsiniz.
 
-To use Prem Templates natively with llama-index, you need to pass a dictionary which will contain an `id` as key and the value will be the template variable. This key-value should be passed in the `additional_kwargs` of ChatMessage.
+Prem Şablonlarını LlamaIndex ile yerel olarak kullanmak için, anahtar olarak bir `id` ve değer olarak şablon değişkenini içeren bir sözlük geçmeniz gerekir. Bu anahtar-değer çifti, ChatMessage'ın `additional_kwargs` kısmında geçilmelidir.
 
-let’s say for example, if your prompt template was this:
+Örneğin, istem şablonunuz şu şekildeyse:
 
+```text
+İsmime merhaba de ve yaşıma uygun iyi hissettiren bir alıntı söyle.
+Adım: {name} ve yaşım {age}
 ```
-Say hello to my name and say a feel-good quote
-from my age. My name is: {name} and age is {age}
-```
 
-So now your message should look like:
+Şimdi mesajınız şuna benzemelidir:
 
-```
+```python
 messages = [
     ChatMessage(
         role="user", content="Shawn", additional_kwargs={"id": "name"}
@@ -162,20 +162,20 @@ messages = [
 ]
 ```
 
-Pass this `messages` to llama-index PremAI Client. Please note: Do not forget to pass the additional `template_id` to invoke generation with Prem Templates. If you are not aware of `template_id` you can learn more about that [in our docs](https://docs.premai.io/get-started/prem-templates). Here is an example:
+Bu `messages` listesini LlamaIndex PremAI İstemcisine geçin. Lütfen unutmayın: Prem Şablonları ile üretimi başlatmak için ek `template_id` değerini geçmeyi unutmayın. `template_id` hakkında bilginiz yoksa [dokümanlarımızdan](https://docs.premai.io/get-started/prem-templates) daha fazla bilgi edinebilirsiniz. İşte bir örnek:
 
-```
+```python
 template_id = "78069ce8-xxxxx-xxxxx-xxxx-xxx"
 response = prem_chat.chat(messages, template_id=template_id)
 ```
 
-Prem Templates are also available for Streaming too.
+Prem Şablonları Akış (Streaming) için de mevcuttur.
 
-## Streaming
+## Akış (Streaming)
 
-In this section, let’s see how we can stream tokens using llama-index and PremAI. It is very similar to above methods. Here’s how you do it.
+Bu bölümde, LlamaIndex ve PremAI kullanarak jetonları (tokens) nasıl akışla iletebileceğimizi görelim. Yukarıdaki yöntemlere çok benzer. İşte nasıl yapacağınız.
 
-```
+```python
 streamed_response = prem_chat.stream_chat(messages)
 
 
@@ -183,23 +183,25 @@ for response_delta in streamed_response:
     print(response_delta.delta, end="")
 ```
 
+```text
+Yazma görevlerinde size yardımcı olmak için buradayım ancak kişisel deneyimlerim yok veya okula gitmiyorum. Ancak fikir fırtınası yapmanıza, makalenizi taslak haline getirmenize veya okulla ilgili çeşitli konularda bilgi sağlamanıza yardımcı olabilirim. Size nasıl daha fazla yardımcı olabileceğimi bildirin!
 ```
-I'm here to assist you with writing tasks, but I don't have personal experiences or attend school. However, I can help you brainstorm ideas, outline your essay, or provide information on various school-related topics. Just let me know how I can assist you further!
-```
 
-This will stream tokens one after the other. Similar to `complete` method, we have `stream_complete` method which does streaming of tokens for completion.
+Bu, jetonları birbiri ardına akışla iletecektir. `complete` yöntemine benzer şekilde, tamamlama için jetonların akışını yapan `stream_complete` yöntemimiz de vardır.
 
-```
-# This will stream tokens one by one
+```python
+# Bu, jetonları tek tek akışla iletecektir
 
 
-streamed_response = prem_chat.stream_complete("hello how are you")
+streamed_response = prem_chat.stream_complete("merhaba nasılsın")
 
 
 for response_delta in streamed_response:
     print(response_delta.delta, end="")
 ```
 
+```text
+Merhaba! Buradayım ve size yardımcı olmaya hazırım. Bugün size nasıl yardımcı olabilirim?
 ```
-Hello! I'm here and ready to assist you. How can I help you today?
+help you today?
 ```

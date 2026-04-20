@@ -1,33 +1,33 @@
-# OpenVINO LLMs
+# OpenVINO LLM'ler
 
 ---
-title: OpenVINO LLMs
+title: OpenVINO LLM'ler
  | LlamaIndex OSS Documentation
 ---
 
-[OpenVINO™](https://github.com/openvinotoolkit/openvino) is an open-source toolkit for optimizing and deploying AI inference. OpenVINO™ Runtime can enable running the same model optimized across various hardware [devices](https://github.com/openvinotoolkit/openvino?tab=readme-ov-file#supported-hardware-matrix). Accelerate your deep learning performance across use cases like: language + LLMs, computer vision, automatic speech recognition, and more.
+[OpenVINO™](https://github.com/openvinotoolkit/openvino), yapay zeka çıkarımını (inference) optimize etmek ve dağıtmak için açık kaynaklı bir araç takımıdır. OpenVINO™ Runtime, çeşitli donanım [cihazlarında](https://github.com/openvinotoolkit/openvino?tab=readme-ov-file#supported-hardware-matrix) optimize edilmiş aynı modelin çalıştırılmasını sağlayabilir. Dil + LLM'ler, bilgisayarlı görü, otomatik konuşma tanıma ve daha fazlası gibi kullanım durumlarında derin öğrenme performansınızı hızlandırın.
 
-OpenVINO models can be run locally through `OpenVINOLLM` entitiy wrapped by LlamaIndex :
+OpenVINO modelleri, LlamaIndex tarafından sarmalanan `OpenVINOLLM` varlığı aracılığıyla yerel olarak çalıştırılabilir:
 
-In the below line, we install the packages necessary for this demo:
+Aşağıdaki satırda, bu demo için gerekli paketleri kuruyoruz:
 
-```
+```python
 %pip install llama-index-llms-openvino transformers huggingface_hub
 ```
 
-Now that we’re set up, let’s play around:
+Kurulumu tamamladığımıza göre biraz deneme yapalım:
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.openvino import OpenVINOLLM
 ```
 
-```
+```python
 def messages_to_prompt(messages):
     prompt = ""
     for message in messages:
@@ -39,12 +39,12 @@ def messages_to_prompt(messages):
             prompt += f"<|assistant|>\n{message.content}</s>\n"
 
 
-    # ensure we start with a system prompt, insert blank if needed
+    # bir sistem istemiyle başladığımızdan emin olun, gerekirse boş ekleyin
     if not prompt.startswith("<|system|>\n"):
         prompt = "<|system|>\n</s>\n" + prompt
 
 
-    # add final assistant prompt
+    # son asistan istemini ekle
     prompt = prompt + "<|assistant|>\n"
 
 
@@ -57,13 +57,13 @@ def completion_to_prompt(completion):
     return f"<|system|>\n</s>\n<|user|>\n{completion}</s>\n<|assistant|>\n"
 ```
 
-### Model Loading
+### Model Yükleme
 
-Models can be loaded by specifying the model parameters using the `OpenVINOLLM` method.
+Modeller, `OpenVINOLLM` yöntemi kullanılarak model parametreleri belirtilerek yüklenebilir.
 
-If you have an Intel GPU, you can specify `device_map="gpu"` to run inference on it.
+Intel GPU'nuz varsa, çıkarımı üzerinde çalıştırmak için `device_map="gpu"` belirtebilirsiniz.
 
-```
+```python
 ov_config = {
     "PERFORMANCE_HINT": "LATENCY",
     "NUM_STREAMS": "1",
@@ -83,30 +83,30 @@ ov_llm = OpenVINOLLM(
 )
 ```
 
-```
-response = ov_llm.complete("What is the meaning of life?")
+```python
+response = ov_llm.complete("Hayatın anlamı nedir?")
 print(str(response))
 ```
 
-### Inference with local OpenVINO model
+### Yerel OpenVINO modeli ile çıkarım
 
-It is possible to [export your model](https://github.com/huggingface/optimum-intel?tab=readme-ov-file#export) to the OpenVINO IR format with the CLI, and load the model from local folder.
+Modelinizi CLI ile OpenVINO IR formatına [dışa aktarmanız](https://github.com/huggingface/optimum-intel?tab=readme-ov-file#export) ve modeli yerel klasörden yüklemeniz mümkündür.
 
-```
+```python
 !optimum-cli export openvino --model HuggingFaceH4/zephyr-7b-beta ov_model_dir
 ```
 
-It is recommended to apply 8 or 4-bit weight quantization to reduce inference latency and model footprint using `--weight-format`:
+`--weight-format` kullanarak çıkarım gecikmesini ve model boyutunu azaltmak için 8 veya 4 bitlik ağırlık kuantizasyonu (quantization) uygulanması önerilir:
 
-```
+```python
 !optimum-cli export openvino --model HuggingFaceH4/zephyr-7b-beta --weight-format int8 ov_model_dir
 ```
 
-```
+```python
 !optimum-cli export openvino --model HuggingFaceH4/zephyr-7b-beta --weight-format int4 ov_model_dir
 ```
 
-```
+```python
 ov_llm = OpenVINOLLM(
     model_id_or_path="ov_model_dir",
     context_window=3900,
@@ -119,9 +119,9 @@ ov_llm = OpenVINOLLM(
 )
 ```
 
-You can get additional inference speed improvement with Dynamic Quantization of activations and KV-cache quantization. These options can be enabled with `ov_config` as follows:
+Dinamik aktivasyon kuantizasyonu ve KV-cache kuantizasyonu ile ek çıkarım hızı iyileştirmesi elde edebilirsiniz. Bu seçenekler `ov_config` ile aşağıdaki gibi etkinleştirilebilir:
 
-```
+```python
 ov_config = {
     "KV_CACHE_PRECISION": "u8",
     "DYNAMIC_QUANTIZATION_GROUP_SIZE": "32",
@@ -131,27 +131,27 @@ ov_config = {
 }
 ```
 
-### Streaming
+### Akış (Streaming)
 
-Using `stream_complete` endpoint
+`stream_complete` uç noktasını kullanma
 
-```
-response = ov_llm.stream_complete("Who is Paul Graham?")
+```python
+response = ov_llm.stream_complete("Paul Graham kimdir?")
 for r in response:
     print(r.delta, end="")
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Sen renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne"),
 ]
 resp = ov_llm.stream_chat(messages)
 
@@ -160,12 +160,12 @@ for r in resp:
     print(r.delta, end="")
 ```
 
-For more information refer to:
+Daha fazla bilgi için şuralara başvurun:
 
-- [OpenVINO LLM guide](https://docs.openvino.ai/2024/learn-openvino/llm_inference_guide.html).
+- [OpenVINO LLM kılavuzu](https://docs.openvino.ai/2024/learn-openvino/llm_inference_guide.html).
 
-- [OpenVINO Documentation](https://docs.openvino.ai/2024/home.html).
+- [OpenVINO Dokümantasyonu](https://docs.openvino.ai/2024/home.html).
 
-- [OpenVINO Get Started Guide](https://www.intel.com/content/www/us/en/content-details/819067/openvino-get-started-guide.html).
+- [OpenVINO Başlangıç Kılavuzu](https://www.intel.com/content/www/us/en/content-details/819067/openvino-get-started-guide.html).
 
-- [RAG example with LlamaIndex](https://github.com/openvinotoolkit/openvino_notebooks/tree/latest/notebooks/llm-rag-llamaindex).
+- [LlamaIndex ile RAG örneği](https://github.com/openvinotoolkit/openvino_notebooks/tree/latest/notebooks/llm-rag-llamaindex).

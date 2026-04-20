@@ -1,25 +1,25 @@
-# Client of Baidu Intelligent Cloud's Qianfan LLM Platform
+# Baidu Akıllı Bulut Qianfan LLM Platformu İstemcisi
 
 ---
-title: Client of Baidu Intelligent Cloud's Qianfan LLM Platform
+title: Baidu Akıllı Bulut Qianfan LLM Platformu İstemcisi
  | LlamaIndex OSS Documentation
 ---
 
-Baidu Intelligent Cloud’s Qianfan LLM Platform offers API services for all Baidu LLMs, such as ERNIE-3.5-8K and ERNIE-4.0-8K. It also provides a small number of open-source LLMs like Llama-2-70b-chat.
+Baidu Akıllı Bulut'un Qianfan LLM Platformu; ERNIE-3.5-8K ve ERNIE-4.0-8K gibi tüm Baidu LLM'leri için API servisleri sunar. Ayrıca Llama-2-70b-chat gibi az sayıda açık kaynaklı LLM de sağlar.
 
-Before using the chat client, you need to activate the LLM service on the Qianfan LLM Platform console’s [online service](https://console.bce.baidu.com/qianfan/ais/console/onlineService) page. Then, Generate an Access Key and a Secret Key in the [Security Authentication](https://console.bce.baidu.com/iam/#/iam/accesslist) page of the console.
+Sohbet istemcisini kullanmadan önce, Qianfan LLM Platformu konsolunun [çevrimiçi servis](https://console.bce.baidu.com/qianfan/ais/console/onlineService) sayfasındaki LLM servisini aktif etmeniz gerekir. Ardından, konsolun [Güvenlik Kimlik Doğrulaması](https://console.bce.baidu.com/iam/#/iam/accesslist) sayfasında bir Erişim Anahtarı (Access Key) ve Gizli Anahtar (Secret Key) oluşturun.
 
-## Installation
+## Kurulum
 
-Install the necessary package:
+Gerekli paketi kurun:
 
-```
+```python
 %pip install llama-index-llms-qianfan
 ```
 
-## Initialization
+## Başlatma (Initialization)
 
-```
+```python
 from llama_index.llms.qianfan import Qianfan
 import asyncio
 
@@ -32,29 +32,29 @@ context_window = 8192
 llm = Qianfan(access_key, secret_key, model_name, endpoint_url, context_window)
 ```
 
-## Synchronous Chat
+## Senkron Sohbet (Synchronous Chat)
 
-Generate a chat response synchronously using the `chat` method:
+`chat` yöntemini kullanarak senkronize olarak bir sohbet yanıtı oluşturun:
 
-```
+```python
 from llama_index.core.base.llms.types import ChatMessage
 
 
 messages = [
-    ChatMessage(role="user", content="Tell me a joke."),
+    ChatMessage(role="user", content="Bana bir fıkra anlat."),
 ]
 chat_response = llm.chat(messages)
 print(chat_response.message.content)
 ```
 
-## Synchronous Stream Chat
+## Senkron Akışlı Sohbet (Synchronous Stream Chat)
 
-Generate a streaming chat response synchronously using the `stream_chat` method:
+`stream_chat` yöntemini kullanarak senkronize olarak akışlı bir sohbet yanıtı oluşturun:
 
-```
+```python
 messages = [
-    ChatMessage(role="system", content="You are a helpful assistant."),
-    ChatMessage(role="user", content="Tell me a story."),
+    ChatMessage(role="system", content="Yardımsever bir asistansın."),
+    ChatMessage(role="user", content="Bana bir hikaye anlat."),
 ]
 content = ""
 for chat_response in llm.stream_chat(messages):
@@ -62,14 +62,14 @@ for chat_response in llm.stream_chat(messages):
     print(chat_response.delta, end="")
 ```
 
-## Asynchronous Chat
+## Asenkron Sohbet (Asynchronous Chat)
 
-Generate a chat response asynchronously using the `achat` method:
+`achat` yöntemini kullanarak asenkron olarak bir sohbet yanıtı oluşturun:
 
-```
+```python
 async def async_chat():
     messages = [
-        ChatMessage(role="user", content="Tell me an async joke."),
+        ChatMessage(role="user", content="Bana asenkron bir fıkra anlat."),
     ]
     chat_response = await llm.achat(messages)
     print(chat_response.message.content)
@@ -80,15 +80,15 @@ async def async_chat():
 asyncio.run(async_chat())
 ```
 
-## Asynchronous Stream Chat
+## Asenkron Akışlı Sohbet (Asynchronous Stream Chat)
 
-Generate a streaming chat response asynchronously using the `astream_chat` method:
+`astream_chat` yöntemini kullanarak asenkron olarak akışlı bir sohbet yanıtı oluşturun:
 
-```
+```python
 async def async_stream_chat():
     messages = [
-        ChatMessage(role="system", content="You are a helpful assistant."),
-        ChatMessage(role="user", content="Tell me an async story."),
+        ChatMessage(role="system", content="Yardımsever bir asistansın."),
+        ChatMessage(role="user", content="Bana asenkron bir hikaye anlat."),
     ]
     content = ""
     response = await llm.astream_chat(messages)

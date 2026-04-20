@@ -5,150 +5,150 @@ title: OpenAI Responses API
  | LlamaIndex OSS Documentation
 ---
 
-This notebook shows how to use the OpenAI Responses LLM.
+Bu not defteri, OpenAI Responses LLM'nin nasıl kullanılacağını gösterir.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index llama-index-llms-openai
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "..."
 ```
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 
 
 llm = OpenAIResponses(
     model="gpt-4o-mini",
-    # api_key="some key",  # uses OPENAI_API_KEY env var by default
+    # api_key="some key",  # varsayılan olarak OPENAI_API_KEY ortam değişkenini kullanır
 )
 ```
 
-#### Call `complete` with a prompt
+#### Bir istemle `complete` çağrısı
 
-```
+```python
 from llama_index.llms.openai import OpenAI
 
 
-resp = llm.complete("Paul Graham is ")
+resp = llm.complete("Paul Graham kimdir?")
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-Paul Graham is a prominent computer scientist, entrepreneur, and venture capitalist, best known for co-founding the startup accelerator Y Combinator. He is also recognized for his essays on technology, startups, and programming, which have influenced many in the tech community. Graham has a background in programming languages and artificial intelligence, having earned a Ph.D. from Harvard University. His work has significantly shaped the startup ecosystem, particularly in Silicon Valley. Would you like to know more about a specific aspect of his work or ideas?
+```python
+Paul Graham, startup hızlandırıcısı Y Combinator'ın kurucu ortağı olmasıyla tanınan önde gelen bir bilgisayar bilimcisi, girişimci ve risk sermayedaridir. Ayrıca teknoloji camiasındaki birçok kişiyi etkileyen teknoloji, startup'lar ve programlama üzerine yazdığı makaleleriyle de tanınır. Graham, Harvard Üniversitesi'nden doktora derecesi almış olup, programlama dilleri ve yapay zeka alanında bir geçmişe sahiptir. Çalışmaları, özellikle Silikon Vadisi'ndeki startup ekosistemini önemli ölçüde şekillendirmiştir. Çalışmalarının veya fikirlerinin belirli bir yönü hakkında daha fazla bilgi edinmek ister misiniz?
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Sen renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant: Ahoy, matey! Ye can call me Captain Jollybeard, the most colorful pirate to sail the seven seas! What brings ye to me ship today? Arrr!
-```
-
-## Streaming
-
-Using `stream_complete` endpoint
-
-```
-resp = llm.stream_complete("Paul Graham is ")
+```python
+assistant: Ahoy, ahbap! Bana Kaptan Neşelısakal diyebilirsin, yedi denizde yelken açan en renkli korsan! Bugün seni gemime ne getirdi? Arrr!
 ```
 
+## Akış (Streaming)
+
+`stream_complete` uç noktasını kullanma
+
+```python
+resp = llm.stream_complete("Paul Graham kimdir?")
 ```
+
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-Paul Graham is a prominent computer scientist, entrepreneur, and venture capitalist, best known for co-founding the startup accelerator Y Combinator. He is also recognized for his essays on technology, startups, and programming, which have influenced many in the tech community. Graham has a background in programming languages and artificial intelligence and has authored several influential works, including "Hackers and Painters." His insights on entrepreneurship and innovation have made him a respected figure in Silicon Valley.
+```python
+Paul Graham, startup hızlandırıcısı Y Combinator'ın kurucu ortağı olmasıyla tanınan önde gelen bir bilgisayar bilimcisi, girişimci ve risk sermayedaridir. Ayrıca teknoloji camiasındaki birçok kişiyi etkileyen teknoloji, startup'lar ve programlama üzerine yazdığı makaleleriyle de tanınır. Graham'ın programlama dilleri ve yapay zeka alanında bir geçmişi vardır ve "Hackers and Painters" (Hacker'lar ve Ressamlar) dahil olmak üzere birkaç etkili eser kaleme almıştır. Girişimcilik ve inovasyon konusundaki içgörüleri onu Silikon Vadisi'nde saygın bir figür haline getirmiştir.
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Sen renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
+```python
+Ahoy oradan! Bana Kaptan Neşelısakal diyebilirsin, yedi denizde yelken açan en renkli korsan! Bugün seni gemime ne getirdi?
 ```
-Ahoy there! Ye can call me Captain Jollybeard, the most colorful pirate to sail the seven seas! What brings ye to me ship today?
-```
 
-## Configure Parameters
+## Parametreleri Yapılandır
 
-The Respones API supports many options:
+Responses API birçok seçeneği destekler:
 
-- Setting the model name
-- Generation parameters like temperature, top\_p, max\_output\_tokens
-- enabling built-in tool calling
-- setting the resoning effort for O-series models
-- tracking previous responses for automatic conversation history
-- and more!
+- Model adını ayarlama
+- Sıcaklık (temperature), top_p, max_output_tokens gibi üretim parametreleri
+- Yerleşik araç çağırmayı (built-in tool calling) etkinleştirme
+- O-serisi modeller için akıl yürütme (reasoning) çabasını ayarlama
+- Otomatik konuşma geçmişi için önceki yanıtları izleme
+- Ve daha fazlası!
 
-### Basic Parameters
+### Temel Parametreler
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 
 
 llm = OpenAIResponses(
     model="gpt-4o-mini",
-    temperature=0.5,  # default is 0.1
-    max_output_tokens=100,  # default is None
-    top_p=0.95,  # default is 1.0
+    temperature=0.5,  # varsayılan 0.1'dir
+    max_output_tokens=100,  # varsayılan None'dır
+    top_p=0.95,  # varsayılan 1.0'dır
 )
 ```
 
-### Built-in Tool Calling
+### Yerleşik Araç Çağırma (Built-in Tool Calling)
 
-The responses API supports built-in tool calling, which you can read more about [here](https://platform.openai.com/docs/guides/tools?api-mode=responses).
+Responses API, hakkında daha fazla bilgiyi [buradan](https://platform.openai.com/docs/guides/tools?api-mode=responses) okuyabileceğiniz yerleşik araç çağırmayı destekler.
 
-Configuring this means that the LLM will automatically call the tool and use it to augment the response.
+Bunu yapılandırmak, LLM'nin aracı otomatik olarak çağıracağı ve yanıtı zenginleştirmek için kullanacağı anlamına gelir.
 
-Tools are defined as a list of dictionaries, each containing settings for a tool.
+Araçlar, her biri bir araç için ayarlar içeren bir sözlük listesi olarak tanımlanır.
 
-Below is an example of using the built-in web search tool.
+Aşağıda yerleşik web arama aracını kullanmaya yönelik bir örnek bulunmaktadır.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.llms import ChatMessage
 
@@ -160,45 +160,43 @@ llm = OpenAIResponses(
 
 
 resp = llm.chat(
-    [ChatMessage(role="user", content="What is the weather in San Francisco?")]
+    [ChatMessage(role="user", content="San Francisco'da hava nasıl?")]
 )
 print(resp)
 print("========" * 2)
 print(resp.additional_kwargs)
 ```
 
-```
-assistant: As of 12:18 AM on Friday, March 28, 2025, in San Francisco, the current weather is partly sunny with a temperature of 61°F (16°C).
+```python
+assistant: 28 Mart 2025 Cuma günü saat 00:18 itibarıyla San Francisco'da mevcut hava durumu parçalı güneşli ve sıcaklık 61°F (16°C).
 
 
-## Weather for San Francisco, CA:
-Current Conditions: Partly sunny, 61°F (16°C)
+## San Francisco, CA için Hava Durumu:
+Mevcut Koşullar: Parçalı güneşli, 61°F (16°C)
 
 
-Daily Forecast:
-* Thursday, March 27: Low: 52°F (11°C), High: 61°F (16°C), Description: Periods of rain and drizzle beginning in the late morning; breezy this afternoon
-* Friday, March 28: Low: 47°F (8°C), High: 61°F (16°C), Description: A shower in the area in the morning; otherwise, clouds giving way to some sun
-* Saturday, March 29: Low: 50°F (10°C), High: 60°F (15°C), Description: Mostly sunny
-* Sunday, March 30: Low: 51°F (11°C), High: 59°F (15°C), Description: Cloudy; periods of rain in the morning followed by a shower in spots in the afternoon
-* Monday, March 31: Low: 49°F (10°C), High: 58°F (14°C), Description: Cloudy and cool; a couple of showers in the afternoon
-* Tuesday, April 01: Low: 53°F (12°C), High: 58°F (14°C), Description: Some sunshine giving way to clouds, breezy and cool; occasional rain in the afternoon
-* Wednesday, April 02: Low: 52°F (11°C), High: 56°F (13°C), Description: A couple of showers in the morning; otherwise, cloudy and remaining cool
+Günlük Tahmin:
+* 27 Mart Perşembe: En Düşük: 52°F (11°C), En Yüksek: 61°F (16°C), Açıklama: Sabahın geç saatlerinde başlayan yağmur ve çisenti dönemleri; bu öğleden sonra rüzgarlı
+* 28 Mart Cuma: En Düşük: 47°F (8°C), En Yüksek: 61°F (16°C), Açıklama: Sabah bölgede sağanak yağış; aksi takdirde yer yer güneşli bulutlu
+* 29 Mart Cumartesi: En Düşük: 50°F (10°C), En Yüksek: 60°F (15°C), Açıklama: Çoğunlukla güneşli
+* 30 Mart Pazar: En Düşük: 51°F (11°C), En Yüksek: 59°F (15°C), Açıklama: Bulutlu; sabah saatlerinde yağmur, öğleden sonra yer yer sağanak yağış
+* 31 Mart Pazartesi: En Düşük: 49°F (10°C), En Yüksek: 58°F (14°C), Açıklama: Bulutlu ve serin; öğleden sonra birkaç sağanak yağış
+* 1 Nisan Salı: En Düşük: 53°F (12°C), En Yüksek: 58°F (14°C), Açıklama: Giderek bulutlanan güneşli hava, rüzgarlı ve serin; öğleden sonra yer yer yağmur
+* 2 Nisan Çarşamba: En Düşük: 52°F (11°C), En Yüksek: 56°F (13°C), Açıklama: Sabah saatlerinde birkaç sağanak yağış; aksi takdirde bulutlu ve serin
 
 
-
-
-In March, San Francisco typically experiences daytime temperatures around 61°F (16°C) and nighttime temperatures around 47°F (8°C). The city usually receives about 3.5 inches (89 mm) of rainfall over approximately 11 days during the month. ([weather2visit.com](https://www.weather2visit.com/north-america/united-states/san-francisco-march.htm?utm_source=openai))
+Mart ayında, San Francisco genellikle gündüzleri 61°F (16°C) ve geceleri 47°F (8°C) civarında sıcaklıklar yaşar. Şehir genellikle ay boyunca yaklaşık 11 gün süresince yaklaşık 3,5 inç (89 mm) yağış alır. ([weather2visit.com](https://www.weather2visit.com/north-america/united-states/san-francisco-march.htm?utm_source=openai))
 ================
 {'built_in_tool_calls': [ResponseFunctionWebSearch(id='ws_67e5eaecce088191ab2edce452ef25420a24041ef7e917b2', status='completed', type='web_search_call')], 'annotations': [AnnotationURLCitation(end_index=1561, start_index=1439, title='San Francisco Weather in March 2025 | United States Averages | Weather-2-Visit', type='url_citation', url='https://www.weather2visit.com/north-america/united-states/san-francisco-march.htm?utm_source=openai')], 'usage': ResponseUsage(input_tokens=327, output_tokens=462, output_tokens_details=OutputTokensDetails(reasoning_tokens=0), total_tokens=789, input_tokens_details={'cached_tokens': 0})}
 ```
 
-## Reasoning Effort
+## Akıl Yürütme Çabası (Reasoning Effort)
 
-For O-series models, you can set the reasoning effort to control the amount of time the model will spend reasoning.
+O-serisi modeller için, modelin akıl yürütmeye ayıracağı süreyi kontrol etmek için akıl yürütme çabasını ayarlayabilirsiniz.
 
-See the [OpenAI API docs](https://platform.openai.com/docs/guides/reasoning?api-mode=responses) for more information.
+Daha fazla bilgi için [OpenAI API dokümanlarına](https://platform.openai.com/docs/guides/reasoning?api-mode=responses) bakın.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.llms import ChatMessage
 
@@ -210,57 +208,57 @@ llm = OpenAIResponses(
 
 
 resp = llm.chat(
-    [ChatMessage(role="user", content="What is the meaning of life?")]
+    [ChatMessage(role="user", content="Hayatın anlamı nedir?")]
 )
 print(resp)
 print("========" * 2)
 print(resp.additional_kwargs)
 ```
 
-```
-assistant: The question “What is the meaning of life?” has been asked by philosophers, theologians, scientists, and countless individuals throughout history—and there isn’t one definitive answer that satisfies everyone. Here are a few perspectives that help illustrate why the answer is so open-ended:
+```python
+assistant: "Hayatın anlamı nedir?" sorusu tarih boyunca filozoflar, ilahiyatçılar, bilim insanları ve sayısız birey tarafından sorulmuştur ve herkesi tatmin eden tek bir kesin cevap yoktur. İşte cevabın neden bu kadar ucu açık olduğunu göstermeye yardımcı olan birkaç bakış açısı:
 
 
-1. Philosophical and Existential Views:
- • Some existentialist thinkers, such as Jean-Paul Sartre and Albert Camus, argue that life doesn’t come with a preordained meaning. Instead, they suggest that it’s up to each individual to create their own purpose through choices, relationships, and personal projects.
- • Other philosophies, like those in classical philosophy, have emphasized the pursuit of virtue, knowledge, or happiness as key to a meaningful life.
+1. Felsefi ve Varoluşçu Görüşler:
+• Jean-Paul Sartre ve Albert Camus gibi bazı varoluşçu düşünürler, hayatın önceden belirlenmiş bir anlamla gelmediğini savunurlar. Bunun yerine, kendi amaçlarını seçimler, ilişkiler ve kişisel projeler yoluyla oluşturmanın her bireyin kendisine bağlı olduğunu öne sürerler.
+• Klasik felsefedekiler gibi diğer felsefeler, anlamlı bir yaşamın anahtarı olarak erdem, bilgi veya mutluluk arayışını vurgulamıştır.
 
 
-2. Religious and Spiritual Perspectives:
- • Many religious traditions offer meanings tied to their spiritual beliefs. In these views, life might be seen as a journey of growth, moral development, or fulfilling a divine plan—whether that means living according to God’s commandments, achieving enlightenment, or learning lessons through reincarnation.
- • Spiritual traditions often encourage adherents to find meaning in love, compassion, and service to others.
+2. Dini ve Manevi Perspektifler:
+• Birçok dini gelenek, manevi inançlarına bağlı anlamlar sunar. Bu görüşlerde hayat; Tanrı'nın emirlerine göre yaşamak, aydınlanmaya ulaşmak veya reenkarnasyon yoluyla dersler çıkarmak anlamına gelse de, ruhsal bir büyüme, ahlaki gelişim veya ilahi bir planı gerçekleştirme yolculuğu olarak görülebilir.
+• Manevi gelenekler genellikle takipçilerini sevgide, şefkatte ve başkalarına hizmette anlam bulmaya teşvik eder.
 
 
-3. Scientific and Naturalistic Approaches:
- • From a biological standpoint, one might say that the purpose of life is simply to survive and reproduce—the basic mechanisms that drive natural selection and evolution.
- • Some argue that while biology defines life’s mechanics, human consciousness allows us to transcend mere survival and imbue our existence with personal and cultural meaning.
+3. Bilimsel ve Doğal Yaklaşımlar:
+• Biyolojik bir bakış açısıyla, hayatın amacının sadece hayatta kalmak ve üremek olduğu söylenebilir; bunlar doğal seçilimi ve evrimi yönlendiren temel mekanizmalardır.
+• Bazıları, biyoloji yaşamın mekaniğini tanımlarken, insan bilincinin salt hayatta kalmanın ötesine geçmemize ve varlığımıza kişisel ve kültürel bir anlam yüklememize izin verdiğini savunur.
 
 
-4. Personal and Cultural Interpretations:
- • For many, meaning is found in everyday connections: love, creativity, learning, and contributing to the community or society at large.
- • Different cultures and individuals may prioritize various values (such as achievement, compassion, or exploration), which means the “meaning” can vary widely based on one’s upbringing, experiences, and personal reflections.
+4. Kişisel ve Kültürel Yorumlar:
+• Birçokları için anlam, günlük bağlantılarda bulunur: sevgi, yaratıcılık, öğrenme ve genel olarak topluma veya cemiyete katkıda bulunma.
+• Farklı kültürler ve bireyler çeşitli değerlere (başarı, şefkat veya keşif gibi) öncelik verebilir, bu da "anlam"ın birinin yetiştirilme tarzına, deneyimlerine ve kişisel yansımalarına bağlı olarak büyük ölçüde değişebileceği anlamına gelir.
 
 
-5. A Humorous Take:
- • Popular culture, notably in Douglas Adams’ The Hitchhiker’s Guide to the Galaxy, famously suggests that the answer to the ultimate question of life is “42”—a playful reminder that the real significance often lies in the journey of questioning itself rather than arriving at a single answer.
+5. Mizahi Bir Yaklaşım:
+• Popüler kültürde, özellikle Douglas Adams'ın Otostopçunun Galaksi Rehberi'nde, hayatın nihai sorusunun cevabının "42" olduğu meşhurdur; bu, asıl önemin tek bir cevaba ulaşmaktan ziyade sorgulama yolculuğunun kendisinde yattığına dair eğlenceli bir hatırlatmadır.
 
 
-In the end, the meaning of life might be considered less of an absolute truth and more of an invitation to explore, question, and define what matters most to you personally. Whether through relationships, creative pursuits, intellectual challenges, or spiritual practices, many believe we have the power to create our own meaning in a vast and complex universe.
+Sonuç olarak, hayatın anlamı mutlak bir gerçeklikten ziyade, sizin için en önemli olanı keşfetmeye, sorgulamaya ve tanımlamaya yönelik bir davet olarak kabul edilebilir. İster ilişkiler, ister yaratıcı uğraşlar, entelektüel zorluklar veya manevi uygulamalar yoluyla olsun, birçoğu uçsuz bucaksız ve karmaşık bir evrende kendi anlamımızı yaratma gücüne sahip olduğumuza inanıyor.
 ================
 {'built_in_tool_calls': [], 'reasoning': ResponseReasoningItem(id='rs_683e2dde0e308198a72c5e7f2e9bf52a0dd2faa5908183b8', summary=[], type='reasoning', encrypted_content=None, status=None), 'annotations': [], 'usage': ResponseUsage(input_tokens=13, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=841, output_tokens_details=OutputTokensDetails(reasoning_tokens=320), total_tokens=854)}
 ```
 
-## Image Support
+## Görüntü Desteği
 
-OpenAI has support for images in the input of chat messages for many models.
+OpenAI, birçok model için sohbet mesajlarının girişinde görüntü desteğine sahiptir.
 
-Using the content blocks feature of chat messages, you can easily combone text and images in a single LLM prompt.
+Mesajların içerik blokları (content blocks) özelliğini kullanarak, metin ve görüntüleri tek bir LLM isteminde kolayca birleştirebilirsiniz.
 
-```
+```python
 !wget https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg -O image.png
 ```
 
-```
+```python
 from llama_index.core.llms import ChatMessage, TextBlock, ImageBlock
 from llama_index.llms.openai import OpenAIResponses
 
@@ -273,7 +271,7 @@ messages = [
         role="user",
         blocks=[
             ImageBlock(path="image.png"),
-            TextBlock(text="Describe the image in a few sentences."),
+            TextBlock(text="Görüntüyü birkaç cümleyle tanımla."),
         ],
     )
 ]
@@ -283,17 +281,17 @@ resp = llm.chat(messages)
 print(resp.message.content)
 ```
 
+```python
+Görüntü, kareli bir yüzeyin üzerinde havada yakalanmış siyah noktalı üç beyaz zarı göstermektedir. Zarlar farklı yönlerde durmakta ve farklı nokta sayılarını sergilemektedir. Arka plan karanlıktır ve zarları aydınlatan hafif bir ışık dramatik bir etki yaratmaktadır. Kareli yüzey bir satranç veya dama tahtasına benzemektedir.
 ```
-The image shows three white dice with black dots, captured in mid-air above a checkered surface. The dice are in various orientations, displaying different numbers of dots. The background is dark, with a subtle light illuminating the dice, creating a dramatic effect. The checkered surface resembles a chess or checkerboard.
-```
 
-## Using Function/Tool Calling
+## Fonksiyon/Araç Çağırma Kullanımı
 
-OpenAI models have native support for function calling. This conveniently integrates with LlamaIndex tool abstractions, letting you plug in any arbitrary Python function to the LLM.
+OpenAI modelleri, fonksiyon çağırma (function calling) için yerel desteğe sahiptir. Bu, LlamaIndex araç soyutlamalarıyla uygun şekilde entegre olur ve herhangi bir rastgele Python fonksiyonunu LLM'ye bağlamanıza olanak tanır.
 
-In the example below, we define a function to generate a Song object.
+Aşağıdaki örnekte, bir Şarkı (Song) nesnesi oluşturmak için bir fonksiyon tanımlıyoruz.
 
-```
+```python
 from pydantic import BaseModel
 from llama_index.core.tools import FunctionTool
 
@@ -301,7 +299,7 @@ from llama_index.core.tools import FunctionTool
 
 
 class Song(BaseModel):
-    """A song with name and artist"""
+    """Adı ve sanatçısı olan bir şarkı"""
 
 
     name: str
@@ -311,7 +309,7 @@ class Song(BaseModel):
 
 
 def generate_song(name: str, artist: str) -> Song:
-    """Generates a song with provided name and artist."""
+    """Verilen ad ve sanatçı ile bir şarkı oluşturur."""
     return Song(name=name, artist=artist)
 
 
@@ -320,55 +318,55 @@ def generate_song(name: str, artist: str) -> Song:
 tool = FunctionTool.from_defaults(fn=generate_song)
 ```
 
-The `strict` parameter tells OpenAI whether or not to use constrained sampling when generating tool calls/structured outputs. This means that the generated tool call schema will always contain the expected fields.
+`strict` parametresi, OpenAI'ye araç çağrıları/yapılandırılmış çıktılar oluştururken kısıtlı örnekleme kullanıp kullanmayacağını bildirir. Bu, oluşturulan araç çağrısı şemasının her zaman beklenen alanları içereceği anlamına gelir.
 
-Since this seems to increase latency, it defaults to false.
+Bunun gecikmeyi (latency) artırdığı görüldüğünden, varsayılan olarak false (yanlış) değerine ayarlanmıştır.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 
 
 llm = OpenAIResponses(model="gpt-4o-mini", strict=True)
 response = llm.predict_and_call(
     [tool],
-    "Write a random song for me",
-    # strict=True  # can also be set at the function level to override the class
+    "Benim için rastgele bir şarkı yaz",
+    # strict=True  # sınıfı geçersiz kılmak için fonksiyon düzeyinde de ayarlanabilir
 )
 print(str(response))
 ```
 
-```
+```python
 name='Chasing Stars' artist='Luna Sky'
 ```
 
-We can also do multiple function calling.
+Ayrıca birden fazla fonksiyon çağırma da yapabiliriz.
 
-```
+```python
 llm = OpenAIResponses(model="gpt-4o-mini")
 response = llm.predict_and_call(
     [tool],
-    "Generate five songs from the Beatles",
+    "Beatles'dan beş şarkı oluştur",
     allow_parallel_tool_calls=True,
 )
 for s in response.sources:
-    print(f"Name: {s.tool_name}, Input: {s.raw_input}, Output: {str(s)}")
+    print(f"Ad: {s.tool_name}, Girdi: {s.raw_input}, Çıktı: {str(s)}")
 ```
 
+```python
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Hey Jude', 'artist': 'The Beatles'}}, Çıktı: name='Hey Jude' artist='The Beatles'
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Let It Be', 'artist': 'The Beatles'}}, Çıktı: name='Let It Be' artist='The Beatles'
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Come Together', 'artist': 'The Beatles'}}, Çıktı: name='Come Together' artist='The Beatles'
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Yesterday', 'artist': 'The Beatles'}}, Çıktı: name='Yesterday' artist='The Beatles'
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Twist and Shout', 'artist': 'The Beatles'}}, Çıktı: name='Twist and Shout' artist='The Beatles'
 ```
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Hey Jude', 'artist': 'The Beatles'}}, Output: name='Hey Jude' artist='The Beatles'
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Let It Be', 'artist': 'The Beatles'}}, Output: name='Let It Be' artist='The Beatles'
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Come Together', 'artist': 'The Beatles'}}, Output: name='Come Together' artist='The Beatles'
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Yesterday', 'artist': 'The Beatles'}}, Output: name='Yesterday' artist='The Beatles'
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Twist and Shout', 'artist': 'The Beatles'}}, Output: name='Twist and Shout' artist='The Beatles'
-```
 
-### Manual Tool Calling
+### Manuel Araç Çağırma
 
-If you want to control how a tool is called, you can also split the tool calling and tool selection into their own steps.
+Bir aracın nasıl çağrıldığını kontrol etmek istiyorsanız, araç çağırma ve araç seçimini kendi adımlarına ayırabilirsiniz.
 
-First, lets select a tool.
+İlk olarak, bir araç seçelim.
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.openai import OpenAIResponses
 
@@ -376,17 +374,17 @@ from llama_index.llms.openai import OpenAIResponses
 llm = OpenAIResponses(model="gpt-4o-mini")
 
 
-chat_history = [ChatMessage(role="user", content="Write a random song for me")]
+chat_history = [ChatMessage(role="user", content="Benim için rastgele bir şarkı yaz")]
 
 
 resp = llm.chat_with_tools([tool], chat_history=chat_history)
 ```
 
-Now, lets call the tool the LLM selected (if any).
+Şimdi, LLM'nin seçtiği aracı çağıralım (varsa).
 
-If there was a tool call, we should send the results to the LLM to generate the final response (or another tool call!).
+Bir araç çağrısı varsa, final yanıtını (veya başka bir araç çağrısını!) oluşturmak için sonuçları LLM'ye göndermeliyiz.
 
-```
+```python
 tools_by_name = {t.metadata.name: t for t in [tool]}
 tool_calls = llm.get_tool_calls_from_response(
     resp, error_on_no_tool_call=False
@@ -394,7 +392,7 @@ tool_calls = llm.get_tool_calls_from_response(
 
 
 while tool_calls:
-    # add the LLM's response to the chat history
+    # LLM'nin yanıtını sohbet geçmişine ekleyin
     chat_history.append(resp.message)
 
 
@@ -403,13 +401,13 @@ while tool_calls:
         tool_kwargs = tool_call.tool_kwargs
 
 
-        print(f"Calling {tool_name} with {tool_kwargs}")
+        print(f"{tool_name} şu argümanlarla çağrılıyor: {tool_kwargs}")
         tool_output = tool(**tool_kwargs)
         chat_history.append(
             ChatMessage(
                 role="tool",
                 content=str(tool_output),
-                # most LLMs like OpenAI need to know the tool call id
+                # OpenAI gibi çoğu LLM'nin araç çağrısı kimliğini bilmesi gerekir
                 additional_kwargs={"call_id": tool_call.tool_id},
             )
         )
@@ -421,80 +419,80 @@ while tool_calls:
         )
 ```
 
-```
+```python
 Calling generate_song with {'name': 'Chasing Stars', 'artist': 'Luna Sky'}
 ```
 
-Now, we should have a final response!
+Şimdi, final bir yanıtımız olmalı!
 
-```
+```python
 print(resp.message.content)
 ```
 
-```
-Here's a song for you titled **"Chasing Stars"** by **Luna Sky**!
+```python
+İşte senin için **Luna Sky**'dan **"Chasing Stars"** adlı bir şarkı!
 
 
 ### Chasing Stars
 
 
-**Verse 1**
-In the midnight glow, we wander free,
-With dreams like fireflies, lighting up the sea.
-Whispers of the night, calling out our names,
-Together we’ll ignite, this wild, untamed flame.
+**Bölüm 1**
+Gece yarısı parıltısında, özgürce dolaşıyoruz,
+Ateş böcekleri gibi hayallerle, denizi aydınlatıyoruz.
+Gecenin fısıltıları, isimlerimizi haykırıyor,
+Birlikte tutuşturacağız bu vahşi, evcilleşmemiş alevi.
 
 
-**Chorus**
-We’re chasing stars, through the endless night,
-With every heartbeat, we’ll take flight.
-Hand in hand, we’ll break the dark,
-In this cosmic dance, we’ll leave our mark.
+**Nakarat**
+Yıldızları kovalıyoruz, sonsuz gece boyunca,
+Her kalp atışıyla uçuşa geçeceğiz.
+El ele, karanlığı yaracağız,
+Bu kozmik dansta, izimizi bırakacağız.
 
 
-**Verse 2**
-Underneath the moon, secrets softly shared,
-Every glance a promise, every touch a dare.
-The universe is ours, let the journey start,
-With every step we take, we’re painting art.
+**Bölüm 2**
+Ayın altında, yavaşça paylaşılan sırlar,
+Her bakış bir söz, her dokunuş bir meydan okuma.
+Evren bizim, yolculuk başlasın,
+Attığımız her adımla bir sanat boyuyoruz.
 
 
-**Chorus**
-We’re chasing stars, through the endless night,
-With every heartbeat, we’ll take flight.
-Hand in hand, we’ll break the dark,
-In this cosmic dance, we’ll leave our mark.
+**Nakarat**
+Yıldızları kovalıyoruz, sonsuz gece boyunca,
+Her kalp atışıyla uçuşa geçeceğiz.
+El ele, karanlığı yaracağız,
+Bu kozmik dansta, izimizi bırakacağız.
 
 
-**Bridge**
-And when the dawn arrives, we’ll still be here,
-With the echoes of our laughter, crystal clear.
-No matter where we go, no matter how far,
-Forever in our hearts, we’ll chase those stars.
+**Köprü**
+Ve şafak vakti geldiğinde, hâlâ burada olacağız,
+Kahkahalarımızın yankılarıyla, cam gibi berrak.
+Nereye gidersek gidelim, ne kadar uzak olursa olsun,
+Sonsuza dek kalbimizde o yıldızları kovalayacağız.
 
 
-**Chorus**
-We’re chasing stars, through the endless night,
-With every heartbeat, we’ll take flight.
-Hand in hand, we’ll break the dark,
-In this cosmic dance, we’ll leave our mark.
+**Nakarat**
+Yıldızları kovalıyoruz, sonsuz gece boyunca,
+Her kalp atışıyla uçuşa geçeceğiz.
+El ele, karanlığı yaracağız,
+Bu kozmik dansta, izimizi bırakacağız.
 
 
-**Outro**
-So let’s chase the stars, let’s light the way,
-In this beautiful journey, we’ll never stray.
-With dreams as our compass, love as our guide,
-Together we’ll soar, side by side.
+**Çıkış**
+Öyleyse yıldızları kovalayalım, yolu aydınlatalım,
+Bu güzel yolculukta asla sapmayacağız.
+Pusulamız hayallerimiz, rehberimiz sevgimiz,
+Birlikte yan yana yükseleceğiz.
 
 
-Feel free to let me know if you'd like any changes or another song!
+Herhangi bir değişiklik veya başka bir şarkı isterseniz bana bildirmekten çekinmeyin!
 ```
 
-## Structured Prediction
+## Yapılandırılmış Tahmin (Structured Prediction)
 
-An important use case for function calling is extracting structured objects. LlamaIndex provides an intuitive interface for converting any LLM into a structured LLM - simply define the target Pydantic class (can be nested), and given a prompt, we extract out the desired object.
+Fonksiyon çağırmanın önemli bir kullanım durumu da yapılandırılmış nesnelerin çıkarılmasıdır. LlamaIndex, herhangi bir LLM'yi yapılandırılmış bir LLM'ye dönüştürmek için sezgisel bir arayüz sağlar - sadece hedef Pydantic sınıfını tanımlayın (içiçe olabilir) ve bir istem verildiğinde istediğiniz nesneyi çıkaralım.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.prompts import PromptTemplate
 from pydantic import BaseModel
@@ -504,7 +502,7 @@ from typing import List
 
 
 class MenuItem(BaseModel):
-    """A menu item in a restaurant."""
+    """Bir restorandaki menü öğesi."""
 
 
     course_name: str
@@ -514,7 +512,7 @@ class MenuItem(BaseModel):
 
 
 class Restaurant(BaseModel):
-    """A restaurant with name, city, and cuisine."""
+    """Adı, şehri ve mutfağı olan bir restoran."""
 
 
     name: str
@@ -527,142 +525,142 @@ class Restaurant(BaseModel):
 
 llm = OpenAIResponses(model="gpt-4o-mini")
 prompt_tmpl = PromptTemplate(
-    "Generate a restaurant in a given city {city_name}"
+    "Verilen {city_name} şehri için bir restoran oluşturun"
 )
-# Option 1: Use `as_structured_llm`
+# Seçenek 1: `as_structured_llm` kullanın
 restaurant_obj = (
     llm.as_structured_llm(Restaurant)
     .complete(prompt_tmpl.format(city_name="Dallas"))
     .raw
 )
-# Option 2: Use `structured_predict`
+# Seçenek 2: `structured_predict` kullanın
 # restaurant_obj = llm.structured_predict(Restaurant, prompt_tmpl, city_name="Miami")
 ```
 
-```
+```python
 restaurant_obj
 ```
 
-```
-Restaurant(name='Tex-Mex Delight', city='Dallas', cuisine='Tex-Mex', menu_items=[MenuItem(course_name='Tacos', is_vegetarian=False), MenuItem(course_name='Vegetarian Enchiladas', is_vegetarian=True), MenuItem(course_name='Fajitas', is_vegetarian=False), MenuItem(course_name='Chips and Salsa', is_vegetarian=True), MenuItem(course_name='Queso Dip', is_vegetarian=True)])
+```python
+Restaurant(name='Tex-Mex Delight', city='Dallas', cuisine='Tex-Mex', menu_items=[MenuItem(course_name='Tacos', is_vegetarian=False), MenuItem(course_name='Vejetaryen Enchiladas', is_vegetarian=True), MenuItem(course_name='Fajitas', is_vegetarian=False), MenuItem(course_name='Cips ve Salsa', is_vegetarian=True), MenuItem(course_name='Peynir Sosu', is_vegetarian=True)])
 ```
 
-## Async
+## Asenkron (Async)
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 
 
 llm = OpenAIResponses(model="gpt-4o")
 ```
 
-```
-resp = await llm.acomplete("Paul Graham is ")
+```python
+resp = await llm.acomplete("Paul Graham kimdir?")
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-Paul Graham is a British-American entrepreneur, venture capitalist, and essayist. He is best known for co-founding Viaweb, one of the first web-based applications, which was later sold to Yahoo and became Yahoo Store. Graham is also a co-founder of Y Combinator, a highly influential startup accelerator that has funded and supported numerous successful startups, including Dropbox, Airbnb, and Reddit. In addition to his work in technology and startups, Graham is known for his insightful essays on topics such as programming, entrepreneurship, and the philosophy of work.
-```
-
-```
-resp = await llm.astream_complete("Paul Graham is ")
+```python
+Paul Graham, İngiliz-Amerikalı bir girişimci, risk sermayedaridir ve denemecidir. En çok, Yahoo'ya satılan ve Yahoo Store haline gelen ilk web tabanlı uygulamalardan biri olan Viaweb'in kurucu ortağı olarak tanınır. Graham aynı zamanda Dropbox, Airbnb ve Reddit dahil olmak üzere çok sayıda başarılı girişimi finanse eden ve destekleyen etkili bir startup hızlandırıcısı olan Y Combinator'ın kurucu ortağıdır. Teknoloji ve girişimcilikteki çalışmalarına ek olarak, programlama, girişimcilik ve çalışma felsefesi gibi konulardaki derinlikli denemeleriyle de tanınır.
 ```
 
+```python
+resp = await llm.astream_complete("Paul Graham kimdir?")
 ```
+
+```python
 async for delta in resp:
     print(delta.delta, end="")
 ```
 
-```
-Paul Graham is a British-American entrepreneur, venture capitalist, and essayist. He is best known for co-founding Viaweb, one of the first web-based applications, which was later sold to Yahoo and became Yahoo Store. Graham is also a co-founder of Y Combinator, a highly influential startup accelerator that has funded and supported numerous successful startups, including Dropbox, Airbnb, and Reddit. In addition to his work in technology and startups, Graham is known for his insightful essays on topics related to entrepreneurship, technology, and society.
+```python
+Paul Graham, İngiliz-Amerikalı bir girişimci, risk sermayedaridir ve denemecidir. En çok, Yahoo'ya satılan ve Yahoo Store haline gelen ilk web tabanlı uygulamalardan biri olan Viaweb'in kurucu ortağı olarak tanınır. Graham aynı zamanda Dropbox, Airbnb ve Reddit dahil olmak üzere çok sayıda başarılı girişimi finanse eden ve destekleyen etkili bir startup hızlandırıcısı olan Y Combinator'ın kurucu ortağıdır. Teknoloji ve girişimcilikteki çalışmalarına ek olarak, programlama, girişimcilik ve toplumla ilgili konulardaki derinlikli denemeleriyle de tanınır.
 ```
 
-Async function calling is also supported.
+Asenkron fonksiyon çağırma da desteklenmektedir.
 
-```
+```python
 llm = OpenAIResponses(model="gpt-4o-mini")
-response = await llm.apredict_and_call([tool], "Generate a random song")
+response = await llm.apredict_and_call([tool], "Rastgele bir şarkı oluştur")
 print(str(response))
 ```
 
-```
+```python
 name='Chasing Stars' artist='Luna Sky'
 ```
 
-## Additional kwargs
+## Ek Argümanlar (Additional kwargs)
 
-If there are additional kwargs not present in the constructor, you can set them at a per-instance level with `additional_kwargs`.
+Yapılandırıcıda (constructor) bulunmayan ek argümanlar varsa, bunları `additional_kwargs` ile örnek düzeyinde ayarlayabilirsiniz.
 
-These will be passed into every call to the LLM.
+Bunlar LLM'ye yapılan her çağrıya iletilecektir.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 
 
 llm = OpenAIResponses(
-    model="gpt-4o-mini", additional_kwargs={"user": "your_user_id"}
+    model="gpt-4o-mini", additional_kwargs={"user": "kullanici_id_niz"}
 )
-resp = llm.complete("Paul Graham is ")
+resp = llm.complete("Paul Graham kimdir?")
 print(resp)
 ```
 
-## Image generation
+## Görüntü oluşturma (Image generation)
 
-You can use [image generation](https://platform.openai.com/docs/guides/image-generation?image-generation-model=gpt-image-1#generate-images) by passing, as a built-in-tool, `{'type': 'image_generation'}` or, if you want to enable streaming, `{'type': 'image_generation', 'partial_images': 2}`:
+[Görüntü oluşturma](https://platform.openai.com/docs/guides/image-generation?image-generation-model=gpt-image-1#generate-images) özelliğini, yerleşik bir araç olarak `{'type': 'image_generation'}` veya akışı etkinleştirmek istiyorsanız `{'type': 'image_generation', 'partial_images': 2}` parametrelerini geçirerek kullanabilirsiniz:
 
-```
+```python
 import base64
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.llms import ChatMessage, ImageBlock, TextBlock
 
 
-# run without streaming
+# Akış olmadan çalıştır
 llm = OpenAIResponses(
     model="gpt-4.1-mini", built_in_tools=[{"type": "image_generation"}]
 )
 messages = [
     ChatMessage.from_str(
-        content="A llama dancing with a cat in a meadow", role="user"
+        content="Çayırda kediyle dans eden bir lama", role="user"
     )
 ]
 response = llm.chat(
     messages
-)  # response = await llm.achat(messages) for an async implementation
+)  # asenkron bir uygulama için: response = await llm.achat(messages)
 for block in response.message.blocks:
     if isinstance(block, ImageBlock):
-        with open("llama_and_cat_dancing.png", "wb") as f:
-            f.write(bas64.b64decode(block.image))
+        with open("dans_eden_lama_ve_kedi.png", "wb") as f:
+            f.write(base64.b64decode(block.image))
     elif isinstance(block, TextBlock):
         print(block.text)
 
 
-# run with streaming
+# Akış ile çalıştır
 llm_stream = OpenAIResponses(
     model="gpt-4.1-mini",
     built_in_tools=[{"type": "image_generation", "partial_images": 2}],
 )
 response = llm_stream.stream_chat(
     messages
-)  # response = await llm_stream.asteam_chat(messages) for an async implementation
+)  # asenkron bir uygulama için: response = await llm_stream.asteam_chat(messages)
 for event in response:
     for block in event.message.blocks:
         if isinstance(block, ImageBlock):
-            # block.detail contains the ID of the image
-            with open(f"llama_and_cat_dancing_{block.detail}.png", "wb") as f:
-                f.write(bas64.b64decode(block.image))
+            # block.detail görüntünün kimliğini (ID) içerir
+            with open(f"dans_eden_lama_ve_kedi_{block.detail}.png", "wb") as f:
+                f.write(base64.b64decode(block.image))
         elif isinstance(block, TextBlock):
             print(block.text)
 ```
 
-## MCP Remote calls
+## MCP Uzak Çağrıları (MCP Remote calls)
 
-You can call any [remote MCP](https://platform.openai.com/docs/guides/tools-remote-mcp) through the OpenAI Responses API just by passing the MCP specifics as a built-in tool to the LLM
+MCP ayrıntılarını LLM'ye yerleşik bir araç olarak geçirerek OpenAI Responses API aracılığıyla herhangi bir [uzak MCP](https://platform.openai.com/docs/guides/tools-remote-mcp)'yi çağırabilirsiniz.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.llms import ChatMessage
 
@@ -680,22 +678,22 @@ llm = OpenAIResponses(
 )
 messages = [
     ChatMessage.from_str(
-        content="What transport protocols are supported in the 2025-03-26 version of the MCP spec?",
+        content="MCP spesifikasyonunun 2025-03-26 sürümünde hangi taşıma protokolleri destekleniyor?",
         role="user",
     )
 ]
 response = llm.chat(messages)
-# see the textual output
+# metin çıktısını gör
 print(response.message.content)
-# see the MCP tool call
+# MCP araç çağrısını gör
 print(response.raw.output[0])
 ```
 
-## Code interpreter
+## Kod Yorumlayıcı (Code interpreter)
 
-You can use the [Code Interpreter](https://platform.openai.com/docs/guides/tools-code-interpreter) just by setting, as a built-in tool, `"type": "code_interpreter", "container": { "type": "auto" }`.
+[Kod Yorumlayıcıyı (Code Interpreter)](https://platform.openai.com/docs/guides/tools-code-interpreter) sadece yerleşik bir araç olarak `"type": "code_interpreter", "container": { "type": "auto" }` ayarını yaparak kullanabilirsiniz.
 
-```
+```python
 from llama_index.llms.openai import OpenAIResponses
 from llama_index.core.llms import ChatMessage
 
@@ -709,15 +707,15 @@ llm = OpenAIResponses(
         }
     ],
 )
-messages = messages = [
+messages = [
     ChatMessage.from_str(
-        content="I need to solve the equation 3x + 11 = 14. Can you help me?",
+        content="3x + 11 = 14 denklemini çözmem gerekiyor. Bana yardım edebilir misin?",
         role="user",
     )
 ]
 response = llm.chat(messages)
-# see the textual output
+# metin çıktısını gör
 print(response.message.content)
-# see the MCP tool call
+# MCP araç çağrısını gör (Kod yorumlayıcı çağrısı)
 print(response.raw.output[0])
 ```

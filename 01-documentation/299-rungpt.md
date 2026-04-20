@@ -5,57 +5,57 @@ title: RunGPT
  | LlamaIndex OSS Documentation
 ---
 
-RunGPT is an open-source cloud-native large-scale multimodal models (LMMs) serving framework. It is designed to simplify the deployment and management of large language models, on a distributed cluster of GPUs. RunGPT aim to make it a one-stop solution for a centralized and accessible place to gather techniques for optimizing large-scale multimodal models and make them easy to use for everyone. In RunGPT, we have supported a number of LLMs such as LLaMA, Pythia, StableLM, Vicuna, MOSS, and Large Multi-modal Model(LMMs) like MiniGPT-4 and OpenFlamingo additionally.
+RunGPT; açık kaynaklı, bulut yerlisi, büyük ölçekli çok modlu modeller (LMM'ler) sunan bir çerçevedir. Dağıtılmış bir GPU kümesi üzerinde büyük dil modellerinin dağıtımını ve yönetimini basitleştirmek için tasarlanmıştır. RunGPT, büyük ölçekli çok modlu modelleri optimize etmeye yönelik teknikleri toplamak ve bunları herkes için kullanımı kolay hale getirmek için merkezi ve erişilebilir bir yerde tek duraklı bir çözüm olmayı hedeflemektedir. RunGPT'de; LLaMA, Pythia, StableLM, Vicuna, MOSS gibi bir dizi LLM'yi ve ek olarak MiniGPT-4 ve OpenFlamingo gibi Büyük Çok Modlu Modelleri (LMM'ler) destekledik.
 
-# Setup
+# Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-rungpt
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-You need to install rungpt package in your python environment with `pip install`
+Python ortamınıza `pip install` ile `rungpt` paketini kurmanız gerekir:
 
-```
+```python
 !pip install rungpt
 ```
 
-After installing successfully, models supported by RunGPT can be deployed with an one-line command. This option will download target language model from open source platform and deploy it as a service at a localhost port, which can be accessed by http or grpc requests. I suppose you not run this command in jupyter book, but in command line instead.
+Başarıyla yüklendikten sonra, RunGPT tarafından desteklenen modeller tek satırlık bir komutla dağıtılabilir. Bu seçenek, hedef dil modelini açık kaynak platformdan indirecek ve onu http veya grpc istekleriyle erişilebilen bir localhost portunda bir servis olarak dağıtacaktır. Bu komutu jupyter not defterinde değil, bunun yerine komut satırında çalıştırmanızı öneririm.
 
-```
+```bash
 !rungpt serve decapoda-research/llama-7b-hf --precision fp16 --device_map balanced
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` fonksiyonunu çağırın
 
-```
+```python
 from llama_index.llms.rungpt import RunGptLLM
 
 
 llm = RunGptLLM()
-promot = "What public transportation might be available in a city?"
-response = llm.complete(promot)
+prompt = "Bir şehirde hangi toplu taşıma araçları mevcut olabilir?"
+response = llm.complete(prompt)
 ```
 
-```
+```python
 print(response)
 ```
 
-```
-I don't want to go to work, so what should I do?
-I have a job interview on Monday. What can I wear that will make me look professional but not too stuffy or boring?
+```text
+İşe gitmek istemiyorum, ne yapmalıyım?
+Pazartesi günü bir iş görüşmem var. Profesyonel görünen ama çok sıkıcı veya durağan olmayan ne giyebilirim?
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesi ile `chat` fonksiyonunu çağırın
 
-```
+```python
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.llms.rungpt import RunGptLLM
 
@@ -63,58 +63,58 @@ from llama_index.llms.rungpt import RunGptLLM
 messages = [
     ChatMessage(
         role=MessageRole.USER,
-        content="Now, I want you to do some math for me.",
+        content="Şimdi benim için biraz matematik yapmanı istiyorum.",
     ),
     ChatMessage(
-        role=MessageRole.ASSISTANT, content="Sure, I would like to help you."
+        role=MessageRole.ASSISTANT, content="Tabii, size yardımcı olmak isterim."
     ),
     ChatMessage(
         role=MessageRole.USER,
-        content="How many points determine a straight line?",
+        content="Bir doğruyu kaç nokta belirler?",
     ),
 ]
 llm = RunGptLLM()
 response = llm.chat(messages=messages, temperature=0.8, max_tokens=15)
 ```
 
-```
+```python
 print(response)
 ```
 
-## Streaming
+## Akış (Streaming)
 
-Using `stream_complete` endpoint
+`stream_complete` uç noktasını kullanma
 
-```
-promot = "What public transportation might be available in a city?"
-response = RunGptLLM().stream_complete(promot)
+```python
+prompt = "Bir şehirde hangi toplu taşıma araçları mevcut olabilir?"
+response = RunGptLLM().stream_complete(prompt)
 for item in response:
     print(item.text)
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.llms.rungpt import RunGptLLM
 
 
 messages = [
     ChatMessage(
         role=MessageRole.USER,
-        content="Now, I want you to do some math for me.",
+        content="Şimdi benim için biraz matematik yapmanı istiyorum.",
     ),
     ChatMessage(
-        role=MessageRole.ASSISTANT, content="Sure, I would like to help you."
+        role=MessageRole.ASSISTANT, content="Tabii, size yardımcı olmak isterim."
     ),
     ChatMessage(
         role=MessageRole.USER,
-        content="How many points determine a straight line?",
+        content="Bir doğruyu kaç nokta belirler?",
     ),
 ]
 response = RunGptLLM().stream_chat(messages=messages)
 ```
 
-```
+```python
 for item in response:
     print(item.message)
 ```

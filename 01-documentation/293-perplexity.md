@@ -5,28 +5,28 @@ title: Perplexity
  | LlamaIndex OSS Documentation
 ---
 
-Perplexity’s Sonar API offers a solution that combines real-time, grounded web search with advanced reasoning and deep research capabilities.
+Perplexity’nin Sonar API'si, gerçek zamanlı, doğrulanmış web araması ile gelişmiş akıl yürütme ve derin araştırma yeteneklerini birleştiren bir çözüm sunar.
 
-When to use:
+Ne zaman kullanılmalı:
 
-- When your application requires timely, relevant data directly from the web, such as dynamic content updates or current event tracking.
-- For products that need to support complex user queries with integrated reasoning and deep research, like digital assistants or advanced search engines.
+- Uygulamanız, dinamik içerik güncellemeleri veya güncel olay takibi gibi web'den doğrudan zamanında ve ilgili veriler gerektirdiğinde.
+- Dijital asistanlar veya gelişmiş arama motorları gibi entegre akıl yürütme ve derin araştırma ile karmaşık kullanıcı sorgularını desteklemesi gereken ürünler için.
 
-Before we get started, make sure you install `llama_index`
+Başlamadan önce `llama_index`'i kurduğunuzdan emin olun.
 
-```
+```python
 %pip install llama-index-llms-perplexity
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-## Initial Setup
+## Başlangıç Kurulumu
 
-As of April 12th, 2025 - the following models are supported with the Perplexity LLM class in LLaMa Index:
+12 Nisan 2025 itibarıyla - LlamaIndex'teki Perplexity LLM sınıfı ile aşağıdaki modeller desteklenmektedir:
 
-| Model                 | Context Length | Model Type      |
+| Model                 | Bağlam Uzunluğu | Model Tipi      |
 | --------------------- | -------------- | --------------- |
 | `sonar-deep-research` | 128k           | Chat Completion |
 | `sonar-reasoning-pro` | 128k           | Chat Completion |
@@ -35,26 +35,26 @@ As of April 12th, 2025 - the following models are supported with the Perplexity 
 | `sonar`               | 128k           | Chat Completion |
 | `r1-1776`             | 128k           | Chat Completion |
 
-- `sonar-pro` has a max output token limit of 8k.
-- The reasoning models output Chain of Thought responses.
-- `r1-1776` is an offline chat model that does not use the Perplexity search subsystem.
+- `sonar-pro` modelinin maksimum çıktı jeton (token) sınırı 8k'dır.
+- Akıl yürütme modelleri Düşünce Zinciri (Chain of Thought) yanıtları üretir.
+- `r1-1776`, Perplexity arama alt sistemini kullanmayan çevrimdışı bir sohbet modelidir.
 
-You can find the latest supported models [here](https://docs.perplexity.ai/docs/model-cards)\
-Rate limits are found [here](https://docs.perplexity.ai/docs/rate-limits)\
-Pricing can be found [here](https://docs.perplexity.ai/guides/pricing).
+En son desteklenen modelleri [burada](https://docs.perplexity.ai/docs/model-cards) bulabilirsiniz.
+İstek limitleri [burada](https://docs.perplexity.ai/docs/rate-limits) bulunur.
+Fiyatlandırma [burada](https://docs.perplexity.ai/guides/pricing) bulunabilir.
 
-```
+```python
 import getpass
 import os
 
 
 if "PPLX_API_KEY" not in os.environ:
     os.environ["PPLX_API_KEY"] = getpass.getpass(
-        "Enter your Perplexity API key: "
+        "Perplexity API anahtarınızı girin: "
     )
 ```
 
-```
+```python
 from llama_index.llms.perplexity import Perplexity
 
 
@@ -64,109 +64,107 @@ PPLX_API_KEY = __import__("os").environ.get("PPLX_API_KEY")
 llm = Perplexity(api_key=PPLX_API_KEY, model="sonar-pro", temperature=0.2)
 ```
 
-```
-# Import the ChatMessage class from the llama_index library.
+```python
+# llama_index kütüphanesinden ChatMessage sınıfını içe aktarın.
 from llama_index.core.llms import ChatMessage
 
 
-# Create a list of dictionaries where each dictionary represents a chat message.
-# Each dictionary contains a 'role' key (e.g., system or user) and a 'content' key with the corresponding message.
+# Her bir sözlüğün bir sohbet mesajını temsil ettiği bir sözlük listesi oluşturun.
+# Her sözlük bir 'role' anahtarı (örneğin, sistem veya kullanıcı) ve karşılık gelen mesajla birlikte bir 'content' anahtarı içerir.
 messages_dict = [
-    {"role": "system", "content": "Be precise and concise."},
+    {"role": "system", "content": "Kesin ve özlü ol."},
     {
         "role": "user",
-        "content": "Tell me the latest news about the US Stock Market.",
+        "content": "Bana ABD Borsa piyasası hakkındaki son haberleri anlat.",
     },
 ]
 
 
-# Convert each dictionary in the list to a ChatMessage object using unpacking (**msg) in a list comprehension.
+# Liste içerisindeki her bir sözlüğü, bir liste kapsamı (list comprehension) içinde paket açma (**msg) kullanarak bir ChatMessage nesnesine dönüştürün.
 messages = [ChatMessage(**msg) for msg in messages_dict]
 
 
-# Print the list of ChatMessage objects to verify the conversion.
+# Dönüşümü doğrulamak için ChatMessage nesnelerinin listesini yazdırın.
 print(messages)
 ```
 
-```
-[ChatMessage(role=<MessageRole.SYSTEM: 'system'>, additional_kwargs={}, blocks=[TextBlock(block_type='text', text='Be precise and concise.')]), ChatMessage(role=<MessageRole.USER: 'user'>, additional_kwargs={}, blocks=[TextBlock(block_type='text', text='Tell me the latest news about the US Stock Market.')])]
+```python
+[ChatMessage(role=<MessageRole.SYSTEM: 'system'>, additional_kwargs={}, blocks=[TextBlock(block_type='text', text='Kesin ve özlü ol.')]), ChatMessage(role=<MessageRole.USER: 'user'>, additional_kwargs={}, blocks=[TextBlock(block_type='text', text='Bana ABD Borsa piyasası hakkındaki son haberleri anlat.')])]
 ```
 
-## Chat
+## Sohbet (Chat)
 
-```
+```python
 response = llm.chat(messages)
 print(response)
 ```
 
-```
-assistant: The latest update on the U.S. stock market indicates a strong performance recently. A significant 10% rally occurred on Wednesday, which contributed substantially to market gains. Additionally, the market closed strongly on Friday, with a 2% increase, ending near the intraday high. This reflects robust momentum, particularly in mega and large-cap growth stocks[1].
+```python
+assistant: ABD borsa piyasasındaki son güncellemeler, son zamanlarda güçlü bir performans olduğunu gösteriyor. Çarşamba günü gerçekleşen %10'luk önemli ralli, piyasa kazançlarına büyük katkı sağladı. Ayrıca piyasa Cuma günü %2'lik bir artışla güçlü bir kapanış yaparak gün içi en yüksek seviyesine yakın bir seviyede tamamladı. Bu durum, özellikle mega ve büyük ölçekli büyüme hisselerinde güçlü bir ivmeyi yansıtıyor[1].
 ```
 
-## Async Chat
+## Asenkron Sohbet (Async Chat)
 
-For asynchronous conversation processing, use the `achat` method to send messages and await the response:
+Asenkron konuşma işleme için, mesaj göndermek ve yanıtı beklemek için `achat` yöntemini kullanın:
 
-```
-# Asynchronously send the list of chat messages to the LLM using the 'achat' method.
-# This method returns a ChatResponse object containing the model's answer.
+```python
+# 'achat' yöntemini kullanarak sohbet mesajları listesini LLM'ye asenkron olarak gönderin.
+# Bu yöntem, modelin cevabını içeren bir ChatResponse nesnesi döndürür.
 response = await llm.achat(messages)
 
 
 print(response)
 ```
 
-```
-assistant: The U.S. stock market has recently experienced significant gains. A major rally on Wednesday resulted in a 10% surge, contributing substantially to the market's overall upside. Additionally, the market closed strongly on Friday, with a 2% increase, ending near the intraday high. This performance highlights robust momentum, particularly in mega-cap and large-cap growth stocks[1].
+```python
+assistant: ABD borsa piyasası son zamanlarda önemli kazanımlar elde etti. Çarşamba günü gerçekleşen büyük bir ralli %10'luk bir artışla sonuçlanarak piyasanın genel yükselişine önemli ölçüde katkıda bulundu. Ayrıca piyasa Cuma günü %2'lik bir artışla güçlü bir şekilde kapandı ve gün içi en yüksek seviyesine yakın bir noktada tamamladı. Bu performans, özellikle mega ve büyük ölçekli büyüme hisselerindeki güçlü ivmeyi vurguluyor[1].
 ```
 
-## Stream Chat
+## Akışlı Sohbet (Stream Chat)
 
-For cases where you want to receive a response token by token in real time, use the `stream_chat` method:
+Bir yanıtı gerçek zamanlı olarak jeton jeton (token by token) almak istediğiniz durumlar için `stream_chat` yöntemini kullanın:
 
-```
-# Call the stream_chat method on the LLM instance, which returns a generator or iterable
-# for streaming the chat response one delta (token or chunk) at a time.
+```python
+# LLM örneğinde, sohbet yanıtını her seferinde bir delta (jeton veya yığın) olarak akışla iletmek için bir üreteç veya yinelenebilir döndüren stream_chat yöntemini çağırın.
 response = llm.stream_chat(messages)
 
 
-# Iterate over each streaming response chunk.
+# Her bir akış yanıt yığını üzerinde yineleme yapın.
 for r in response:
-    # Print the delta (the new chunk of generated text) without adding a newline.
+    # Yeni bir satır eklemeden deltayı (oluşturulan metnin yeni yığını) yazdırın.
     print(r.delta, end="")
 ```
 
-```
-The latest news about the U.S. stock market indicates a strong performance recently. The New York Stock Exchange (NYSE) experienced a significant rally, with a 10% surge on Wednesday, followed by a 2% gain on Friday. This upward momentum brought the market near its intraday high, driven by strength in mega-cap and large-cap growth stocks[1].
+```python
+ABD borsa piyasası hakkındaki son haberler, son zamanlarda güçlü bir performans olduğunu gösteriyor. New York Borsası (NYSE), Çarşamba günü %10'luk önemli bir ralli ve ardından Cuma günü %2'lik bir kazançla karşılaştı. Bu yukarı yönlü ivme, mega ve büyük ölçekli büyüme hisselerinin etkisiyle piyasayı gün içi en yüksek seviyelerine yaklaştırdı[1].
 ```
 
-## Async Stream Chat
+## Asenkron Akışlı Sohbet (Async Stream Chat)
 
-Similarly, for asynchronous streaming, the `astream_chat` method provides a way to process response deltas asynchronously:
+Benzer şekilde, asenkron akış için `astream_chat` yöntemi, yanıt deltalarını asenkron olarak işleme yolu sunar:
 
-```
-# Asynchronously call the astream_chat method on the LLM instance,
-# which returns an asynchronous generator that yields response chunks.
+```python
+# LLM örneğinde, yanıt yığınlarını döndüren bir asenkron üreteç olan astream_chat yöntemini asenkron olarak çağırın.
 resp = await llm.astream_chat(messages)
 
 
-# Asynchronously iterate over each response chunk from the generator.
-# For each chunk (delta), print the chunk's text content.
+# Üreteçten gelen her bir yanıt yığını üzerinde asenkron olarak yineleme yapın.
+# Her bir yığın (delta) için yığının metin içeriğini yazdırın.
 async for delta in resp:
     print(delta.delta, end="")
 ```
 
+```python
+ABD borsa piyasasındaki son güncellemeler önemli bir pozitif ivme gösteriyor. New York Borsası (NYSE), Çarşamba günü %10'luk dikkat çekici bir yükselişle güçlü bir ralli yaşadı. Bunu Cuma günü gün içi en yüksek seviyeye yakın bir kapanışla gelen %2'lik bir kazanç takip etti. Piyasanın bu performansı, genel yükselişe katkıda bulunan mega ve büyük ölçekli büyüme hisseleri tarafından yönlendirildi[1].
 ```
-The latest updates on the U.S. stock market indicate significant positive momentum. The New York Stock Exchange (NYSE) experienced a strong rally, with a notable 10% surge on Wednesday. This was followed by a 2% gain on Friday, closing near the intraday high. The market's performance has been driven by mega and large-cap growth stocks, contributing to the overall upside[1].
-```
 
-### Tool calling
+### Araç çağırma (Tool calling)
 
-Perplexity models can easily be wrapped into a llamaindex tool so that it can be called as part of your data processing or conversational workflows. This tool uses real-time generative search powered by Perplexity, and it’s configured with the updated default model (“sonar-pro”) and the enable\_search\_classifier parameter enabled.
+Perplexity modelleri, veri işleme veya konuşma iş akışlarınızın bir parçası olarak çağrılabilmesi için kolayca bir LlamaIndex aracına sarmalanabilir. Bu araç, Perplexity tarafından desteklenen gerçek zamanlı üretken aramayı kullanır ve güncellenmiş varsayılan model (“sonar-pro”) ve etkinleştirilmiş enable_search_classifier parametresi ile yapılandırılmıştır.
 
-Below is an example of how to define and register the tool:
+Aşağıda aracın nasıl tanımlanacağına ve kaydedileceğine dair bir örnek bulunmaktadır:
 
-```
+```python
 from llama_index.core.tools import FunctionTool
 from llama_index.llms.perplexity import Perplexity
 from llama_index.core.llms import ChatMessage
@@ -176,16 +174,16 @@ from llama_index.core.llms import ChatMessage
 
 def query_perplexity(query: str) -> str:
     """
-    Queries the Perplexity API via the LlamaIndex integration.
+    LlamaIndex entegrasyonu aracılığıyla Perplexity API'sini sorgular.
 
 
-    This function instantiates a Perplexity LLM with updated default settings
-    (using model "sonar-pro" and enabling search classifier so that the API can
-    intelligently decide if a search is needed), wraps the query into a ChatMessage,
-    and returns the generated response content.
+    Bu fonksiyon, güncellenmiş varsayılan ayarlarla (model "sonar-pro" kullanarak
+    ve bir aramanın gerekli olup olmadığına API'nin akıllıca karar verebilmesi için
+    arama sınıflandırıcısını etkinleştirerek) bir Perplexity LLM örneği oluşturur,
+    sorguyu bir ChatMessage haline getirir ve oluşturulan yanıt içeriğini döndürür.
     """
     pplx_api_key = (
-        "your-perplexity-api-key"  # Replace with your actual API key
+        "perplexity-api-anahtarınız"  # Gerçek API anahtarınızla değiştirin
     )
 
 
@@ -193,7 +191,7 @@ def query_perplexity(query: str) -> str:
         api_key=pplx_api_key,
         model="sonar-pro",
         temperature=0.7,
-        enable_search_classifier=True,  # This will determine if the search component is necessary in this particular context
+        enable_search_classifier=True,  # Bu, bu özel bağlamda arama bileşeninin gerekli olup olmadığını belirleyecektir.
     )
 
 
@@ -204,6 +202,6 @@ def query_perplexity(query: str) -> str:
 
 
 
-# Create the tool from the query_perplexity function
+# query_perplexity fonksiyonundan araç oluşturun
 query_perplexity_tool = FunctionTool.from_defaults(fn=query_perplexity)
 ```

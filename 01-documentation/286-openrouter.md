@@ -5,120 +5,111 @@ title: OpenRouter
  | LlamaIndex OSS Documentation
 ---
 
-OpenRouter provides a standardized API to access many LLMs at the best price offered. You can find out more on their [homepage](https://openrouter.ai).
+OpenRouter, birçok LLM'ye sunulan en iyi fiyattan erişmek için standartlaştırılmış bir API sağlar. [Ana sayfalarından](https://openrouter.ai) daha fazla bilgi edinebilirsiniz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-openrouter
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.openrouter import OpenRouter
 from llama_index.core.llms import ChatMessage
 ```
 
-## Call `chat` with ChatMessage List
+## Bir ChatMessage Listesi ile `chat` Çağrısı
 
-You need to either set env var `OPENROUTER_API_KEY` or set api\_key in the class constructor
+Ya `OPENROUTER_API_KEY` ortam değişkenini ayarlamanız ya da sınıf yapılandırıcısında (constructor) `api_key` parametresini belirtmeniz gerekir.
 
-```
+```python
 # import os
-# os.environ['OPENROUTER_API_KEY'] = '<your-api-key>'
+# os.environ['OPENROUTER_API_KEY'] = '<api-anahtarınız>'
 
 
 llm = OpenRouter(
-    api_key="<your-api-key>",
+    api_key="<api-anahtarınız>",
     max_tokens=256,
     context_window=4096,
     model="gryphe/mythomax-l2-13b",
 )
 ```
 
-```
-message = ChatMessage(role="user", content="Tell me a joke")
+```python
+message = ChatMessage(role="user", content="Bana bir şaka yap")
 resp = llm.chat([message])
 print(resp)
 ```
 
-```
-assistant: Why did the tomato turn red? Because it saw the salad dressing!
+```python
+assistant: Domates neden kızardı? Çünkü salata sosunu gördü!
 ```
 
-### Streaming
+### Akış (Streaming)
 
-```
-message = ChatMessage(role="user", content="Tell me a story in 250 words")
+```python
+message = ChatMessage(role="user", content="Bana 250 kelimelik bir hikaye anlat")
 resp = llm.stream_chat([message])
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-Once upon a time, there was a young girl named Maria who lived in a small village surrounded by lush green forests. Maria was a kind and gentle soul, loved by everyone in the village. She spent most of her days exploring the forests, discovering new species of plants and animals, and helping the villagers with their daily chores.
+```python
+Bir zamanlar, gür yeşil ormanlarla çevrili küçük bir köyde yaşayan Maria adında genç bir kız vardı. Maria, köydeki herkes tarafından sevilen nazik ve kibar bir ruhtu. Günlerinin çoğunu ormanları keşfederek, yeni bitki ve hayvan türleri keşfederek ve köylülere günlük işlerinde yardım ederek geçirirdi.
 
+Bir gün, Maria yürüyüşe çıkmışken daha önce hiç görmediği gizli bir yola rastladı. Yolun üzeri yabani otlar ve sarmaşıklarla kaplıydı ama içinden bir şey onu çağırıyordu. Onu takip etmeye karar verdi ve yol onu ormanın derinliklerine, daha da derinlerine götürdü.
 
-One day, while Maria was out on a walk, she stumbled upon a hidden path she had never seen before. The path was overgrown with weeds and vines, but something about it called to her. She decided to follow it, and it led her deeper and deeper into the forest.
+Yürüdükçe ağaçlar uzadı ve hava soğudu. Maria bir huzursuzluk hissetmeye başladı ama yolun nereye çıktığını görmeye kararlıydı. Sonunda bir açıklığa geldi ve açıklığın tam ortasında, gövdesi bir ev kadar geniş olan devasa bir ağaç duruyordu.
 
-
-As she walked, the trees grew taller and the air grew colder. Maria began to feel a sense of unease, but she was determined to see where the path led. Finally, she came to a clearing, and in the center of it stood an enormous tree, its trunk as wide as a house.
-
-
-Maria approached the tree and saw that it was covered in strange symbols. She reached out to touch one of the symbols, and suddenly, the tree began to glow. The glow grew brighter and brighter, until Maria
+Maria ağaca yaklaştı ve ağacın tuhaf sembollerle kaplı olduğunu gördü. Sembollerden birine dokunmak için elini uzattı ve aniden ağaç parlamaya başladı. Parıltı gitgide güçlendi, ta ki Maria...
 ```
 
-## Call `complete` with Prompt
+## Bir İstem (Prompt) ile `complete` Çağrısı
 
-```
-resp = llm.complete("Tell me a joke")
+```python
+resp = llm.complete("Bana bir şaka yap")
 print(resp)
 ```
 
-```
-Sure, here's a joke for you:
+```python
+Tabii, işte senin için bir şaka:
 
+Bisiklet neden kendi başına ayakta duramaz?
 
-Why couldn't the bicycle stand up by itself?
+Çünkü iki tekerleği (too-tired / yorgun) vardır!
 
-
-Because it was two-tired!
-
-
-I hope that brought a smile to your face!
+Umarım bu yüzünüze bir gülümseme getirmiştir!
 ```
 
-```
-resp = llm.stream_complete("Tell me a story in 250 words")
+```python
+resp = llm.stream_complete("Bana 250 kelimelik bir hikaye anlat")
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-Once upon a time, there was a young girl named Maria. She lived in a small village surrounded by lush green forests and sparkling rivers. Maria was a kind and gentle soul, loved by everyone in the village. She spent her days helping her parents with their farm work and exploring the surrounding nature.
+```python
+Bir zamanlar Maria adında genç bir kız vardı. Gür yeşil ormanlar ve pırıl pırıl nehirlerle çevrili küçük bir köyde yaşıyordu. Maria, köydeki herkes tarafından sevilen nazik ve kibar bir ruhtu. Günlerini ailesine çiftlik işlerinde yardım ederek ve çevredeki doğayı keşfederek geçirirdi.
 
+Bir gün ormanda dolaşırken Maria daha önce hiç görmediği gizli bir yola rastladı. Onu takip etmeye karar verdi ve yol onu yaban çiçekleriyle dolu güzel bir çayıra götürdü. Çayırın ortasında küçük bir gölet buldu ve suda kendi yansımasını gördü.
 
-One day, while wandering in the forest, Maria stumbled upon a hidden path she had never seen before. She decided to follow it, and it led her to a beautiful meadow filled with wildflowers. In the center of the meadow, she found a small pond, where she saw her own reflection in the water.
+Gölete bakarken Maria kendisine doğru yaklaşan bir figür gördü. Bu, kendisini çayırın koruyucusu olarak tanıtan bilge yaşlı bir kadındı. Yaşlı kadın Maria'ya, kendisine büyük bir neşe ve mutluluk getirecek özel bir hediye almak üzere seçildiğini söyledi.
 
-
-As she gazed into the pond, Maria saw a figure approaching her. It was a wise old woman, who introduced herself as the guardian of the meadow. The old woman told Maria that she had been chosen to receive a special gift, one that would bring her great joy and happiness.
-
-
-The old woman then presented Maria with a small, delicate flower. She told her that this flower had the power to heal any wound, both physical and emotional. Maria was amazed and grateful, and she promised to use the flower wisely.
+Yaşlı kadın daha sonra Maria'ya küçük, narin bir çiçek sundu. Bu çiçeğin hem fiziksel hem de duygusal her türlü yarayı iyileştirme gücüne sahip olduğunu söyledi. Maria hayretler içinde kaldı ve minnettar oldu ve çiçeği akıllıca kullanacağına söz verdi.
 ```
 
-## Model Configuration
+## Model Yapılandırması
 
-```
-# View options at https://openrouter.ai/models
-# This example uses Mistral's MoE, Mixtral:
+```python
+# https://openrouter.ai/models adresindeki seçenekleri görüntüleyin
+# Bu örnek Mistral'ın MoE'si olan Mixtral'ı kullanır:
 llm = OpenRouter(model="mistralai/mixtral-8x7b-instruct")
 ```
 
-```
-resp = llm.complete("Write a story about a dragon who can code in Rust")
+```python
+resp = llm.complete("Rust dilinde kod yazabilen bir ejderha hakkında bir hikaye yaz")
 print(resp)
 ```

@@ -1,52 +1,52 @@
-# Interacting with LLM deployed in Amazon SageMaker Endpoint with LlamaIndex
+# Amazon SageMaker Uç Noktasında Dağıtılan LLM ile LlamaIndex Kullanarak Etkileşim Kurma
 
 ---
-title: Interacting with LLM deployed in Amazon SageMaker Endpoint with LlamaIndex
+title: Amazon SageMaker Uç Noktasında Dağıtılan LLM ile LlamaIndex Kullanarak Etkileşim Kurma
  | LlamaIndex OSS Documentation
 ---
 
-An Amazon SageMaker endpoint is a fully managed resource that enables the deployment of machine learning models, specifically LLM (Large Language Models), for making predictions on new data.
+Amazon SageMaker uç noktası, yeni veriler üzerinde tahminler yapmak için makine öğrenimi modellerinin, özellikle de LLM (Büyük Dil Modelleri) modellerinin dağıtımını sağlayan tamamen yönetilen bir kaynaktır.
 
-This notebook demonstrates how to interact with LLM endpoints using `SageMakerLLM`, unlocking additional llamaIndex features. So, It is assumed that an LLM is deployed on a SageMaker endpoint.
+Bu not defteri, `SageMakerLLM` kullanarak LLM uç noktalarıyla nasıl etkileşim kurulacağını göstererek ek LlamaIndex özelliklerinin kilidini açar. Bu nedenle, bir LLM'nin bir SageMaker uç noktasında dağıtıldığı varsayılır.
 
-## Setting Up
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-sagemaker-endpoint
 ```
 
-```
+```python
 ! pip install llama-index
 ```
 
-You have to specify the endpoint name to interact with.
+Etkileşim kurmak için uç nokta adını belirtmeniz gerekir.
 
+```python
+ENDPOINT_NAME = "<-UC-NOKTA-ADINIZ->"
 ```
-ENDPOINT_NAME = "<-YOUR-ENDPOINT-NAME->"
-```
 
-Credentials should be provided to connect to the endpoint. You can either:
+Uç noktaya bağlanmak için kimlik bilgileri sağlanmalıdır. Şunlardan birini yapabilirsiniz:
 
-- use an AWS profile by specifying the `profile_name` parameter, if not specified, the default credential profile will be used.
-- Pass credentials as parameters (`aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `region_name`).
+- `profile_name` parametresini belirterek bir AWS profili kullanın; belirtilmezse varsayılan kimlik bilgisi profili kullanılacaktır.
+- Kimlik bilgilerini parametre olarak geçin (`aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `region_name`).
 
-for more details check [this link](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html).
+daha fazla ayrıntı için [bu bağlantıyı](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) kontrol edin.
 
-**AWS profile name**
+**AWS profil adı**
 
-```
+```python
 from llama_index.llms.sagemaker_endpoint import SageMakerLLM
 
 
-AWS_ACCESS_KEY_ID = "<-YOUR-AWS-ACCESS-KEY-ID->"
-AWS_SECRET_ACCESS_KEY = "<-YOUR-AWS-SECRET-ACCESS-KEY->"
-AWS_SESSION_TOKEN = "<-YOUR-AWS-SESSION-TOKEN->"
-REGION_NAME = "<-YOUR-ENDPOINT-REGION-NAME->"
+AWS_ACCESS_KEY_ID = "<-AWS-ERISIM-ANAHTARI-KIMLIGINIZ->"
+AWS_SECRET_ACCESS_KEY = "<-AWS-GIZLI-ERISIM-ANAHTARINIZ->"
+AWS_SESSION_TOKEN = "<-AWS-OTURUM-JETONUNUZ->"
+REGION_NAME = "<-UC-NOKTA-BOLGE-ADINIZ->"
 ```
 
-```
+```python
 llm = SageMakerLLM(
     endpoint_name=ENDPOINT_NAME,
     aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -56,120 +56,120 @@ llm = SageMakerLLM(
 )
 ```
 
-**With credentials**:
+**Kimlik bilgileri ile**:
 
-```
+```python
 from llama_index.llms.sagemaker_endpoint import SageMakerLLM
 
 
-ENDPOINT_NAME = "<-YOUR-ENDPOINT-NAME->"
-PROFILE_NAME = "<-YOUR-PROFILE-NAME->"
+ENDPOINT_NAME = "<-UC-NOKTA-ADINIZ->"
+PROFILE_NAME = "<-PROFIL-ADINIZ->"
 llm = SageMakerLLM(
     endpoint_name=ENDPOINT_NAME, profile_name=PROFILE_NAME
-)  # Omit the profile name to use the default profile
+)  # Varsayılan profili kullanmak için profil adını atlayın
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-### Call `complete` with a prompt
+### Bir istem (prompt) ile `complete` fonksiyonunu çağırın
 
-```
+```python
 resp = llm.complete(
-    "Paul Graham is ", formatted=True
-)  # formatted=True to avoid adding system prompt
+    "Paul Graham ", formatted=True
+)  # sistem istemi eklenmesini önlemek için formatted=True
 print(resp)
 ```
 
+```text
+66 yaşında (doğum tarihi: 4 Eylül 1951). Yapay zeka, makine öğrenimi ve bilgisayarlı görü alanlarındaki çalışmalarıyla tanınan İngiliz-Amerikalı bir bilgisayar bilimcisi, programcı ve girişimcidir. Stanford Üniversitesi'nde fahri profesör ve Stanford Yapay Zeka Laboratuvarı'nda (SAIL) araştırmacıdır.
+
+
+Graham, bir veri kümesinde birlikte oluşan n öğelik diziler olan "n-gram" kavramının geliştirilmesi de dahil olmak üzere bilgisayar bilimi alanına önemli katkılarda bulunmuştur. Ayrıca makine öğrenimi algoritmalarının geliştirilmesi üzerinde çalışmış ve makine öğrenimi konusu üzerine kapsamlı yazılar yazmıştır.
+
+
+Graham, çalışmaları için Bilgi İşlem Makineleri Birliği (ACM) A.M. Turing Ödülü, IEEE Sinir Ağları Öncü Ödülü ve IJCAI Ödülü dahil olmak üzere sayısız ödül almıştır.
 ```
-66 years old (birthdate: September 4, 1951). He is a British-American computer scientist, programmer, and entrepreneur who is known for his work in the fields of artificial intelligence, machine learning, and computer vision. He is a professor emeritus at Stanford University and a researcher at the Stanford Artificial Intelligence Lab (SAIL).
 
+### Bir mesaj listesi ile `chat` fonksiyonunu çağırın
 
-Graham has made significant contributions to the field of computer science, including the development of the concept of "n-grams," which are sequences of n items that occur together in a dataset. He has also worked on the development of machine learning algorithms and has written extensively on the topic of machine learning.
-
-
-Graham has received numerous awards for his work, including the Association for Computing Machinery (ACM) A.M. Turing Award, the IEEE Neural Networks Pioneer Award, and the IJCAI Award
-```
-
-### Call `chat` with a list of messages
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant:   Arrrr, shiver me timbers! *adjusts eye patch* Me name be Cap'n Blackbeak, the most feared and infamous pirate on the seven seas! *winks*
+```text
+asistan: Arrrr, beni bir titreme aldı! *göz bandını düzeltir* Benim adım Kaptan Karagaga, yedi denizin en korkulan ve en rezil korsanı! *göz kırpar*
 
 
-*ahem* But enough about me, matey. What be bringin' ye to these fair waters? Are ye here to plunder some booty, or just to share a pint o' grog with a salty old sea dog like meself? *chuckles*
-```
-
-### Streaming
-
-#### Using `stream_complete` endpoint
-
-```
-resp = llm.stream_complete("Paul Graham is ", formatted=True)
+*öhöm* Ama benden bu kadar yeter evlat. Seni bu güzel sulara getiren nedir? Ganimet yağmalamak için mi buradasın, yoksa benim gibi eski bir deniz kurduyla bir kadeh rom paylaşmak için mi? *kıkırdar*
 ```
 
+## Akış (Streaming)
+
+#### `stream_complete` uç noktasını kullanma
+
+```python
+resp = llm.stream_complete("Paul Graham ", formatted=True)
 ```
+
+```python
 for r in resp:
     print(r.delta)
 ```
 
-```
-64 today. He’s a computer sci
-ist, entrepreneur, and writer, best known for his work in the fields of artificial intelligence, machine learning, and computer graphics.
-Graham was born in 1956 in Boston, Massachusetts. He earned his Bachelor’s degree in Computer Science from Harvard University in 1978 and his PhD in Computer Science from the University of California, Berkeley in 1982.
-Graham’s early work focused on the development of the first computer graphics systems that could generate photorealistic images. In the 1980s, he became interested in the field of artificial intelligence and machine learning, and he co-founded a number of companies to explore these areas, including Viaweb, which was one of the first commercial web hosting services.
-Graham is also a prolific writer and has published a number of influential essays on topics such as the nature
+```text
+bugün 64 yaşında. Yapay zeka, makine öğrenimi ve bilgisayar grafikleri alanlarındaki çalışmalarıyla tanınan bir bilgisayar bilimcisi, girişimci ve yazardır.
+Graham, 1956 yılında Boston, Massachusetts'te doğdu. Lisans derecesini 1978 yılında Harvard Üniversitesi'nden Bilgisayar Bilimi alanında, doktorasını ise 1982 yılında Kaliforniya Üniversitesi, Berkeley'den Bilgisayar Bilimi alanında aldı.
+Graham'ın ilk çalışmaları, foto-gerçekçi görüntüler üretebilen ilk bilgisayar grafik sistemlerinin geliştirilmesine odaklandı. 1980'lerde yapay zeka ve makine öğrenimi alanıyla ilgilenmeye başladı ve bu alanları keşfetmek için aralarında ilk ticari web barındırma hizmetlerinden biri olan Viaweb'in de bulunduğu bir dizi şirketin kurucu ortağı oldu.
+Graham aynı zamanda üretken bir yazardır ve doğa gibi konular üzerine bir dizi etkili makale yayınlamıştır.
 ```
 
-#### Using `stream_chat` endpoint
+#### `stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
+```text
+  ARRGH! *göz bandını düzeltir* Can dostum? *göz kırpar* Benim adım Kaptan Karagaga, yedi denizde yelken açmış en korkulan ve en rezil korsan! *kıkırdar* Ya da en azından tayfam bana öyle söylüyor. *göz kırpar*
+
+
+Ee, seni bu sulara getiren nedir dostum? Ganimet yağmalamak için mi buradasın yoksa engin denizlerle ilgili hikayelerimi dinlemek için mi? *sırıtır* Her iki durumda da hazinemi seninle paylaşmaya hazırım! *göz kırpar* Sadece gizli altın depolarımdan hiçbir kara faresiyle bahsetme, yoksa kendini tahtada yürürken bulabilirsin, anladın mı? *göz kırpar*
 ```
-  ARRGH! *adjusts eye patch* Me hearty? *winks* Me name be Captain Blackbeak, the most feared and infamous pirate to ever sail the seven seas! *chuckles* Or, at least, that's what me matey mates tell me. *winks*
 
+## Modeli Yapılandırma
 
-So, what be bringin' ye to these waters, matey? Are ye here to plunder some booty or just to hear me tales of the high seas? *grins* Either way, I be ready to share me treasure with ye! *winks* Just don't be tellin' any landlubbers about me hidden caches o' gold, or ye might be walkin' the plank, savvy? *winks*
-```
+`SageMakerLLM`, Amazon SageMaker'da dağıtılan farklı dil modelleriyle (LLM) etkileşim kurmak için bir soyutlamadır. Tüm varsayılan parametreler Llama 2 modeliyle uyumludur. Bu nedenle, farklı bir model kullanıyorsanız muhtemelen aşağıdaki parametreleri ayarlamanız gerekecektir:
 
-## Configure Model
+- `messages_to_prompt`: Bir `ChatMessage` nesneleri listesini ve mesajda belirtilmemişse bir sistem istemini kabul eden çağrılabilir bir yapıdır. Mesajları uç nokta LLM uyumlu formatta içeren bir dize döndürmelidir.
 
-`SageMakerLLM` is an abstraction for interacting with different language models (LLM) deployed in Amazon SageMaker. All the default parameters are compatible with the Llama 2 model. Therefore, if you are using a different model, you will likely need to set the following parameters:
+- `completion_to_prompt`: Bir sistem istemiyle bir tamamlama dizesini kabul eden ve uç nokta LLM uyumlu formatta bir dize döndüren çağrılabilir bir yapıdır.
 
-- `messages_to_prompt`: A callable that accepts a list of `ChatMessage` objects and, if not specified in the message, a system prompt. It should return a string containing the messages in the endpoint LLM-compatible format.
-
-- `completion_to_prompt`: A callable that accepts a completion string with a system prompt and returns a string in the endpoint LLM-compatible format.
-
-- `content_handler`: A class that inherits from `llama_index.llms.sagemaker_llm_endpoint_utils.BaseIOHandler` and implements the following methods: `serialize_input`, `deserialize_output`, `deserialize_streaming_output`, and `remove_prefix`.
+- `content_handler`: `llama_index.llms.sagemaker_llm_endpoint_utils.BaseIOHandler` sınıfından miras alan ve şu yöntemleri uygulayan bir sınıftır: `serialize_input`, `deserialize_output`, `deserialize_streaming_output` ve `remove_prefix`.
+e_prefix`.

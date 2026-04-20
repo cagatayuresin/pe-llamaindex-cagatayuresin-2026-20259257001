@@ -5,29 +5,29 @@ title: Predibase
  | LlamaIndex OSS Documentation
 ---
 
-This notebook shows how you can use Predibase-hosted LLM’s within Llamaindex. You can add [Predibase](https://predibase.com) to your existing Llamaindex worklow to:
+Bu not defteri, Predibase tarafından barındırılan LLM'leri LlamaIndex içinde nasıl kullanabileceğinizi gösterir. [Predibase](https://predibase.com)'i mevcut LlamaIndex iş akışınıza şunlar için ekleyebilirsiniz:
 
-1. Deploy and query pre-trained or custom open source LLM’s without the hassle
-2. Operationalize an end-to-end Retrieval Augmented Generation (RAG) system
-3. Fine-tune your own LLM in just a few lines of code
+1. Önceden eğitilmiş veya özel açık kaynaklı LLM'leri zahmetsizce dağıtın ve sorgulayın
+2. Uçtan uca bir Geri Getirme Artırılmış Üretim (RAG) sistemini operasyonel hale getirin
+3. Sadece birkaç satır kodla kendi LLM'nizi ince ayarlayın (fine-tune)
 
-## Getting Started
+## Başlarken
 
-1. Sign up for a free Predibase account [here](https://predibase.com/free-trial)
-2. Create an Account
-3. Go to Settings > My profile and Generate a new API Token.
+1. [Buradan](https://predibase.com/free-trial) ücretsiz bir Predibase hesabı için kaydolun
+2. Bir Hesap Oluşturun
+3. Ayarlar (Settings) > Profilim (My profile) bölümüne gidin ve yeni bir API Belirteci (Token) oluşturun.
 
-```
+```python
 %pip install llama-index-llms-predibase
 ```
 
-```
+```python
 !pip install llama-index --quiet
 !pip install predibase --quiet
 !pip install sentence-transformers --quiet
 ```
 
-```
+```python
 import os
 
 
@@ -35,112 +35,112 @@ os.environ["PREDIBASE_API_TOKEN"] = "{PREDIBASE_API_TOKEN}"
 from llama_index.llms.predibase import PredibaseLLM
 ```
 
-## Flow 1: Query Predibase LLM directly
+## Akış 1: Predibase LLM'yi doğrudan sorgulayın
 
-```
-# Predibase-hosted fine-tuned adapter example
+```python
+# Predibase'de barındırılan ince ayarlı adaptör örneği
 llm = PredibaseLLM(
     model_name="mistral-7b",
-    predibase_sdk_version=None,  # optional parameter (defaults to the latest Predibase SDK version if omitted)
-    adapter_id="e2e_nlg",  # adapter_id is optional
-    adapter_version=1,  # optional parameter (applies to Predibase only)
-    api_token=None,  # optional parameter for accessing services hosting adapters (e.g., HuggingFace)
+    predibase_sdk_version=None,  # isteğe bağlı parametre (belirtilmezse varsayılan olarak en son Predibase SDK sürümüne ayarlanır)
+    adapter_id="e2e_nlg",  # adapter_id isteğe bağlıdır
+    adapter_version=1,  # isteğe bağlı parametre (yalnızca Predibase için geçerlidir)
+    api_token=None,  # adaptörleri barındıran hizmetlere (örneğin HuggingFace) erişmek için isteğe bağlı parametre
     max_new_tokens=512,
     temperature=0.3,
 )
-# The `model_name` parameter is the Predibase "serverless" base_model ID
-# (see https://docs.predibase.com/user-guide/inference/models for the catalog).
-# You can also optionally specify a fine-tuned adapter that's hosted on Predibase or HuggingFace
-# In the case of Predibase-hosted adapters, you must also specify the adapter_version
+# `model_name` parametresi, Predibase "sunucusuz" base_model kimliğidir
+# (katalog için https://docs.predibase.com/user-guide/inference/models sayfasına bakın).
+# Ayrıca isteğe bağlı olarak Predibase veya HuggingFace üzerinde barındırılan ince ayarlı bir adaptör de belirtebilirsiniz
+# Predibase'de barındırılan adaptörler durumunda, adapter_version'u da belirtmelisiniz
 ```
 
-```
-# HuggingFace-hosted fine-tuned adapter example
+```python
+# HuggingFace'de barındırılan ince ayarlı adaptör örneği
 llm = PredibaseLLM(
     model_name="mistral-7b",
-    predibase_sdk_version=None,  # optional parameter (defaults to the latest Predibase SDK version if omitted)
-    adapter_id="predibase/e2e_nlg",  # adapter_id is optional
+    predibase_sdk_version=None,  # isteğe bağlı parametre (belirtilmezse varsayılan olarak en son Predibase SDK sürümüne ayarlanır)
+    adapter_id="predibase/e2e_nlg",  # adapter_id isteğe bağlıdır
     api_token=os.environ.get(
         "HUGGING_FACE_HUB_TOKEN"
-    ),  # optional parameter for accessing services hosting adapters (e.g., HuggingFace)
+    ),  # adaptörleri barındıran hizmetlere (örneğin HuggingFace) erişmek için isteğe bağlı parametre
     max_new_tokens=512,
     temperature=0.3,
 )
-# The `model_name` parameter is the Predibase "serverless" base_model ID
-# (see https://docs.predibase.com/user-guide/inference/models for the catalog).
-# You can also optionally specify a fine-tuned adapter that's hosted on Predibase or HuggingFace
-# In the case of Predibase-hosted adapters, you can also specify the adapter_version (assumed latest if omitted)
+# `model_name` parametresi, Predibase "sunucusuz" base_model kimliğidir
+# (katalog için https://docs.predibase.com/user-guide/inference/models sayfasına bakın).
+# Ayrıca isteğe bağlı olarak Predibase veya HuggingFace üzerinde barındırılan ince ayarlı bir adaptör de belirtebilirsiniz
+# Predibase'de barındırılan adaptörler durumunda, adapter_version'u da belirtebilirsiniz (belirtilmezse en sonuncusu varsayılır)
 ```
 
-```
-result = llm.complete("Can you recommend me a nice dry white wine?")
+```python
+result = llm.complete("Bana güzel bir sek beyaz şarap önerebilir misin?")
 print(result)
 ```
 
-## Flow 2: Retrieval Augmented Generation (RAG) with Predibase LLM
+## Akış 2: Predibase LLM ile Geri Getirme Artırılmış Üretim (RAG)
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.embeddings import resolve_embed_model
 from llama_index.core.node_parser import SentenceSplitter
 ```
 
-#### Download Data
+#### Veriyi İndir
 
-```
+```python
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Load Documents
+### Belgeleri Yükle
 
-```
+```python
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-### Configure Predibase LLM
+### Predibase LLM'yi Yapılandırma
 
-```
-# Predibase-hosted fine-tuned adapter
+```python
+# Predibase'de barındırılan ince ayarlı adaptör
 llm = PredibaseLLM(
     model_name="mistral-7b",
-    predibase_sdk_version=None,  # optional parameter (defaults to the latest Predibase SDK version if omitted)
-    adapter_id="e2e_nlg",  # adapter_id is optional
-    api_token=None,  # optional parameter for accessing services hosting adapters (e.g., HuggingFace)
+    predibase_sdk_version=None,  # isteğe bağlı parametre (belirtilmezse varsayılan olarak en son Predibase SDK sürümüne ayarlanır)
+    adapter_id="e2e_nlg",  # adapter_id isteğe bağlıdır
+    api_token=None,  # adaptörleri barındıran hizmetlere (örneğin HuggingFace) erişmek için isteğe bağlı parametre
     temperature=0.3,
     context_window=1024,
 )
 ```
 
-```
-# HuggingFace-hosted fine-tuned adapter
+```python
+# HuggingFace'de barındırılan ince ayarlı adaptör
 llm = PredibaseLLM(
     model_name="mistral-7b",
-    predibase_sdk_version=None,  # optional parameter (defaults to the latest Predibase SDK version if omitted)
-    adapter_id="predibase/e2e_nlg",  # adapter_id is optional
+    predibase_sdk_version=None,  # isteğe bağlı parametre (belirtilmezse varsayılan olarak en son Predibase SDK sürümüne ayarlanır)
+    adapter_id="predibase/e2e_nlg",  # adapter_id isteğe bağlıdır
     api_token=os.environ.get(
         "HUGGING_FACE_HUB_TOKEN"
-    ),  # optional parameter for accessing services hosting adapters (e.g., HuggingFace)
+    ),  # adaptörleri barındıran hizmetlere (örneğin HuggingFace) erişmek için isteğe bağlı parametre
     temperature=0.3,
     context_window=1024,
 )
 ```
 
-```
+```python
 embed_model = resolve_embed_model("local:BAAI/bge-small-en-v1.5")
 splitter = SentenceSplitter(chunk_size=1024)
 ```
 
-### Setup and Query Index
+### İndeksi Kur ve Sorgula
 
-```
+```python
 index = VectorStoreIndex.from_documents(
     documents, transformations=[splitter], embed_model=embed_model
 )
 query_engine = index.as_query_engine(llm=llm)
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken ne yaptı?")
 ```
 
-```
+```python
 print(response)
 ```

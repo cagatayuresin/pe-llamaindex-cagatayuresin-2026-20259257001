@@ -1,23 +1,23 @@
-# Using Opus 4.1 with LlamaIndex
+# LlamaIndex ile Opus 4.1 Kullanımı
 
 ---
-title: Using Opus 4.1 with LlamaIndex
+title: LlamaIndex ile Opus 4.1 Kullanımı
  | LlamaIndex OSS Documentation
 ---
 
-In this notebook we are going to exploit [Claude Opus 4.1 by Anthropic](https://www.anthropic.com/news/claude-opus-4-1) advanced coding capabilities to create a cute website, and we’re going to do it within LlamaIndex!
+Bu not defterinde, sevimli bir web sitesi oluşturmak için [Anthropic'in Claude Opus 4.1](https://www.anthropic.com/news/claude-opus-4-1) gelişmiş kodlama yeteneklerinden yararlanacağız ve bunu LlamaIndex içerisinde yapacağız!
 
-## Build an LLM-based assistant with Opus 4.1
+## Opus 4.1 ile LLM tabanlı bir asistan oluşturun
 
-**1. Install needed dependencies**
+**1. Gerekli bağımlılıkları yükleyin**
 
-```
+```python
 ! pip install -q llama-index-llms-anthropic get-code-from-markdown
 ```
 
-Let’s just define a helper function to help us fetch the code from Markdown:
+Markdown'dan kodu çekmemize yardımcı olacak bir yardımcı fonksiyon tanımlayalım:
 
-```
+```python
 from get_code_from_markdown import get_code_from_markdown
 
 
@@ -27,9 +27,9 @@ def fetch_code_from_markdown(markdown: str) -> str:
     return get_code_from_markdown(markdown, language="html")
 ```
 
-Let’s now initialize our LLM:
+Şimdi LLM'imizi başlatalım:
 
-```
+```python
 import os
 import getpass
 
@@ -37,22 +37,22 @@ import getpass
 os.environ["ANTHROPIC_API_KEY"] = getpass.getpass()
 ```
 
-```
+```python
 from llama_index.llms.anthropic import Anthropic
 
 
 llm = Anthropic(model="claude-opus-4-1-20250805", max_tokens=12000)
 ```
 
-```
+```python
 res = llm.complete(
     "Can you build a llama-themed static HTML page, with cute little bouncing animations and blue/white/indigo as theme colors?"
 )
 ```
 
-Let’s now get the code and write it to an HTML file!
+Şimdi kodu alalım ve bir HTML dosyasına yazalım!
 
-```
+```python
 html_code = fetch_code_from_markdown(res.text)
 
 
@@ -61,29 +61,29 @@ with open("index.html", "w") as f:
         f.write(block)
 ```
 
-You can now download `index.html` and take a look at the results :)
+Şimdi `index.html` dosyasını indirebilir ve sonuçlara göz atabilirsiniz :)
 
 ![Llama Paradise HTML](/_astro/llama_paradise.D7N9h-yu_2jOzoG.png)
 
-## Build an agent with Opus 4.1
+## Opus 4.1 ile bir ajan (agent) oluşturun
 
-We can also build a simple calculator agent using Claude Opus 4.1
+Claude Opus 4.1 kullanarak basit bir hesap makinesi ajanı da oluşturabiliriz
 
-```
+```python
 from llama_index.core.agent.workflow import FunctionAgent
 
 
 
 
 def multiply(a: int, b: int) -> int:
-    """Multiply two integers and return an integer"""
+    """İki tam sayıyı çarpar ve bir tam sayı döndürür"""
     return a * b
 
 
 
 
 def add(a: int, b: int) -> int:
-    """Sum two integers and return an integer"""
+    """İki tam sayıyı toplar ve bir tam sayı döndürür"""
     return a + b
 
 
@@ -91,16 +91,16 @@ def add(a: int, b: int) -> int:
 
 agent = FunctionAgent(
     name="CalculatorAgent",
-    description="Useful to perform basic arithmetic operations",
-    system_prompt="You are a calculator agent, you should perform arithmetic operations using the tools available to you.",
+    description="Temel aritmetik işlemleri gerçekleştirmek için kullanışlıdır",
+    system_prompt="Siz bir hesap makinesi ajanısınız, elinizdeki araçları kullanarak aritmetik işlemleri gerçekleştirmelisiniz.",
     tools=[multiply, add],
     llm=llm,
 )
 ```
 
-Let’s now run the agent through and get the result for a multiplication:
+Şimdi ajanı çalıştıralım ve bir çarpma işleminin sonucunu alalım:
 
-```
+```python
 from llama_index.core.agent.workflow import ToolCall, ToolCallResult
 
 
@@ -110,37 +110,37 @@ handler = agent.run("What is 60 multiplied by 95?")
 async for event in handler.stream_events():
     if isinstance(event, ToolCallResult):
         print(
-            f"Result from calling tool {event.tool_name}:\n\n{event.tool_output}"
+            f"{event.tool_name} aracının çağrılmasından gelen sonuç:\n\n{event.tool_output}"
         )
     if isinstance(event, ToolCall):
         print(
-            f"Calling tool {event.tool_name} with arguments:\n\n{event.tool_kwargs}"
+            f"{event.tool_name} aracı şu argümanlarla çağrılıyor:\n\n{event.tool_kwargs}"
         )
 
 
 response = await handler
 
 
-print("Final response")
+print("Final yanıtı")
 print(response)
 ```
 
-```
-Calling tool multiply with arguments:
+```python
+multiply aracı şu argümanlarla çağrılıyor:
 
 
 {'a': 60, 'b': 95}
-Result from calling tool multiply:
+multiply aracının çağrılmasından gelen sonuç:
 
 
 5700
-Final response
-60 multiplied by 95 equals 5,700.
+Final yanıtı
+60'ın 95 ile çarpımı 5.700 eder.
 ```
 
-Let’s also run it with a sum!
+Ayrıca bir toplama işlemi ile çalıştıralım!
 
-```
+```python
 from llama_index.core.agent.workflow import ToolCall, ToolCallResult
 
 
@@ -150,32 +150,32 @@ handler = agent.run("What is 1234 plus 5678?")
 async for event in handler.stream_events():
     if isinstance(event, ToolCallResult):
         print(
-            f"Result from calling tool {event.tool_name}:\n\n{event.tool_output}"
+            f"{event.tool_name} aracının çağrılmasından gelen sonuç:\n\n{event.tool_output}"
         )
     if isinstance(event, ToolCall):
         print(
-            f"Calling tool {event.tool_name} with arguments:\n\n{event.tool_kwargs}"
+            f"{event.tool_name} aracı şu argümanlarla çağrılıyor:\n\n{event.tool_kwargs}"
         )
 
 
 response = await handler
 
 
-print("Final response")
+print("Final yanıtı")
 print(response)
 ```
 
-```
-Calling tool add with arguments:
+```python
+add aracı şu argümanlarla çağrılıyor:
 
 
 {'a': 1234, 'b': 5678}
-Result from calling tool add:
+add aracının çağrılmasından gelen sonuç:
 
 
 6912
-Final response
-1234 plus 5678 equals 6912.
+Final yanıtı
+1234 artı 5678 eşittir 6912.
 ```
 
-If you want more content around Anthropic, make sure to check out our [general example notebook](./anthropic.ipynb)
+Anthropic hakkında daha fazla içerik istiyorsanız, [genel örnek not defterimize](./anthropic.ipynb) göz atmayı unutmayın.

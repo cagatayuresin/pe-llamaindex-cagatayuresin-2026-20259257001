@@ -2,186 +2,177 @@
 
 ---
 title: Ollama - Gemma
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Setup
+## Kurulum
 
-First, follow the [readme](https://github.com/jmorganca/ollama) to set up and run a local Ollama instance.
+İlk olarak, yerel bir Ollama örneği kurmak ve çalıştırmak için [readme](https://github.com/jmorganca/ollama) sayfasındaki adımları izleyin.
 
-[Gemma](https://blog.google/technology/developers/gemma-open-models/): a family of lightweight, state-of-the-art open models built by Google DeepMind. Available in 2b and 7b parameter sizes
+[Gemma](https://blog.google/technology/developers/gemma-open-models/): Google DeepMind tarafından geliştirilen hafif, son teknoloji açık model ailesidir. 2b ve 7b parametre boyutlarında mevcuttur.
 
-[Ollama](https://ollama.com/library/gemma): Support both 2b and 7b models
+[Ollama](https://ollama.com/library/gemma): Hem 2b hem de 7b modellerini destekler.
 
-Note: `please install ollama>=0.1.26` You can download pre-release version here [Ollama](https://github.com/ollama/ollama/releases/tag/v0.1.26)
+Not: `lütfen ollama>=0.1.26 sürümünü kurun`. Ön sürümü buradan indirebilirsiniz: [Ollama](https://github.com/ollama/ollama/releases/tag/v0.1.26)
 
-When the Ollama app is running on your local machine:
+Ollama uygulaması yerel makinenizde çalışırken:
 
-- All of your local models are automatically served on localhost:11434
-- Select your model when setting llm = Ollama(…, model=”:”)
-- Increase defaullt timeout (30 seconds) if needed setting Ollama(…, request\_timeout=300.0)
-- If you set llm = Ollama(…, model=“\<model family”) without a version it will simply look for latest
+- Tüm yerel modelleriniz otomatik olarak `localhost:11434` adresinden sunulur.
+- Modelinizi `llm = Ollama(..., model="<model_adı>")` şeklinde ayarlayarak seçin.
+- Gerektiğinde `Ollama(..., request_timeout=300.0)` ayarıyla varsayılan zaman aşımı süresini (30 saniye) artırın.
+- Versiyon belirtmeden `llm = Ollama(..., model="<model_ailesi>")` ayarlarsanız, sistem doğrudan en son (latest) sürümü arayacaktır.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index-llms-ollama
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.ollama import Ollama
 ```
 
-```
+```python
 gemma_2b = Ollama(model="gemma:2b", request_timeout=30.0)
 gemma_7b = Ollama(model="gemma:7b", request_timeout=30.0)
 ```
 
-```
-resp = gemma_2b.complete("Who is Paul Graham?")
+```python
+resp = gemma_2b.complete("Paul Graham kimdir?")
 print(resp)
 ```
 
-```
-Paul Graham is an entrepreneur, investor, and podcaster known for his outspokenness and unconventional approach. He has built several successful companies, including Xero (now Intuit), FullStory, and The School of Greatness.
+```text
+Paul Graham be açık sözlülüğü ve alışılmamış yaklaşımıyla tanınan bir girişimci, yatırımcı ve podcast yayıncısıdır. Xero (şimdi Intuit), FullStory ve The School of Greatness dahil olmak üzere birçok başarılı şirket kurmuştur.
 
+İşte dikkate değer başarılarından bazıları:
 
-Here are some of his notable achievements:
+* **Xero'nun Kurucusu ve CEO'su:** Xero, dünya çapında 1 milyondan fazla kullanıcısı olan, küçük ve orta ölçekli işletmeler için lider bir muhasebe yazılımı şirketidir. Graham, Xero'nun hızlı büyümesinde ve nihayetinde 2015 yılında 750 milyon dolar karşılığında Intuit (şimdi Microsoft'un bir parçası) tarafından satın alınmasında etkili olmuştur.
+* **Birçok çok satan kitabın yazarı:** Graham, kişisel gelişim ve üretkenliğe odaklanan "The School of Greatness" kitabının yazarıdır. Ayrıca eski Xero ortağı Steve Huffman ile birlikte "Built to Last: Why Your Business Matters" kitabını yazmıştır.
+* **The School of Greatness'ın Kurucusu:** The School of Greatness, girişimcilerin ve iş liderlerinin tam potansiyellerine ulaşmalarına yardımcı olmak için mentorluk, atölye çalışmaları ve inzivalar sunan kâr amacı gütmeyen bir kuruluştur.
+* **Podcast sunucusu ve konuk konuşmacı:** Graham, etkili girişimciler ve düşünce liderleriyle röportajlar yaptığı popüler podcast "Bits"in sunucusudur. Ayrıca diğer podcast'lere ve şovlara sık sık konuk olmaktadır.
 
+Paul Graham hakkında bazı ek bilgiler:
 
-* **Founder and CEO of Xero:** Xero is a leading accounting software company for small and medium-sized businesses, with over 1 million users worldwide. Graham was instrumental in Xero's rapid growth and eventual acquisition by Intuit (now part of Microsoft) for $750 million in 2015.
-* **Author of several bestselling books:** Graham is the author of the book "The School of Greatness," which focuses on personal development and productivity. He also co-authored "Built to Last: Why Your Business Matters" with his former Xero partner, Steve Huffman.
-* **Founder of The School of Greatness:** The School of Greatness is a non-profit organization that offers mentoring, workshops, and retreats to help entrepreneurs and business leaders reach their full potential.
-* **Podcast host and guest speaker:** Graham is the host of the popular podcast "Bits," where he interviews influential entrepreneurs and thought leaders. He is also a frequent guest on other podcasts and shows.
+* İş dünyasına ve hayata alışılmadık ve genellikle tartışmalı yaklaşımıyla tanınır.
+* Birçok kişi tarafından Avustralya'daki en etkili girişimcilerden ve düşünce liderlerinden biri olarak kabul edilir.
+* Aynı zamanda kişisel gelişim ve büyümenin tutkulu bir savunucusudur ve podcast'i ile sosyal medya platformlarında düzenli olarak ipuçları ve görüşler paylaşır.
 
-
-Here are some additional facts about Paul Graham:
-
-
-* He is known for his unorthodox and often controversial approach to business and life.
-* He is considered by many to be one of the most influential entrepreneurs and thought leaders in Australia.
-* He is also a passionate advocate for personal growth and development, and he regularly shares tips and insights on his podcast and social media platforms.
-
-
-If you'd like to learn more about Paul Graham and his businesses, you can check out his website (paulfgraham.com), the School of Greatness website (theschoolofgreatness.org), and his podcast website (bitspodcast.com).
+Paul Graham ve işletmeleri hakkında daha fazla bilgi edinmek isterseniz web sitesine (paulfgraham.com), School of Greatness web sitesine (theschoolofgreatness.org) ve podcast web sitesine (bitspodcast.com) göz atabilirsiniz.
 ```
 
-```
-resp = gemma_7b.complete("Who is Paul Graham?")
+```python
+resp = gemma_7b.complete("Paul Graham kimdir?")
 print(resp)
 ```
 
-```
-Paul Graham (born February 21, about  45 years old) has achieved significant success as a software developer and entrepreneur. He's known for his insightful writing on Software Engineering at greaseboxsoftware where he frequently writes articles with humorous yet pragmatic advice regarding programming languages such Python while occasionally offering tips involving general life philosophies that resonate deeply amongst the programmer community, particularly about work ethic ("hacker mentality")  He has contributed to software engineering communities in a multitude of ways:
+```text
+Paul Graham (21 Şubat doğumlu, yaklaşık 45 yaşında), bir yazılım geliştiricisi ve girişimci olarak önemli başarılar elde etmiştir. Greaseboxsoftware'de Yazılım Mühendisliği üzerine yazdığı anlayışlı yazılarıyla tanınır; burada sık sık Python gibi programlama dilleri hakkında esprili ancak pragmatik tavsiyeler içeren makaleler yazar ve zaman zaman programcı topluluğu arasında derin yankı uyandıran, özellikle çalışma ahlakı ("hacker zihniyeti") ile ilgili genel yaşam felsefelerini içeren ipuçları sunar. Yazılım mühendisliği topluluklarına birçok yönden katkıda bulunmuştur:
 
+**Geliştirici:**
+* PyTorch kullanarak Bulletphysics (oyunlar için bir fizik motoru) oluşturdu. Başarıyla inşa edip potansiyelini sergiledikten sonra Aversim Technologies'deki Baş Yazılım Mühendisi görevinden istifa etti; bu açık kaynaklı projenin yazılım mühendisliği çevrelerinde ulaştığı güçlü doğayı, en iyi profesyonellerin hayranlıklarını ifade ettiği önemli medya haberleriyle gösterdi.
+* Beam Interactive LLC için, genel göreliliğin yumuşak gövde simülasyonu ile buluştuğu fizik alanlarında çözümler sunmak üzere Bulletphysics Gama Işını Alan Çözücü'yü yazdı.
 
-**Developer:**
-* Created Bulletphysics (a physics engine for games) using PyTorch. He resigned from his day job as Lead Software Engineer at Aversim Technologies after successfully building it and expriming its potential, showcasing the powerfull nature this open-source project has achieved within software engineering circles with significant media coverage involving top professionals expressing admiration
-* Wrote Bulletphysics Gamma Ray Field Solver for Beam Interactive LLC to provide solutions in areas of physics where general relativity meets soft body simulation.
+**Yazar:** Yazılım Mühendisliği konusunda üretken bir yazardır ve çalışmaları, karmaşık sistem yazılım mühendisliği ("hacker zihniyeti") oluştururken karşılaşılan zorluklar hakkında dürüstlükle ancak bilgece bir mizahla yazar.
+* Açıklamalar belirli diller veya programcıların karşılaştığı ortak sorunlara yönelik özlü ancak anlayışlı olduğu için sık sık kod parçacıkları paylaştı.
 
+**Düşünce Lideri:** Yazıları ve halka açık görünümleri sayesinde programcı topluluğunda, özellikle yazılım mühendisliği en iyi uygulamaları konusunda, başkalarından öğrenmeyi teşvik eden yaklaşılabilir bir persona sergileyerek önemli bir düşünce lideri haline gelmiştir.
+* Forumlarda aktif olarak yer almış, burada sık sık hem yeni başlayan geliştiriciler için tavsiyeler hem de deneyimli programcıların karşılaştığı karmaşık sorunlar için anlayışlı çözümler sunmuştur.
 
-**Author:**  He is a prolific author on Software Engineering and writes about his work, challenges encountered while building complex systems software engineering ("hacker mentality") with honesty but wiense humour
-* Shared code snippets frequently as explanations are concise yet insightful for specific situations involving particular language constructs or solutions to common problems faced by programmers.
-
-
-**Thought Leader:**  He has become a significant thought leader in the programmer community due his writing and public appearances, particularly about software engineering best practices while maintaining an approachable persona that encourages learning from others
-* Actively engaged with online forums where he frequently provides advice for aspiring developers as well insightful solutions to complex problems encountered by experienced programmers.
-
-
-Overall Paul Graham has achieved a significant impact on Software Engineering through not only his own accomplishments but also the positive influence of sharing information, helping other software engineers become better at their craft and fuftage potential in this field with gracefull writing style that is enjoyed amongst professionals as well privetiors alike
+Genel olarak Paul Graham, sadece kendi başarılarıyla değil aynı zamanda bilgiyi paylaşmanın olumlu etkisiyle, diğer yazılım mühendislerinin zanaatlarında daha iyi olmalarına yardımcı olarak ve hem profesyoneller hem de amatörler tarafından keyifle okunan zarif yazı stiliyle bu alandaki potansiyellerini gerçekleştirmelerini sağlayarak Yazılım Mühendisliği üzerinde önemli bir etki yaratmıştır.
 ```
 
-```
-resp = gemma_2b.complete("Who is owning Tesla?")
+```python
+resp = gemma_2b.complete("Tesla'nın sahibi kim?")
 print(resp)
 ```
 
-```
-Tesla Inc. is owned by Elon Musk. He founded Tesla in 2003 with the goal of creating sustainable transportation. Tesla was originally listed on the NASDAQ Stock Market under the symbol "TSLA". In 2013, Tesla went private and began trading on the New York Stock Exchange (NYSE).
+```text
+Tesla Inc.'in sahibi Elon Musk'tır. Sürdürülebilir ulaşım yaratma hedefiyle Tesla'yı 2003 yılında kurdu. Tesla başlangıçta NASDAQ Menkul Kıymetler Borsası'nda "TSLA" sembolü altında listelenmişti. 2013 yılında Tesla halka kapandı ve New York Menkul Kıymetler Borsası'nda (NYSE) işlem görmeye başladı.
 ```
 
-```
-resp = gemma_7b.complete("Who is owning Tesla?")
+```python
+resp = gemma_7b.complete("Tesla'nın sahibi kim?")
 print(resp)
 ```
 
-```
-Elon Musk, CEO of SpaceX and former electric car company Telsa Motors (now part owned by Ford Motor Company), owns about a quarter to nearly half the stock in TESLA inc.
+```text
+SpaceX'in CEO'su ve eski elektrikli araba şirketi Tesla Motors'un (şimdi kısmen Ford Motor Company'ye ait) kurucusu olan Elon Musk, TESLA inc.'in hisselerinin yaklaşık dörtte birinden neredeyse yarısına kadar olan kısmına sahiptir.
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = gemma_7b.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant: Avast, me heartie. My Name be Jolly Roger and I plunder the high seas for treasures untold!
-```
-
-### Streaming
-
-Using `stream_complete` endpoint
-
-```
-response = gemma_7b.stream_complete("Who is Paul Graham?")
+```text
+assistant: Hey gidi koca kaptan. Benim adım Jolly Roger ve anlatılmamış hazineler için engin denizleri yağmalarım!
 ```
 
+### Akış (Streaming)
+
+`stream_complete` uç noktasını kullanma
+
+```python
+response = gemma_7b.stream_complete("Paul Graham kimdir?")
 ```
+
+```python
 for r in response:
     print(r.delta, end="")
 ```
 
+```text
+Paul Graham, çevrimiçi ortamda yaygın olarak "PerlGuy" olarak anılır ve yazılım mühendisliği ile programlama topluluklarında önemli bir varlığa sahiptir. Öncelikle şu alanlarda uzmanlaşmıştır:
+
+**1.) Yazılım Tasarımı:** Modülerleştirme (DRY) için etkili kodlama desenleri hakkındaki fikirlerini "Expert Refactoring using Smells And Polymorphism Principle (SRPPP)" gibi kitaplarda paylaştı.
+ * Kod kalitesini artırmak ve yazılım modülleri ile katmanları arasındaki bağımlılığı (coupling) azaltmak için en iyi uygulamaları paylaşarak kapsamlı yazılar yazdı. Bu, dünya çapındaki sayısız geliştiricinin, mobil uygulamalardan kurumsal sistemlere kadar uzanan projelerde çekirdek olarak "Düzenli Tasarım Desenleri" ve "Düşük Bağımlılıklı Tasarımlar" (SOLID) prensipleriyle daha iyi Yazılım Tasarım Desenleri yazmalarını etkiledi.
+
+**2.) Açık Kaynak:** Project Lombok, Phalanger (şimdi Relocator) ve CouchSurfer'a aktif olarak katkıda bulundu. Kod tasarım desenlerini fufurce'da paylaştı ve bu da önemli bir etki yarattı. Pivotal Software Systems gibi birden fazla üst düzey organizasyonun parçası olurken yüksek kaliteli açık kaynaklı yazılım projelerini sürdürerek tanınırlık kazandı.
+
+**3.) Koçluk:** İşletmelere koçluk hizmetleri sunarak mühendislik uygulamalarını geliştirmelerine ve daha iyi test edilebilir kodlar yazmalarına yardımcı oluyor. Büyük kitleler için düzenlenen eğitim seanslarında Tasarım Desenleri konusundaki uzmanlığını da paylaştı.
+
+Genel olarak Paul Graham, açık kaynaklı projelerin bir parçası olurken en iyi yazılım tasarımı uygulamalarını paylaşarak önemli bir güvenilirlik kazanmıştır; buralarda uzun vadeli sürdürülebilirliği sağlamak için üretim sistemlerine dahil edilmesi kolay, ölçülebilir ve düşük karmaşıklıklı (SOLID) yüksek kaliteli kod çözümlerini savunmaktadır.
 ```
-Paul graham, commonly referred to as "PerlGuy" online has a significant presence in the software engineering and programming communities. He specializes primarily on:
 
+`stream_chat` uç noktasını kullanma
 
-**1.) Software Design:**    * Shared his ideas about effective coding patterns for Modularization (DRY) into books like Expert Refactoring using Smells And Polymorphism Principle(SRPPP).
- * Has written extensively, sharing best practices to improve code quality while reducing coupling between software modules and layers.  This has influenced numerous developers worldwide in writing better Software Design Patterns with Low Coupling Designs Epidra Hard To Measure Modularity (SOLID) principles at heart for projects ranging from mobile apps all the way up into enterprise systems
-**2.) Open Source:**    * Actively contributed to Project Lombok, Phalanger(now Relocator), and CouchSurfer. Shared his code design patterns on fufurce with significant impact as well . He has earned recognition by maintaining high quality open source software projects while being part of multiple top rated organizations like Pivotal Software Systems
-**3.) Coaching:**    * Offers coaching services to businesses, helping them improve their engineering practices and writing better testable Code. Shared his expertise on Design patterns during training sessions for large audiences as well .
-
-
-Overall Paul Graham has earned significant credibility by sharing best software designPractices while being part of open source projects where he advocates high quality code solutions that are easy Measure Epidra Hard To cras Low Modularity (SOLID)principles into production systems, ensuring long term sustainability.
-```
-
-Using `stream_chat` endpoint
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = gemma_7b.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-Avast, me heartie! My alias be Screevy Bob. If you ask for my real nom de guerre... I ain't tellin'. Arrgh and all that jazz!!
+```text
+Hey gidi! Benim lakabım "Screevy Bob". Eğer gerçek savaş adımı sorarsan... Söylemem. Arrgh ve tüm o tantana!!
 ```

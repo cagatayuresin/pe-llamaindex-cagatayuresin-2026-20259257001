@@ -5,82 +5,82 @@ title: Portkey
  | LlamaIndex OSS Documentation
 ---
 
-**Portkey** is a full-stack LLMOps platform that productionizes your Gen AI app reliably and securely.
+**Portkey**, Gen AI uygulamanızı güvenilir ve emniyetli bir şekilde üretim ortamına taşıyan tam kapsamlı bir LLMOps platformudur.
 
-#### Key Features of Portkey’s Integration with Llamaindex:
+#### Portkey'in LlamaIndex ile Entegrasyonunun Temel Özellikleri:
 
 ![header](https://3798672042-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FeWEp2XRBGxs7C1jgAdk7%2Fuploads%2FjDGBQvw5aFOCqctr0xwp%2FColab%20Version%202.png?alt=media\&token=16057c99-b86c-416c-932e-c2b71549c506)
 
-1. **[🚪 AI Gateway](#%F0%9F%94%81-implementing-fallbacks-and-retries-with-portkey)**:
+1. **[🚪 AI Gateway (Yapay Zeka Ağ Geçidi)](#%F0%9F%94%81-implementing-fallbacks-and-retries-with-portkey)**:
 
-   - **[Automated Fallbacks & Retries](#%F0%9F%94%81-implementing-fallbacks-and-retries-with-portkey)**: Ensure your application remains functional even if a primary service fails.
-   - **[Load Balancing](#%E2%9A%96%EF%B8%8F-implementing-load-balancing-with-portkey)**: Efficiently distribute incoming requests among multiple models.
-   - **[Semantic Caching](#%F0%9F%A7%A0-implementing-semantic-caching-with-portkey)**: Reduce costs and latency by intelligently caching results.
+   - **[Otomatik Yedekleme (Fallback) ve Yeniden Denemeler](#%F0%9F%94%81-implementing-fallbacks-and-retries-with-portkey)**: Birincil servis başarısız olsa bile uygulamanızın işlevsel kalmasını sağlayın.
+   - **[Yük Dengeleme (Load Balancing)](#%E2%9A%96%EF%B8%8F-implementing-load-balancing-with-portkey)**: Gelen istekleri birden fazla model arasında verimli bir şekilde dağıtın.
+   - **[Anlamsal Önbelleğe Alma (Semantic Caching)](#%F0%9F%A7%A0-implementing-semantic-caching-with-portkey)**: Sonuçları akıllıca önbelleğe alarak maliyetleri ve gecikmeyi azaltın.
 
-2. **[🔬 Observability](#%F0%9F%94%AC-observability-with-portkey)**:
+2. **[🔬 Gözlemlenebilirlik (Observability)](#%F0%9F%94%AC-observability-with-portkey)**:
 
-   - **Logging**: Keep track of all requests for monitoring and debugging.
-   - **Requests Tracing**: Understand the journey of each request for optimization.
-   - **Custom Tags**: Segment and categorize requests for better insights.
+   - **Günlükleme (Logging)**: İzleme ve hata ayıklama için tüm istekleri takip edin.
+   - **İstek İzleme (Requests Tracing)**: Optimizasyon için her isteğin yolculuğunu anlayın.
+   - **Özel Etiketler (Custom Tags)**: Daha iyi içgörüler için istekleri segmentlere ayırın ve kategorize edin.
 
-3. **[📝 Continuous Improvement with User Feedback](#%F0%9F%93%9D-feedback-with-portkey)**:
+3. **[📝 Kullanıcı Geri Bildirimi ile Sürekli İyileştirme](#%F0%9F%93%9D-feedback-with-portkey)**:
 
-   - **Feedback Collection**: Seamlessly gather feedback on any served request, be it on a generation or conversation level.
-   - **Weighted Feedback**: Obtain nuanced information by attaching weights to user feedback values.
-   - **Feedback Metadata**: Incorporate custom metadata with the feedback to provide context, allowing for richer insights and analyses.
+   - **Geri Bildirim Toplama**: İster bir üretim ister konuşma düzeyinde olsun, sunulan herhangi bir istek hakkında sorunsuz bir şekilde geri bildirim toplayın.
+   - **Ağırlıklı Geri Bildirim**: Kullanıcı geri bildirim değerlerine ağırlıklar ekleyerek incelikli bilgiler edinin.
+   - **Geri Bildirim Meta Verileri**: Bağlam sağlamak için geri bildirimle birlikte özel meta verileri dahil edin, böylece daha zengin içgörüler ve analizler elde edin.
 
-4. **[🔑 Secure Key Management](#feedback-with-portkey)**:
+4. **[🔑 Güvenli Anahtar Yönetimi](#feedback-with-portkey)**:
 
-   - **Virtual Keys**: Portkey transforms original provider keys into virtual keys, ensuring your primary credentials remain untouched.
-   - **Multiple Identifiers**: Ability to add multiple keys for the same provider or the same key under different names for easy identification without compromising security.
+   - **Sanal Anahtarlar (Virtual Keys)**: Portkey, orijinal sağlayıcı anahtarlarını sanal anahtarlara dönüştürerek birincil kimlik bilgilerinizin dokunulmadan kalmasını sağlar.
+   - **Çoklu Tanımlayıcılar**: Güvenlikten ödün vermeden kolay tanımlama için aynı sağlayıcı için birden fazla anahtar veya farklı isimler altında aynı anahtarı ekleme yeteneği.
 
-To harness these features, let’s start with the setup:
+Bu özellikleri kullanmak için kuruluma başlayalım:
 
 [![\\"Open](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/llm/portkey.ipynb)
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab ortamında açıyorsanız, muhtemelen LlamaIndex'i yüklemeniz gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-portkey
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-```
-# Installing Llamaindex & Portkey SDK
+```python
+# LlamaIndex ve Portkey SDK Kurulumu
 !pip install -U llama_index
 !pip install -U portkey-ai
 
 
-# Importing necessary libraries and modules
+# Gerekli kütüphanelerin ve modüllerin içe aktarılması
 from llama_index.llms.portkey import Portkey
 from llama_index.core.llms import ChatMessage
 import portkey as pk
 ```
 
-You do not need to install **any** other SDKs or import them in your Llamaindex app.
+LlamaIndex uygulamanıza **başka** herhangi bir SDK yüklemenize veya bunları içe aktarmanıza gerek yoktur.
 
-#### **Step 1️⃣: Get your Portkey API Key and your Virtual Keys for OpenAI, Anthropic, and more**
+#### **Adım 1️⃣: OpenAI, Anthropic ve daha fazlası için Portkey API Anahtarınızı ve Sanal Anahtarlarınızı alın**
 
-**[Portkey API Key](https://app.portkey.ai/)**: Log into [Portkey here](https://app.portkey.ai/), then click on the profile icon on top left and “Copy API Key”.
+**[Portkey API Anahtarı](https://app.portkey.ai/)**: [Buradan Portkey'e](https://app.portkey.ai/) giriş yapın, ardından sol üstteki profil simgesine tıklayın ve "API Key'i Kopyala" (Copy API Key) deyin.
 
-```
+```python
 import os
 
 
 os.environ["PORTKEY_API_KEY"] = "PORTKEY_API_KEY"
 ```
 
-**[Virtual Keys](https://docs.portkey.ai/key-features/ai-provider-keys)**
+**[Sanal Anahtarlar (Virtual Keys)](https://docs.portkey.ai/key-features/ai-provider-keys)**
 
-1. Navigate to the “Virtual Keys” page on [Portkey dashboard](https://app.portkey.ai/) and hit the “Add Key” button located at the top right corner.
-2. Choose your AI provider (OpenAI, Anthropic, Cohere, HuggingFace, etc.), assign a unique name to your key, and, if needed, jot down any relevant usage notes. Your virtual key is ready!
+1. [Portkey panosundaki](https://app.portkey.ai/) "Sanal Anahtarlar" (Virtual Keys) sayfasına gidin ve sağ üst köşedeki "Anahtar Ekle" (Add Key) düğmesine basın.
+2. Yapay zeka sağlayıcınızı seçin (OpenAI, Anthropic, Cohere, HuggingFace vb.), anahtarınıza benzersiz bir isim atayın ve gerekirse ilgili kullanım notlarını not edin. Sanal anahtarınız hazır!
 
-![header](https://3798672042-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FeWEp2XRBGxs7C1jgAdk7%2Fuploads%2F66S1ik16Gle8jS1u6smr%2Fvirtual_keys.png?alt=media\&token=2fec1c39-df4e-4c93-9549-7445a833321c) 3. Now copy and paste the keys below - you can use them anywhere within the Portkey ecosystem and keep your original key secure and untouched.
+![header](https://3798672042-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FeWEp2XRBGxs7C1jgAdk7%2Fuploads%2F66S1ik16Gle8jS1u6smr%2Fvirtual_keys.png?alt=media\&token=2fec1c39-df4e-4c93-9549-7445a833321c) 3. Şimdi aşağıdaki anahtarları kopyalayıp yapıştırın - bunları Portkey ekosisteminin herhangi bir yerinde kullanabilir ve orijinal anahtarınızı güvenli ve dokunulmamış halde tutabilirsiniz.
 
-```
+```python
 openai_virtual_key_a = ""
 openai_virtual_key_b = ""
 
@@ -93,55 +93,55 @@ cohere_virtual_key_a = ""
 cohere_virtual_key_b = ""
 ```
 
-If you don’t want to use Portkey’s Virtual keys, you can also use your AI provider keys directly.
+Portkey'in Sanal anahtarlarını kullanmak istemiyorsanız, yapay zeka sağlayıcı anahtarlarınızı doğrudan da kullanabilirsiniz.
 
-```
+```python
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["ANTHROPIC_API_KEY"] = ""
 ```
 
-#### **Step 2️⃣: Configure Portkey Features**
+#### **Adım 2️⃣: Portkey Özelliklerini Yapılandırın**
 
 To harness the full potential of Portkey’s integration with Llamaindex, you can configure various features as illustrated above. Here’s a guide to all Portkey features and the expected values:
 
-| Feature             | Config Key            | Value(Type)                                                                     | Required                           |
+| Özellik             | Yapılandırma Anahtarı | Değer(Tür)                                                                     | Gerekli                           |
 | ------------------- | --------------------- | ------------------------------------------------------------------------------- | ---------------------------------- |
-| API Key             | `api_key`             | `string`                                                                        | ✅ Required (can be set externally) |
-| Mode                | `mode`                | `fallback`, `loadbalance`, `single`                                             | ✅ Required                         |
-| Cache Type          | `cache_status`        | `simple`, `semantic`                                                            | ❔ Optional                         |
-| Force Cache Refresh | `cache_force_refresh` | `True`, `False`                                                                 | ❔ Optional                         |
-| Cache Age           | `cache_age`           | `integer` (in seconds)                                                          | ❔ Optional                         |
-| Trace ID            | `trace_id`            | `string`                                                                        | ❔ Optional                         |
-| Retries             | `retry`               | `integer` \[0,5]                                                                | ❔ Optional                         |
-| Metadata            | `metadata`            | `json object` [More info](https://docs.portkey.ai/key-features/custom-metadata) | ❔ Optional                         |
-| Base URL            | `base_url`            | `url`                                                                           | ❔ Optional                         |
+| API Key             | `api_key`             | `string`                                                                        | ✅ Gerekli (harici olarak ayarlanabilir) |
+| Mod                 | `mode`                | `fallback`, `loadbalance`, `single`                                             | ✅ Gerekli                         |
+| Önbellek Türü       | `cache_status`        | `simple`, `semantic`                                                            | ❔ İsteğe Bağlı                         |
+| Önbelleği Zorla Yenile | `cache_force_refresh` | `True`, `False`                                                                 | ❔ İsteğe Bağlı                         |
+| Önbellek Ömrü       | `cache_age`           | `integer` (saniye cinsinden)                                                          | ❔ İsteğe Bağlı                         |
+| İzleme Kimliği      | `trace_id`            | `string`                                                                        | ❔ İsteğe Bağlı                         |
+| Yeniden Denemeler    | `retry`               | `integer` \[0,5]                                                                | ❔ İsteğe Bağlı                         |
+| Meta Veri           | `metadata`            | `json object` [Daha fazla bilgi](https://docs.portkey.ai/key-features/custom-metadata) | ❔ İsteğe Bağlı                         |
+| Temel URL           | `base_url`            | `url`                                                                           | ❔ İsteğe Bağlı                         |
 
-- `api_key` and `mode` are required values.
+- `api_key` ve `mode` gerekli değerlerdir.
 
-- You can set your Portkey API key using the Portkey constructor or you can also set it as an environment variable.
+- Portkey API anahtarınızı Portkey kurucusunu kullanarak ayarlayabilir veya ortam değişkeni olarak da ayarlayabilirsiniz.
 
-- There are **3** modes - Single, Fallback, Loadbalance.
+- **3** mod vardır - Single (Tek), Fallback (Yedekleme), Loadbalance (Yük Dengeleme).
 
-  - **Single** - This is the standard mode. Use it if you do not want Fallback OR Loadbalance features.
-  - **Fallback** - Set this mode if you want to enable the Fallback feature. [Check out the guide here](#implementing-fallbacks-and-retries-with-portkey).
-  - **Loadbalance** - Set this mode if you want to enable the Loadbalance feature. [Check out the guide here](#implementing-load-balancing-with-portkey).
+  - **Single** - Bu standart moddur. Fallback VEYA Loadbalance özelliklerini istemiyorsanız bunu kullanın.
+  - **Fallback** - Fallback özelliğini etkinleştirmek istiyorsanız bu modu ayarlayın. [Kılavuza buradan göz atın](#implementing-fallbacks-and-retries-with-portkey).
+  - **Loadbalance** - Loadbalance özelliğini etkinleştirmek istiyorsanız bu modu ayarlayın. [Kılavuza buradan göz atın](#implementing-load-balancing-with-portkey).
 
-Here’s an example of how to set up some of these features:
+İşte bu özelliklerinden bazılarının nasıl kurulacağına dair bir örnek:
 
-```
+```python
 portkey_client = Portkey(
     mode="single",
 )
 
 
-# Since we have defined the Portkey API Key with os.environ, we do not need to set api_key again here
+# Portkey API Anahtarını os.environ ile tanımladığımız için, burada api_key'i tekrar ayarlamamıza gerek yok
 ```
 
-#### **Step 3️⃣: Constructing the LLM**
+#### **Adım 3️⃣: LLM'yi Oluşturma**
 
-With the Portkey integration, constructing an LLM is simplified. Use the `LLMOptions` function for all providers, with the exact same keys you’re accustomed to in your OpenAI or Anthropic constructors. The only new key is `weight`, essential for the load balancing feature.
+Portkey entegrasyonu ile bir LLM oluşturmak basitleştirilmiştir. OpenAI veya Anthropic kurucularınızda alışık olduğunuz anahtarların aynısıyla tüm sağlayıcılar için `LLMOptions` fonksiyonunu kullanın. Tek yeni anahtar, yük dengeleme özelliği için gerekli olan `weight` (ağırlık) anahtarıdır.
 
-```
+```python
 openai_llm = pk.LLMOptions(
     provider="openai",
     model="gpt-4",
@@ -149,111 +149,111 @@ openai_llm = pk.LLMOptions(
 )
 ```
 
-The above code illustrates how to utilize the `LLMOptions` function to set up an LLM with the OpenAI provider and the GPT-4 model. This same function can be used for other providers as well, making the integration process streamlined and consistent across various providers.
+Yukarıdaki kod, OpenAI sağlayıcısı ve GPT-4 modeli ile bir LLM kurmak için `LLMOptions` fonksiyonunun nasıl kullanılacağını göstermektedir. Aynı fonksiyon diğer sağlayıcılar için de kullanılabilir, bu da entegrasyon sürecini çeşitli sağlayıcılar arasında basitleştirilmiş ve tutarlı hale getirir.
 
-#### **Step 4️⃣: Activate the Portkey Client**
+#### **Adım 4️⃣: Portkey İstemcisini Aktif Edin**
 
-Once you’ve constructed the LLM using the `LLMOptions` function, the next step is to activate it with Portkey. This step is essential to ensure that all the Portkey features are available for your LLM.
+`LLMOptions` fonksiyonunu kullanarak LLM'yi oluşturduktan sonraki adım, onu Portkey ile aktif hale getirmektir. Bu adım, tüm Portkey özelliklerinin LLM'niz için kullanılabilir olmasını sağlamak için gereklidir.
 
-```
+```python
 portkey_client.add_llms(openai_llm)
 ```
 
-And, that’s it! In just 4 steps, you have infused your Llamaindex app with sophisticated production capabilities.
+Ve işte bu kadar! Sadece 4 adımda, LlamaIndex uygulamanıza gelişmiş üretim yetenekleri aşıladınız.
 
-#### **🔧 Testing the Integration**
+#### **🔧 Entegrasyonu Test Etme**
 
-Let’s ensure that everything is set up correctly. Below, we create a simple chat scenario and pass it through our Portkey client to see the response.
+Her şeyin doğru kurulduğundan emin olalım. Aşağıda, basit bir sohbet senaryosu oluşturuyoruz ve yanıtı görmek için bunu Portkey istemcimiz üzerinden geçiriyoruz.
 
-```
+```python
 messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="What can you do?"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Neler yapabilirsin?"),
 ]
-print("Testing Portkey Llamaindex integration:")
+print("Portkey LlamaIndex entegrasyonu test ediliyor:")
 response = portkey_client.chat(messages)
 print(response)
 ```
 
-Here’s how your logs will appear on your [Portkey dashboard](https://app.portkey.ai/):
+Günlüklerinizin (logs) [Portkey panonuzda](https://app.portkey.ai/) nasıl görüneceği aşağıda açıklanmıştır:
 
-![Logs](https://portkey.ai/blog/content/images/2023/09/Log-1.png)
+![Günlükler](https://portkey.ai/blog/content/images/2023/09/Log-1.png)
 
-#### **⏩ Streaming Responses**
+#### **⏩ Yanıtları Akışla İletme (Streaming)**
 
-With Portkey, streaming responses has never been more straightforward. Portkey has 4 response functions:
+Portkey ile yanıtları akışla iletmek hiç bu kadar kolay olmamıştı. Portkey'in 4 yanıt fonksiyonu vardır:
 
 1. `.complete(prompt)`
 2. `.stream_complete(prompt)`
 3. `.chat(messages)`
 4. `.stream_chat(messages)`
 
-While the `complete` function expects a string input(`str`), the `chat` function works with an array of `ChatMessage` objects.
+`complete` fonksiyonu bir dize girdisi (`str`) beklerken, `chat` fonksiyonu bir `ChatMessage` nesneleri dizisiyle çalışır.
 
-**Example usage:**
+**Örnek kullanım:**
 
-```
-# Let's set up a prompt and then use the stream_complete function to obtain a streamed response.
-
-
-prompt = "Why is the sky blue?"
+```python
+# Bir istem hazırlayalım ve ardından akışlı bir yanıt almak için stream_complete fonksiyonunu kullanalım.
 
 
-print("\nTesting Stream Complete:\n")
+prompt = "Gökyüzü neden mavidir?"
+
+
+print("\nStream Complete Test Ediliyor:\n")
 response = portkey_client.stream_complete(prompt)
 for i in response:
     print(i.delta, end="", flush=True)
 
 
-# Let's prepare a set of chat messages and then utilize the stream_chat function to achieve a streamed chat response.
+# Bir dizi sohbet mesajı hazırlayalım ve ardından akışlı bir sohbet yanıtı elde etmek için stream_chat fonksiyonunu kullanalım.
 
 
 messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="What can you do?"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Neler yapabilirsin?"),
 ]
 
 
-print("\nTesting Stream Chat:\n")
+print("\nStream Chat Test Ediliyor:\n")
 response = portkey_client.stream_chat(messages)
 for i in response:
     print(i.delta, end="", flush=True)
 ```
 
-#### **🔍 Recap and References**
+#### **🔍 Özet ve Referanslar**
 
-Congratulations! 🎉 You’ve successfully set up and tested the Portkey integration with Llamaindex. To recap the steps:
+Tebrikler! 🎉 Portkey entegrasyonunu LlamaIndex ile başarıyla kurdunuz ve test ettiniz. Adımları özetlemek gerekirse:
 
 1. pip install portkey-ai
-2. from llama\_index.llms import Portkey
-3. Grab your Portkey API Key and create your virtual provider keys from [here](https://app.portkey.ai/).
-4. Construct your Portkey client and set mode: `portkey_client=Portkey(mode="fallback")`
-5. Construct your provider LLM with LLMOptions: `openai_llm = pk.LLMOptions(provider="openai", model="gpt-4", virtual_key=openai_key_a)`
-6. Add the LLM to Portkey with `portkey_client.add_llms(openai_llm)`
-7. Call the Portkey methods regularly like you would any other LLM, with `portkey_client.chat(messages)`
+2. from llama_index.llms import Portkey
+3. Portkey API Anahtarınızı alın ve sanal sağlayıcı anahtarlarınızı [buradan](https://app.portkey.ai/) oluşturun.
+4. Portkey istemcinizi oluşturun ve modu ayarlayın: `portkey_client=Portkey(mode="fallback")`
+5. Sağlayıcı LLM'nizi LLMOptions ile oluşturun: `openai_llm = pk.LLMOptions(provider="openai", model="gpt-4", virtual_key=openai_key_a)`
+6. `portkey_client.add_llms(openai_llm)` ile LLM'yi Portkey'e ekleyin
+7. Portkey yöntemlerini, `portkey_client.chat(messages)` ile herhangi bir LLM'de yaptığınız gibi düzenli olarak çağırın.
 
-Here’s the guide to all the functions and their params:
+İşte tüm fonksiyonlara ve parametrelerine dair kılavuz:
 
 - [Portkey LLM Constructor](#step-2-add-all-the-portkey-features-you-want-as-illustrated-below-by-calling-the-portkey-class)
 - [LLMOptions Constructor](https://github.com/Portkey-AI/rubeus-python-sdk/blob/4cf3e17b847225123e92f8e8467b41d082186d60/rubeus/api_resources/utils.py#L179)
-- [List of Portkey + Llamaindex Features](#portkeys-integration-with-llamaindex-adds-the-following-production-capabilities-to-your-apps-out-of-the-box)
+- [Portkey + LlamaIndex Özelliklerinin Listesi](#portkeys-integration-with-llamaindex-adds-the-following-production-capabilities-to-your-apps-out-of-the-box)
 
 [![\\"Open](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/llm/portkey.ipynb)
 
-#### **🔁 Implementing Fallbacks and Retries with Portkey**
+#### **🔁 Portkey ile Yedekleme (Fallback) ve Yeniden Denemelerin Uygulanması**
 
-Fallbacks and retries are essential for building resilient AI applications. With Portkey, implementing these features is straightforward:
+Yedeklemeler (fallbacks) ve yeniden denemeler (retries), dayanıklı yapay zeka uygulamaları oluşturmak için gereklidir. Portkey ile bu özellikleri uygulamak basittir:
 
-- **Fallbacks**: If a primary service or model fails, Portkey will automatically switch to a backup model.
-- **Retries**: If a request fails, Portkey can be configured to retry the request multiple times.
+- **Yedeklemeler (Fallbacks)**: Birincil servis veya model başarısız olursa, Portkey otomatik olarak bir yedek modele geçecektir.
+- **Yeniden Denemeler (Retries)**: Bir istek başarısız olursa, Portkey isteği birden fazla kez yeniden deneyecek şekilde yapılandırılabilir.
 
-Below, we demonstrate how to set up fallbacks and retries using Portkey:
+Aşağıda, Portkey kullanarak yedeklemelerin ve yeniden denemelerin nasıl kurulacağını gösteriyoruz:
 
-```
+```python
 portkey_client = Portkey(mode="fallback")
 messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="What can you do?"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Neler yapabilirsin?"),
 ]
 
 
@@ -275,29 +275,29 @@ llm2 = pk.LLMOptions(
 portkey_client.add_llms(llm_params=[llm1, llm2])
 
 
-print("Testing Fallback & Retry functionality:")
+print("Yedekleme (Fallback) & Yeniden Deneme (Retry) işlevselliği test ediliyor:")
 response = portkey_client.chat(messages)
 print(response)
 ```
 
-#### **⚖️ Implementing Load Balancing with Portkey**
+#### **⚖️ Portkey ile Yük Dengelemenin (Load Balancing) Uygulanması**
 
-Load balancing ensures that incoming requests are efficiently distributed among multiple models. This not only enhances the performance but also provides redundancy in case one model fails.
+Yük dengeleme, gelen isteklerin birden fazla model arasında verimli bir şekilde dağıtılmasını sağlar. Bu sadece performansı artırmakla kalmaz, aynı zamanda bir modelin başarısız olması durumunda yedeklilik (redundancy) sağlar.
 
-With Portkey, implementing load balancing is simple. You need to:
+Portkey ile yük dengelemeyi uygulamak basittir. Şunları yapmanız gerekir:
 
-- Define the `weight` parameter for each LLM. This weight determines how requests are distributed among the LLMs.
-- Ensure that the sum of weights for all LLMs equals 1.
+- Her bir LLM için `weight` (ağırlık) parametresini tanımlayın. Bu ağırlık, isteklerin LLM'ler arasında nasıl dağıtılacağını belirler.
+- Tüm LLM'lerin ağırlıklarının toplamının 1 olduğundan emin olun.
 
-Here’s an example of setting up load balancing with Portkey:
+İşte Portkey ile yük dengeleme kurmaya dair bir örnek:
 
-```
+```python
 portkey_client = Portkey(mode="ab_test")
 
 
 messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="What can you do?"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Neler yapabilirsin?"),
 ]
 
 
@@ -320,18 +320,18 @@ llm2 = pk.LLMOptions(
 portkey_client.add_llms(llm_params=[llm1, llm2])
 
 
-print("Testing Loadbalance functionality:")
+print("Yük dengeleme (Loadbalance) işlevselliği test ediliyor:")
 response = portkey_client.chat(messages)
 print(response)
 ```
 
-#### **🧠 Implementing Semantic Caching with Portkey**
+#### **🧠 Portkey ile Anlamsal Önbelleğe Almanın (Semantic Caching) Uygulanması**
 
-Semantic caching is a smart caching mechanism that understands the context of a request. Instead of caching based solely on exact input matches, semantic caching identifies similar requests and serves cached results, reducing redundant requests and improving response times as well as saving money.
+Anlamsal önbelleğe alma, bir isteğin bağlamını anlayan akıllı bir önbellekleme mekanizmasıdır. Yalnızca tam girdi eşleşmelerine dayalı önbelleğe almak yerine, anlamsal önbelleğe alma benzer istekleri tanımlar ve önbelleğe alınmış sonuçları sunarak gereksiz istekleri azaltır, yanıt sürelerini iyileştirir ve para tasarrufu sağlar.
 
-Let’s see how to implement semantic caching with Portkey:
+Portkey ile anlamsal önbelleğe almanın nasıl uygulanacağını görelim:
 
-```
+```python
 import time
 
 
@@ -350,12 +350,12 @@ portkey_client.add_llms(openai_llm)
 
 
 current_messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="What are the ingredients of a pizza?"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Bir pizzanın malzemeleri nelerdir?"),
 ]
 
 
-print("Testing Portkey Semantic Cache:")
+print("Portkey Anlamsal Önbelleği Test Ediliyor:")
 
 
 start = time.time()
@@ -364,16 +364,16 @@ end = time.time() - start
 
 
 print(response)
-print(f"{'-'*50}\nServed in {end} seconds.\n{'-'*50}")
+print(f"{'-'*50}\n{end} saniyede sunuldu.\n{'-'*50}")
 
 
 new_messages = [
-    ChatMessage(role="system", content="You are a helpful assistant"),
-    ChatMessage(role="user", content="Ingredients of pizza"),
+    ChatMessage(role="system", content="Yardımsever bir asistansın"),
+    ChatMessage(role="user", content="Pizzanın malzemeleri"),
 ]
 
 
-print("Testing Portkey Semantic Cache:")
+print("Portkey Anlamsal Önbelleği Test Ediliyor:")
 
 
 start = time.time()
@@ -382,17 +382,20 @@ end = time.time() - start
 
 
 print(response)
-print(f"{'-'*50}\nServed in {end} seconds.\n{'-'*50}")
+print(f"{'-'*50}\n{end} saniyede sunuldu.\n{'-'*50}")
 ```
 
-Portkey’s cache supports two more cache-critical functions - Force Refresh and Age.
+Portkey'in önbelleği, önbellek açısından kritik iki fonksiyonu daha destekler - Zorla Yenileme (Force Refresh) ve Ömür (Age).
 
-`cache_force_refresh`: Force-send a request to your provider instead of serving it from a cache. `cache_age`: Decide the interval at which the cache store for this particular string should get automatically refreshed. The cache age is set in seconds.
 
-Here’s how you can use it:
+`cache_force_refresh`: Cevabı önbellekten sunmak yerine sağlayıcınıza zorla bir istek gönderir. `cache_age`: Bu belirli dize için önbellek deposunun otomatik olarak hangi aralıkla yenileneceğine karar verir. Önbellek ömrü saniye cinsinden ayarlanır.
 
-```
-# Setting the cache status as `semantic` and cache_age as 60s.
+
+İşte nasıl kullanabileceğiniz:
+
+
+```python
+# Önbellek durumunu `semantic` (anlamsal) ve cache_age'i (önbellek ömrü) 60 saniye olarak ayarlama.
 openai_llm = pk.LLMOptions(
     provider="openai",
     model="gpt-3.5-turbo",
@@ -402,13 +405,17 @@ openai_llm = pk.LLMOptions(
 )
 ```
 
-#### **🔬 Observability with Portkey**
 
-Having insight into your application’s behavior is paramount. Portkey’s observability features allow you to monitor, debug, and optimize your AI applications with ease. You can track each request, understand its journey, and segment them based on custom tags. This level of detail can help in identifying bottlenecks, optimizing costs, and enhancing the overall user experience.
+#### **🔬 Portkey ile Gözlemlenebilirlik (Observability)**
 
-Here’s how to set up observability with Portkey:
 
-```
+Uygulamanızın davranışına dair içgörüye sahip olmak çok önemlidir. Portkey'in gözlemlenebilirlik özellikleri, yapay zeka uygulamalarınızı kolaylıkla izlemenize, hata ayıklamanıza ve optimize etmenize olanak tanır. Her bir isteği takip edebilir, yolculuğunu anlayabilir ve özel etiketlere göre segmentlere ayırabilirsiniz. Bu detay düzeyi, darboğazları belirlemede, maliyetleri optimize etmede ve genel kullanıcı deneyimini iyileştirmede yardımcı olabilir.
+
+
+İşte Portkey ile gözlemlenebilirliğin nasıl kurulacağı:
+
+
+```python
 metadata = {
     "_environment": "production",
     "_prompt": "test",
@@ -435,71 +442,88 @@ openai_llm = pk.LLMOptions(
 portkey_client.add_llms(openai_llm)
 
 
-print("Testing Observability functionality:")
+print("Gözlemlenebilirlik (Observability) işlevselliği test ediliyor:")
 response = portkey_client.chat(messages)
 print(response)
 ```
 
-#### **🌉 Open Source AI Gateway**
 
-Portkey’s AI Gateway uses the [open source project Rubeus](https://github.com/portkey-ai/rubeus) internally. Rubeus powers features like interoperability of LLMs, load balancing, fallbacks, and acts as an intermediary, ensuring that your requests are processed optimally.
+#### **🌉 Açık Kaynak Yapay Zeka Ağ Geçidi (AI Gateway)**
 
-One of the advantages of using Portkey is its flexibility. You can easily customize its behavior, redirect requests to different providers, or even bypass logging to Portkey altogether.
 
-Here’s an example of customizing the behavior with Portkey:
+Portkey'in AI Gateway'i dahili olarak [açık kaynaklı Rubeus projesini](https://github.com/portkey-ai/rubeus) kullanır. Rubeus; LLM'lerin birlikte çalışabilirliği, yük dengeleme, yedeklemeler gibi özellikleri destekler ve isteklerinizin en iyi şekilde işlenmesini sağlayarak bir aracı görevi görür.
 
-```
+
+Portkey kullanmanın avantajlarından biri esnekliğidir. Davranışını kolayca özelleştirebilir, istekleri farklı sağlayıcılara yönlendirebilir ve hatta Portkey'e günlük kaydını tamamen atlayabilirsiniz.
+
+
+İşte Portkey ile davranışı özelleştirmeye dair bir örnek:
+
+
+```python
 portkey_client.base_url=None
 ```
 
-#### **📝 Feedback with Portkey**
 
-Continuous improvement is a cornerstone of AI. To ensure your models and applications evolve and serve users better, feedback is vital. Portkey’s Feedback API offers a straightforward way to gather weighted feedback from users, allowing you to refine and improve over time.
+#### **📝 Portkey ile Geri Bildirim (Feedback)**
 
-Here’s how to utilize the Feedback API with Portkey:
 
-Read more about [Feedback here](https://docs.portkey.ai/key-features/feedback-api).
+Sürekli iyileştirme, yapay zekanın temel taşıdır. Modellerinizin ve uygulamalarınızın gelişmesini ve kullanıcılara daha iyi hizmet vermesini sağlamak için geri bildirim hayati önem taşır. Portkey'in Geri Bildirim API'si, kullanıcılardan ağırlıklı geri bildirim toplamanın basit bir yolunu sunarak zaman içinde iyileştirmenize ve geliştirmenize olanak tanır.
 
-```
+
+İşte Portkey ile Geri Bildirim API'sinin nasıl kullanılacağı:
+
+
+[Geri bildirim (Feedback) hakkında buradan](https://docs.portkey.ai/key-features/feedback-api) daha fazla bilgi okuyun.
+
+
+```python
 import requests
 import json
 
 
-# Endpoint URL
+# Uç Nokta URL'si
 url = "https://api.portkey.ai/v1/feedback"
 
 
-# Headers
+# Başlıklar
 headers = {
     "x-portkey-api-key": os.environ.get("PORTKEY_API_KEY"),
     "Content-Type": "application/json",
 }
 
 
-# Data
+# Veri
 data = {"trace_id": "llamaindex_portkey", "value": 1}
 
 
-# Making the request
+# İstek yapma
 response = requests.post(url, headers=headers, data=json.dumps(data))
 
 
-# Print the response
+# Yanıtı yazdırma
 print(response.text)
 ```
 
-All the feedback with `weight` and `value` for each trace id is available on the Portkey dashboard:
 
-![Feedback](https://portkey.ai/blog/content/images/2023/09/feedback.png)
+Her bir izleme kimliği (trace id) için `weight` (ağırlık) ve `value` (değer) içeren tüm geri bildirimler Portkey panosunda mevcuttur:
 
-#### **✅ Conclusion**
 
-Integrating Portkey with Llamaindex simplifies the process of building robust and resilient AI applications. With features like semantic caching, observability, load balancing, feedback, and fallbacks, you can ensure optimal performance and continuous improvement.
+![Geri Bildirim](https://portkey.ai/blog/content/images/2023/09/feedback.png)
 
-By following this guide, you’ve set up and tested the Portkey integration with Llamaindex. As you continue to build and deploy AI applications, remember to leverage the full potential of this integration!
 
-For further assistance or questions, reach out to the developers ➡️\
+#### **✅ Sonuç**
+
+
+Portkey'i LlamaIndex ile entegre etmek, sağlam ve dayanıklı yapay zeka uygulamaları oluşturma sürecini basitleştirir. Anlamsal önbelleğe alma, gözlemlenebilirlik, yük dengeleme, geri bildirim ve yedeklemeler gibi özelliklerle optimum performans ve sürekli iyileştirme sağlayabilirsiniz.
+
+
+Bu kılavuzu takip ederek, Portkey entegrasyonunu LlamaIndex ile kurdunuz ve test ettiniz. Yapay zeka uygulamaları oluşturmaya ve dağıtmaya devam ederken, bu entegrasyonun tüm potansiyelinden yararlanmayı unutmayın!
+
+
+Daha fazla yardım veya sorularınız için geliştiricilere ulaşın ➡️\
 [![Twitter](https://img.shields.io/twitter/follow/portkeyai?style=social\&logo=twitter)](https://twitter.com/intent/follow?screen_name=portkeyai)
 
-Join our community of practitioners putting LLMs into production ➡️\
+
+Yapay zeka modellerini üretim ortamına taşıyan uygulayıcılar topluluğumuza katılın ➡️\
 [![Discord](https://img.shields.io/discord/1143393887742861333?logo=discord)](https://discord.gg/sDk9JaNfK8)
