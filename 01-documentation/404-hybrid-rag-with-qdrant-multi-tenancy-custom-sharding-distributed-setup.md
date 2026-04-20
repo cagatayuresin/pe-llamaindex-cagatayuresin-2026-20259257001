@@ -1,36 +1,36 @@
-# Hybrid RAG with Qdrant: multi-tenancy, custom sharding, distributed setup
-
 ---
-title: Hybrid RAG with Qdrant: multi-tenancy, custom sharding, distributed setup
- | LlamaIndex OSS Documentation
+title: Qdrant ile Hibrit RAG - çoklu kiralacı (multi-tenancy), özel parçalama (custom sharding), dağıtık kurulum
+ | LlamaIndex OSS Belgeleri
 ---
 
-## What you’ll build
+# Qdrant ile Hibrit RAG: çoklu kiralacı (multi-tenancy), özel parçalama (custom sharding), dağıtık kurulum
 
-This notebook implements a production-style Hybrid RAG on Qdrant using LlamaIndex, designed for multitenancy and scale-out via custom sharding.
+## Neler oluşturacaksınız
 
-- Hybrid search: dense embeddings + sparse BM25 for higher recall and precision.
-- Multitenancy: isolate tenants using payload filters and shard routing.
-- Custom sharding: keep each tenant local for performance and cost efficiency.
-- Distributed Qdrant: multi-node setup with replication for high availability and throughput.
+Bu not defteri, çoklu kiralacı (multitenancy) ve özel parçalama (custom sharding) yoluyla dışa doğru ölçeklendirme için tasarlanmış LlamaIndex kullanarak Qdrant üzerinde üretim (production) tarzı bir Hibrit RAG uygular.
 
-This notebook walks through an end to end Retrieval Augmented Generation workflow that uses Qdrant as a distributed hybrid search backend and LlamaIndex as the orchestration layer. You will build a tenant aware RAG that combines dense vectors with sparse signals, you will isolate data per tenant with filters, and you will route data and queries with a custom shard key for scale.
+- Hibrit arama: daha yüksek geri çağırma (recall) ve kesinlik (precision) için yoğun (dense) gömmeler + seyrek (sparse) BM25.
+- Çoklu kiralacı yapısı: yük algılama filtreleri (payload filters) ve parça yönlendirme (shard routing) kullanılarak kiracıları (tenants) izole eder.
+- Özel parçalama: performans ve maliyet verimliliği için her bir kiracıyı yerel düzeyde tutar.
+- Dağıtık Qdrant: yüksek bulunabilirlik (high availability) ve işlem hacmi (throughput) için replikasyona (replication) sahip çok düğümlü (multi-node) kurulum.
 
-## Install dependencies
+Bu not defteri, dağıtık bir hibrit arama arka ucu olarak Qdrant'ı ve orkestrasyon katmanı olarak LlamaIndex'i kullanan uçtan uca (end-to-end) bir Retrieval Augmented Generation (Erişim Artırılmış Üretim) iş akışını adım adım gösterir. Yoğun (dense) vektörleri seyrek sinyallerle (sparse signals) birleştiren, kiracıya duyarlı bir RAG oluşturacaksınız, filtrelerle kiracı başına verileri izole edeceksiniz ve ölçeklendirme için özel bir parça anahtarı (shard key) ile verileri ve sorguları yönlendireceksiniz.
 
-### About the dependencies
+## Bağımlılıkları kurun
 
-- llama-index: orchestration layer for ingestion, indexing, and retrieval.
-- llama-index-vector-stores-qdrant: Qdrant integration with hybrid support.
-- fastembed: lightweight CPU-friendly embedding/sparse models
+### Bağımlılıklar hakkında
 
-```
+- llama-index: Veri alımı (ingestion), indeksleme ve geri getirme (retrieval) işlemleri için orkestrasyon katmanı.
+- llama-index-vector-stores-qdrant: Hibrit destekli Qdrant entegrasyonu.
+- fastembed: CPU dostu hafif gömme(embedding)/seyrek(sparse) modelleri
+
+```bash
 %pip install -U llama-index llama-index-vector-stores-qdrant fastembed
 ```
 
-Make sure you have a distributed Qdrant cluster up and running. Here is a `compose.yaml` file:
+Sisteminizde çalışır durumda olan dağıtık bir Qdrant kümeniz olduğundan emin olun. İşte bir örnek `compose.yaml` dosyası:
 
-```
+```yaml
 services:
   qdrant_primary:
     image: "qdrant/qdrant:latest"
@@ -48,14 +48,14 @@ services:
     restart: always
 ```
 
-## Imports and global settings
+## İçe Aktarmalar (Imports) ve Genel Ayarlar
 
-### Settings and connectivity
+### Ayarlar ve bağlantı
 
-- Embeddings: `FastEmbedEmbedding('BAAI/bge-base-en-v1.5')` is a compact, high-quality baseline.
-- Connection: `QDRANT_URL` defaults to an HTTP endpoint; set `QDRANT_API_KEY` for secured/cloud setups.
+- Gömmeler (Embeddings): `FastEmbedEmbedding('BAAI/bge-base-en-v1.5')` kompakt, yüksek kaliteli bir temel modeldir (baseline).
+- Bağlantı: `QDRANT_URL` varsayılan olarak bir HTTP uç noktasına ayarlıdır; güvenli/bulut (secured/cloud) yapılandırmalar için `QDRANT_API_KEY` değişkenini ayarlayın.
 
-```
+```python
 import os
 
 
@@ -73,11 +73,11 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
 
 
-# Embeddings, small and fast
+# Gömme Modelleri, küçük ve hızlı
 Settings.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-base-en-v1.5")
 
 
-# Qdrant connection, local by default, set QDRANT_URL and QDRANT_API_KEY for cloud
+# Qdrant bağlantısı, varsayılan olarak yereldir (local), bulut için QDRANT_URL ve QDRANT_API_KEY'i ayarlayın.
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
@@ -89,23 +89,23 @@ aclient: AsyncQdrantClient = AsyncQdrantClient(
 COLLECTION = "hybrid_rag_multitenant_sharding_demo"
 ```
 
-## Create distributed-ready collection
+## Dağıtıma hazır bir koleksiyon oluşturun
 
-### Configure dual-vector schema (dense + sparse)
+### Çift vektörlü şemayı (yoğun + seyrek) yapılandırın
 
-- Define vector field names: `dense` for embeddings and `sparse` for BM25‑style signals.
+- Vektör alanı (vector field) adlarını tanımlayın: Gömmeler için `dense` ve BM25 tarzı sinyaller için `sparse` kullanın.
 
-- Dense config:
+- Yoğun yapılandırma (Dense config):
 
-  - Determine embedding dimensionality at runtime by probing `Settings.embed_model` (avoids hardcoding).
-  - Use cosine distance for semantic similarity.
+  - Gömme işleminin boyutunu sabit kodlama (hardcoding) yapmaktan kaçınarak, çalışma zamanında `Settings.embed_model` yöntemini yoklayarak (probing) belirleyin.
+  - Anlamsal benzerlik (semantic similarity) işlemleri için kosinüs mesafesini (cosine distance) kullanın.
 
-- Sparse config:
-  - Enable an in‑memory sparse index (`on_disk=False`) to support hybrid scoring.
+- Seyrek yapılandırma (Sparse config):
+  - Hibrit puanlama yeteneklerini desteklemek için bellek içi bir seyrek indeks (in-memory sparse index) etkinleştirin (`on_disk=False`).
 
-- These settings establish the collection’s dual‑index layout used later by QdrantVectorStore for hybrid retrieval.
+- Bu ayarlar, QdrantVectorStore tarafından hibrit vektör çağrımı/getirimi için daha sonra kullanılacak olan koleksiyonun çift indeksli yapısını oluşturur.
 
-```
+```python
 dense_vector_name = "dense"
 dense_config = models.VectorParams(
     size=len(Settings.embed_model.get_text_embedding("probe")),
@@ -117,13 +117,13 @@ sparse_config = models.SparseVectorParams(
 )
 ```
 
-### Shard keys and selector contract
+### Parça anahtarları (Shard keys) ve seçici sözleşmesi (selector contract)
 
-- `shard_keys`: \[‘tenant\_a’, ‘tenant\_b’] — predefined partitions used with custom sharding to keep each tenant local.
-- `payload_indexes`: keyword index on `tenant_id` to accelerate filter-based queries.
-- `shard_key_selector_fn(tenant_id) -> tenant_id`: returns the shard key used for both writes and reads.
+- `shard_keys`: \[‘tenant\_a’, ‘tenant\_b’] — Her bir kiracıyı yerel seviyelerde muhafaza etmek için özel parçalama (custom sharding) işleminde kullanılan önceden tanımlanmış bölümler.
+- `payload_indexes`: Filtre tabanlı sorgu süreçlerini hızlandırmak için `tenant_id` bazlı anahtar kelime indeksi (keyword index).
+- `shard_key_selector_fn(tenant_id) -> tenant_id`: Hem yazma hem de okuma işlemleri için kullanılan parça anahtarını (shard key) döndürür.
 
-```
+```python
 shard_keys = ["tenant_a", "tenant_b"]
 payload_indexes = [
     {
@@ -139,27 +139,27 @@ def shard_key_selector_fn(tenant_id: str) -> models.ShardKeySelector:
     return tenant_id
 ```
 
-### Initialize hybrid Qdrant store with custom sharding
+### Özel parçalama (custom sharding) içeren hibrit Qdrant deposunu (store) başlatın
 
-This step creates or attaches to the collection named in `COLLECTION` and configures a dual‑vector hybrid store:
+Bu adım, `COLLECTION` değişkeni içindeki koleksiyonu yaratır veya ona bağlanır. İki vektörlü hibrit depoyu ise şöyle yapılandırır:
 
-- Hybrid search: `enable_hybrid=True` with `dense_vector_name='dense'` and `sparse_vector_name='sparse'`.
+- Hibrit arama: `dense_vector_name='dense'` ve `sparse_vector_name='sparse'` yapıları eşliğinde `enable_hybrid=True`.
 
-- Dense config: `dense_config` uses cosine distance and derives size from `Settings.embed_model`.
+- Yoğun konfigürasyon: `dense_config` değişkeni kosinüs uzaklığını kullanır ve verilerin boyutunu `Settings.embed_model` ile belirler.
 
-- Sparse config: `sparse_config` enables an in‑memory sparse index; `fastembed_sparse_model='Qdrant/bm25'` supplies BM25‑style signals.
+- Seyrek konfigürasyon: `sparse_config` bellek üzerinde bir indeks açar; `fastembed_sparse_model='Qdrant/bm25'` ise BM25 tarzı sinyalleri işleme alır.
 
-- Distributed topology:
+- Dağıtık (Distributed) topoloji:
 
-  - `sharding_method=Custom` with `shard_keys=['tenant_a','tenant_b']`.
-  - `shard_key_selector_fn(tenant_id) -> tenant_id` routes both writes and reads.
-  - `shard_number=6`, `replication_factor=2` for scale and High availability.
+  - `shard_keys=['tenant_a','tenant_b']` kullanılarak `sharding_method=Custom`.
+  - `shard_key_selector_fn(tenant_id) -> tenant_id` mekanizması işlemleri ve sorguları doğru yönlendirir.
+  - Ölçeklendirme ve 'Yüksek Bulunabilirlik' (HA) için `shard_number=6`, `replication_factor=2`.
 
-- Payload index: `payload_indexes` accelerates filtering on `tenant_id`.
+- Yük indeksi: `payload_indexes` değişkeni, filtrelemeyi `tenant_id` temelinde hızlandırmakla görevlidir.
 
-Idempotent behavior: the vector store will create the collection if missing and reuse it on subsequent runs.
+Eşkuvvetlilik (Idempotent) karakteristiği: Vektör deposu mevcut değilse yeni bir tane yaratacak, bir sonraki işlemlerde aynısını kullanacaktır.
 
-```
+```python
 vector_store = QdrantVectorStore(
     collection_name=COLLECTION,
     client=client,
@@ -179,31 +179,31 @@ vector_store = QdrantVectorStore(
 )
 ```
 
-## Prepare multi-tenant dataset
+## Çok kiracılı veri kümesini hazırlayın
 
-We create two tenants with small document sets. Each Document carries tenant\_id, tags, and a doc\_id.
+Birbiri içerisine giren küçük gruplar halindeki belge setleri ile iki ayrı kiracı grubu meydana getiriyoruz. Her `Document` sınıfı bir tenant\_id, etiket (tags) listesi, ve bir tanımlayıcı belge (doc\_id) içerir.
 
-### Dataset design and extensibility
+### Veri kümesi tasarımı (Dataset design) ve genişletilebilirlik (extensibility)
 
-We simulate two tenants with a few short documents each. Every `Document` carries:
+Her bir metin bloğu için, birbirinden izole ve kısa birer parçadan oluşan ve iki ayrı bölüm (kiracı grubu) barındıran bir modeli simüle ediyoruz. Bu kapsamda `Document` şunları taşır:
 
-- `tenant_id` for isolation and shard routing,
-- `tags` for quick filtering and debugging,
-- `text` content used for dense/sparse indexing.
+- Bölme yönlendirmesi (shard routing) ve izolasyon için `tenant_id`,
+- Çözümleme/Sorun giderme ile kolay filtreleme yapabilmek için `tags`,
+- Yoğun/Seyrek indeksleme süreçlerinde yer bulan içerikler için de `text` formatı kullanılır.
 
-```
+```python
 TENANT_DOCS: dict[str, list[Document]] = {
     "tenant_a": [
         Document(
-            text="Solar panels reduce electricity bills and carbon footprint",
+            text="Güneş panelleri, karbon ayakizini azaltır ve elektrik kullanım faturalarındaki masrafları düşürür",
             metadata={"tenant_id": "tenant_a", "tags": ["energy", "solar"]},
         ),
         Document(
-            text="Inverters convert DC power to AC for home appliances",
+            text="İnvertörler doğru akımı ev aletleri için alternatif bir sisteme dönüştürür",
             metadata={"tenant_id": "tenant_a", "tags": ["energy", "hardware"]},
         ),
         Document(
-            text="Net metering policies vary by region and utility provider",
+            text="Elektrik dağıtıcıların belirlediği fatura (Net metering policies) oranları bölgelere göre değişiklik arz eder",
             metadata={
                 "tenant_id": "tenant_a",
                 "tags": ["policy", "regulation"],
@@ -212,82 +212,82 @@ TENANT_DOCS: dict[str, list[Document]] = {
     ],
     "tenant_b": [
         Document(
-            text="Kubernetes orchestrates containers across a cluster",
+            text="Kubernetes clusterlar üzerinde iş konteynerlerini organize ve koordine eder",
             metadata={"tenant_id": "tenant_b", "tags": ["cloud", "k8s"]},
         ),
         Document(
-            text="Service meshes add observability and traffic management",
+            text="Servis kafesleri ile işlerin gözlemlenebilmesi ve çalışma trafiğinin kontrolü sağlanır",
             metadata={
                 "tenant_id": "tenant_b",
                 "tags": ["cloud", "networking"],
             },
         ),
         Document(
-            text="Helm charts package and deploy Kubernetes applications",
+            text="Helm şemaları kurgularınızdaki Kubernetes verilerini toplar ve deploy eder",
             metadata={"tenant_id": "tenant_b", "tags": ["cloud", "devops"]},
         ),
     ],
 }
 ```
 
-## Ingest with shard key for locality
+## Hedef bölge odaklı yollarla verilerinizi entegre edin (Ingest with shard key for locality)
 
-Here we embed text with the active Settings.embed\_model, then upsert each point with payload and a shard key. This keeps each tenant local to a shard group in a cluster.
+Etkin Settings.embed\_model metodolojisiyle (methodology) metin içeriğimizi uyumlu hale getiriyor ve bunu ilgili paylar ile (payload & shard key) Upsert işlemini yapıp, verileri kümeye işliyoruz. Sistem bu yöntemi izleyerek verilerin küme içindeki bir (tenant) shard (parça) bölümü ile lokal baz üzerinde eş değer olmasını temin eder.
 
-### Embedding strategy
+### Gömme stratejisi (Embedding strategy)
 
-- FastEmbed keeps this demo CPU-friendly. For production, consider a service (e.g., text-embedding-3-large or in-house model) and cache embeddings.
-- If you change the model, update `dense_config.size` to match and consider reindexing.
-- Avoid embedding on every run in notebooks; persist or cache to speed up iterations.
+- FastEmbed, bu test için işlemci (CPU) dostu yapıyı sağlar. Daha kurumsal kullanımlar göz önüne alındığında, bir hizmet planlayıcısını (ör. text-embedding-3-large modelini kullanmak) veya kendi üretiminizi gerçekleştirdiğiniz yapıyı hayata geçirip; daha sonra gömme çıktılarınızı ön bellekte tasnif etmeniz önerilir (cache).
+- Sisteminize entegre edip kullandığınız modeli (gömmeleri) değiştirirseniz, sistem modeline denklik getirmesini sağlamak amacıyla `dense_config.size` komutundaki girdileri güncellemeli ve re-index yapılarını tekrar incelemelisiniz.
+- Notebook üzerindeki işlemler boyunca gömme tasniflerinizi sürekli biçimde çalıştırmaktan genel itibarıyla kaçının ve bunu daha çok birleştirilmiş verileri (persist) bellek üzerinden (cache) okuyarak hızını artırmak adına dizayn edin.
 
-```
+```python
 def create_dense_embeddings(docs: list[Document]) -> list[Document]:
     for doc in docs:
         doc.embedding = Settings.embed_model.get_text_embedding(doc.text)
     return docs
 ```
 
-### Ingestion flow and locality guarantees
+### Veri alım süreci (Ingestion flow) ve bölgesel garantiler
 
-- We embed each doc with the configured embedding model (dense) and rely on the vector store to build the sparse representation.
-- Writes use `shard_identifier=tenant_id`, ensuring documents live on the intended shard group.
+- Sisteme eklediğimiz (configured) her bir gömme blokajını (embedding block) metotlar üzerinden (dense ile belirterek) düzenler ve Vector Store komutları (sparse representation) sistem kütüphaneleriyle ile işlemesini kurarız.
+- Yazılımsal süreç, ilgili belgelerin `shard_identifier=tenant_id` kod yapısıyla bir hedef veya bölümü dikkate (shard groups) alarak işleme alır.
 
-Tip: For large batches, prefer the async ingestion APIs and chunk documents for backpressure control.
+Not (Tip): Yoğun bilgi alımları esnasında async ingestion mantığını oluşturmayı göz önüne alın (ters akışlı (backpressure control) durumunu aşabilmek için bilgi süzgeci tasnif blokajları ile verilerinizi işleyin).
 
-```
+```python
 for tenant_id, docs in TENANT_DOCS.items():
     docs = create_dense_embeddings(docs)
     await vector_store.async_add(docs, shard_identifier=tenant_id)
 ```
 
-### Index wrapping and reusability
+### Index sarmalama işlemleri ve yeniden kullanımı (reusability)
 
-`StorageContext.from_defaults(vector_store=vector_store)` binds the Qdrant collection to LlamaIndex’s `VectorStoreIndex` without re-ingesting data.
+`StorageContext.from_defaults(vector_store=vector_store)` komutu, sistemde veri tabanını (re-ingesting methodu ile) tekrar işlemden geçirmeden evvel Qdrant veri indeksindeki LlamaIndex’s `VectorStoreIndex` bağını yürürlüğe alır (kurar).
 
-Benefits:
+Faydaları:
 
-- Reuse the same physical collection for multiple retrievers or query pipelines.
-- Swap retrieval modes (dense-only, sparse-only, hybrid) via retriever config, not data layout.
-- Keep ingestion concerns (sharding, replication) decoupled from application query logic.
+- Tekil parçacık sistemleri çerçevesindeki verileri aynı birleşik küme ile sorgu yapılarında yeniden organize edin.
+- Retriever modülünün kurgusunda arama işlemlerini (dense-only, sparse-only, hybrid yapılarını dikkate alan argümanlarla) veri tabanını değiştirmeksizin yapılandırın (retriever config ile kullanırsınız).
+- Sistem üzerine yazılmış komutlardan uygulama içindeki algoritmik yapının ayrışmasını (sharding-kopyalama) organize edin (Bunun için dış mimari ile sistem algısını birbirinden kopartmanız lazımdır).
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_vector_store(
     vector_store, storage_context=storage_context
 )
 ```
 
-## Multi-tenant retrieval
+## Çoklu Kiralacı Veri Araması (Multi-tenant retrieval)
 
-Use a tenant-scoped hybrid retriever and keep queries shard-local. You can also use metadata filters if you want to filter within the tenant’s data.
+Yerel verilerde bir etki alanı (tenant-scoped) seçerek, işleyiş süreçlerinizi spesifik yapıdaki kiralacıların (hybrid retriever formatıyla kısıtlanmış ortamlara) hedef rotasında işlem (shard-local ile) sağlayın. Sadece ilgili kullanıcılara ayrıştırılmış birim içerisinden verilerin sınırlarını korumak hedefli metadata (özel uzantılı veritabanlarındaki yapı) filtreleriyle işlem gerçekleştirebilirsiniz.
 
-### Retrieval tips for hybrid mode
+### Hibrit Arama (hybrid mode) için faydalı bilgiler
 
-- Set `vector_store_query_mode=HYBRID` to combine dense and sparse. Tune `similarity_top_k`, `sparse_top_k`, and `hybrid_top_k`.
-- Pass `vector_store_kwargs={"shard_identifier": tenant_id}` to keep queries within the tenant’s shard.
-- Add metadata filters (e.g., on `tenant_id` or `tags`) to further narrow candidates when needed.
+- Modeldeki yapıyı `vector_store_query_mode=HYBRID` diyerek yoğun ve seyrek modellerle kombine (bir araya getirmesini/birleştirmesini) olmasını dizayn ediniz. Akabinde, `similarity_top_k`, `sparse_top_k` ile `hybrid_top_k` modifikasyonlarını sağlayın (Tune ile test yapın).
+- Argüman yapısını kullanan modüller esnasında komutlarınızın ilgili kiracı/kullanıcının parçalama alanına (tenant's shard) iletildiğinden tam olarak emin olmalısınız. `vector_store_kwargs={"shard_identifier": tenant_id}`
+- Arama modülünün kurgularındaki hedefleri (gerekir ise `tenant_id` veya `tags` gibi parametrelerle), meta alanlarından veri getirimi ve filtrelemelerini güçlendirerek ek işlemler tanımlayın.
 
-```
+```python
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 
@@ -297,7 +297,7 @@ from llama_index.core.vector_stores.types import VectorStoreQueryMode
 def create_retriever_for_tenant(tenant_id: str) -> VectorIndexRetriever:
     if tenant_id not in shard_keys:
         raise ValueError(
-            f"Unknown tenant_id: {tenant_id}. Expected one of {shard_keys}"
+            f"Bilinmeyen (Unknown) tenant_id: {tenant_id}. Şu değerlerden biri bekleniyordu: {shard_keys}"
         )
     return VectorIndexRetriever(
         index=index,
@@ -319,7 +319,7 @@ query = "manage microservices traffic and observability"
 results = retriever.retrieve(query)
 
 
-print(f"Tenant: {tenant_id} | Query: {query}")
+print(f"Kiracı (Tenant): {tenant_id} | Sorgu (Query): {query}")
 for i, r in enumerate(results, 1):
     meta = r.node.metadata
     print(
@@ -327,14 +327,14 @@ for i, r in enumerate(results, 1):
     )
 ```
 
-```
-Tenant: tenant_b | Query: manage microservices traffic and observability
-1. score=4.6271 | tags=['cloud', 'networking'] | text=Service meshes add observability and traffic management
-2. score=0.1213 | tags=['cloud', 'k8s'] | text=Kubernetes orchestrates containers across a cluster
-3. score=0.0000 | tags=['cloud', 'devops'] | text=Helm charts package and deploy Kubernetes applications
+```bash
+Kiracı (Tenant): tenant_b | Sorgu (Query): manage microservices traffic and observability
+1. score=4.6271 | tags=['cloud', 'networking'] | text=Servis kafesleri ile işlerin gözlemlenebilmesi ve çalışma trafiğinin kontrolü sağlanır
+2. score=0.1213 | tags=['cloud', 'k8s'] | text=Kubernetes clusterlar üzerinde iş konteynerlerini organize ve koordine eder
+3. score=0.0000 | tags=['cloud', 'devops'] | text=Helm şemaları kurgularınızdaki Kubernetes verilerini toplar ve deploy eder
 ```
 
-### Interpreting results
+### Sonuçları yorumlama
 
-- The printout shows the hybrid score, tags (metadata), and snippet of the matched text.
-- Verify tenant isolation by switching `tenant_id` and observing that results come only from that tenant’s documents.
+- Yukarıdaki çıktı, hibrit puanını, etiketleri (meta veriler) ve eşleşen metnin önizlemesini/parçasını göstermektedir.
+- `tenant_id`'yi değiştirerek kiracı veya veritabanı yalıtımını doğrulayın (testi çalıştırın), zira sonuçların tek taraflı o veriye ulaşmasını kanıtlamak gereklidir.

@@ -1,15 +1,15 @@
 ---
-title: Qdrant Vector Store
- | LlamaIndex OSS Documentation
+title: Qdrant Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-#### Creating a Qdrant client
+#### Bir Qdrant İstemcisi Oluşturma
 
-```
+```bash
 %pip install llama-index-vector-stores-qdrant llama-index-readers-file llama-index-embeddings-fastembed llama-index-llms-openai
 ```
 
-```
+```python
 import logging
 import sys
 import os
@@ -27,77 +27,77 @@ from llama_index.core import Settings
 Settings.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-base-en-v1.5")
 ```
 
-If running for the first, time, install the dependencies using:
+Eğer ilk kez çalıştırıyorsanız, şu komutları kullanarak bağımlılıkları yükleyin:
 
-```
+```bash
 !pip install -U qdrant_client fastembed
 ```
 
-Set your OpenAI key for authenticating the LLM
+LLM kimlik doğrulaması (authentication) için OpenAI anahtarınızı ayarlayın
 
-Follow these set the OpenAI API key to the OPENAI\_API\_KEY environment variable -
+OpenAI API anahtarını OPENAI\_API\_KEY ortam değişkenine (environment variable) ayarlamak için bunları takip edin:
 
-1. Using Terminal
+1. Terminal Kullanarak
 
-```
-export OPENAI_API_KEY=your_api_key_here
-```
-
-2. Using IPython Magic Command in Jupyter Notebook
-
-```
-%env OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+```bash
+export OPENAI_API_KEY=api_anahtarinizi_buraya_yazin
 ```
 
-3. Using Python Script
+2. Jupyter Notebook'ta IPython Sihirli Komutunu (Magic Command) Kullanarak
 
+```bash
+%env OPENAI_API_KEY=<API_ANAHTARINIZ>
 ```
+
+3. Python Betiği (Script) Kullanarak
+
+```python
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "your_api_key_here"
+os.environ["OPENAI_API_KEY"] = "api_anahtarinizi_buraya_yazin"
 ```
 
-Note: It’s generally recommended to set sensitive information like API keys as environment variables rather than hardcoding them into scripts.
+Not: Genel olarak API anahtarları gibi hassas bilgilerin betiklere (script) sabit olarak kodlanması yerine ortam değişkenleri (environment variables) olarak ayarlanması önerilir.
 
-```
+```python
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-#### Load the documents
+#### Belgeleri yükleyin
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-#### Build the VectorStoreIndex
+#### VectorStoreIndex'i (Vektör Deposu İndeksi) Oluşturun
 
-```
+```python
 client = qdrant_client.QdrantClient(
-    # you can use :memory: mode for fast and light-weight experiments,
-    # it does not require to have Qdrant deployed anywhere
-    # but requires qdrant-client >= 1.1.1
+    # Hızlı ve hafif denemeler için :memory: modunu kullanabilirsiniz,
+    # bu mod, Qdrant'ın herhangi bir yere dağıtılmasını gerektirmez
+    # ancak qdrant-client >= 1.1.1 sürümüne ihtiyaç duyar
     # location=":memory:"
-    # otherwise set Qdrant instance address with:
-    # url="http://<host>:<port>"
-    # otherwise set Qdrant instance with host and port:
+    # aksi takdirde Qdrant örnek (instance) adresini url ile ayarlayın:
+    # url="http://<ana_bilgisayar>:<baglanti_noktasi>"
+    # aksi takdirde ana bilgisayar (host) ve bağlantı noktası (port) ile ayarlayın:
     host="localhost",
     port=6333
-    # set API KEY for Qdrant Cloud
+    # Qdrant Cloud için API ANAHTARINI ayarlayın
     # api_key="<qdrant-api-key>",
 )
 ```
 
-```
+```python
 vector_store = QdrantVectorStore(client=client, collection_name="paul_graham")
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
@@ -106,39 +106,39 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author worked on writing and programming before college.**
+**Yazar üniversiteden önce yazma ve programlama üzerine çalıştı.**
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
 response = query_engine.query(
-    "What did the author do after his time at Viaweb?"
+    "Yazar, Viaweb'deki görevinden sonra ne yaptı?"
 )
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author arranged to do freelance work for a group that did projects for customers after his time at Viaweb.**
+**Yazar, Viaweb'deki zamanından sonra müşteriler için projeler yürüten bir grup adına serbest (freelance) çalışmak üzere anlaşmalar yaptı.**
 
-#### Build the VectorStoreIndex asynchronously
+#### Asenkron (Asynchronously) VectorStoreIndex Oluşturma
 
-```
-# To connect to the same event-loop,
-# allows async events to run on notebook
+```python
+# Aynı olay döngüsüne (event-loop) bağlanmak için,
+# notebook'ta asenkron olayların (async events) çalışmasına izin verir
 
 
 import nest_asyncio
@@ -147,20 +147,20 @@ import nest_asyncio
 nest_asyncio.apply()
 ```
 
-```
+```python
 aclient = qdrant_client.AsyncQdrantClient(
-    # you can use :memory: mode for fast and light-weight experiments,
-    # it does not require to have Qdrant deployed anywhere
-    # but requires qdrant-client >= 1.1.1
+    # Hızlı ve hafif denemeler için :memory: modunu kullanabilirsiniz,
+    # bu mod, Qdrant'ın herhangi bir yere dağıtılmasını gerektirmez
+    # ancak qdrant-client >= 1.1.1 sürümüne ihtiyaç duyar
     location=":memory:"
-    # otherwise set Qdrant instance address with:
-    # uri="http://<host>:<port>"
-    # set API KEY for Qdrant Cloud
+    # aksi takdirde Qdrant örnek (instance) adresini şununla ayarlayın:
+    # uri="http://<ana_bilgisayar>:<baglanti_noktasi>"
+    # Qdrant Cloud için API ANAHTARINI ayarlayın
     # api_key="<qdrant-api-key>",
 )
 ```
 
-```
+```python
 vector_store = QdrantVectorStore(
     collection_name="paul_graham",
     client=client,
@@ -175,38 +175,38 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Async Query Index
+#### Asenkron İndeks Sorgulama (Async Query Index)
 
-```
+```python
 query_engine = index.as_query_engine(use_async=True)
-response = await query_engine.aquery("What did the author do growing up?")
+response = await query_engine.aquery("Yazar büyürken neler yaptı?")
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author worked on writing short stories and programming, particularly on an IBM 1401 computer in 9th grade using an early version of Fortran. Later, the author transitioned to working on microcomputers, starting with a TRS-80 in about 1980, where they wrote simple games, programs, and a word processor.**
+**Yazar; kısa hikayeler yazdı ve programlama üzerinde çalıştı, özellikle 9. sınıfta Fortran'ın eski bir sürümünü kullanarak bir IBM 1401 bilgisayarında programlar yazdı. Daha sonra, 1980 yılı civarında TRS-80 ile mikro bilgisayarlara geçiş yaptı, basit oyunlar, programlar ve bir kelime işlemci (word processor) yazdı.**
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(use_async=True)
 response = await query_engine.aquery(
-    "What did the author do after his time at Viaweb?"
+    "Yazar Viaweb'deki görevinden sonra ne yaptı?"
 )
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author went on to co-found Y Combinator after his time at Viaweb.**
+**Yazar, Viaweb'deki zamanının ardından Y Combinator'ın kurucu ortaklarından (co-found) biri oldu.**
 
-## Hybrid Search
+## Hibrit Arama (Hybrid Search)
 
-You can enable hybrid search when creating an qdrant index. Here, we use Qdrant’s BM25 capabilities to quickly create a sparse and dense index for hybrid retrieval.
+Bir qdrant indeksi oluştururken hibrit aramayı etkinleştirebilirsiniz. Burada, hibrit erişim için hızlı bir şekilde seyrek (sparse) ve yoğun (dense) bir indeks oluşturmak amacıyla Qdrant'ın BM25 özelliklerinden yararlanıyoruz.
 
-```
+```python
 from qdrant_client import QdrantClient, AsyncQdrantClient
 from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext
@@ -232,7 +232,7 @@ index = VectorStoreIndex.from_documents(
 )
 
 
-# retrieve 2 sparse, 2 dense, and filter down to 3 total hybrid results
+# 2 seyrek, 2 yoğun veri çekin ve toplamda 3 hibrit sonuca filtreleyin
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid",
     sparse_top_k=2,
@@ -241,18 +241,18 @@ query_engine = index.as_query_engine(
 )
 
 
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-## Saving and Loading
+## Kaydetme ve Yükleme
 
-To restore an index, in most cases, you can just restore using the vector store object itself. The index is saved automatically by Qdrant.
+Bir indeksi geri yüklemek için çoğu durumda doğrudan vektör deposu (vector store) nesnesinin kendisini kullanarak geri yükleme yapabilirsiniz. İndeks, Qdrant tarafından otomatik olarak kaydedilir.
 
-```
+```python
 loaded_index = VectorStoreIndex.from_vector_store(
     vector_store,
-    # Embedding model should match the original embedding model
+    # Gömme modeli (Embedding model), orijinal gömme modeliyle eşleşmelidir
     # embed_model=Settings.embed_model
 )
 ```

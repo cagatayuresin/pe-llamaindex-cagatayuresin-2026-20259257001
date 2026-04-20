@@ -1,46 +1,46 @@
-# Hybrid Search with Qdrant BM42
-
 ---
-title: Hybrid Search with Qdrant BM42
- | LlamaIndex OSS Documentation
+title: Qdrant BM42 ile Hibrit Arama
+ | LlamaIndex OSS Belgeleri
 ---
 
-Qdrant recently released a new lightweight approach to sparse embeddings, [BM42](https://qdrant.tech/articles/bm42/).
+# Qdrant BM42 ile Hibrit Arama
 
-In this notebook, we walk through how to use BM42 with llama-index, for effecient hybrid search.
+Qdrant yakın zamanda seyrek gömmelere (sparse embeddings) yönelik yeni ve hafif bir yaklaşım olan [BM42](https://qdrant.tech/articles/bm42/)'yi yayınladı.
 
-## Setup
+Bu not defterinde, verimli bir hibrit arama için BM42'nin llama-index ile nasıl kullanılacağını adım adım inceleyeceğiz.
 
-First, we need a few packages
+## Kurulum
+
+Öncelikle birkaç pakete ihtiyacımız var:
 
 - `llama-index`
 - `llama-index-vector-stores-qdrant`
-- `fastembed` or `fastembed-gpu`
+- `fastembed` veya `fastembed-gpu`
 
-`llama-index` will automatically run fastembed models on GPU if the provided libraries are installed. Check out their [full installation guide](https://qdrant.github.io/fastembed/examples/FastEmbed_GPU/).
+`llama-index`, gerekli kütüphaneler kuruluysa fastembed modellerini otomatik olarak GPU üzerinde çalıştıracaktır. Kapsamlı kurulum rehberlerini [buradan](https://qdrant.github.io/fastembed/examples/FastEmbed_GPU/) inceleyebilirsiniz.
 
-```
+```bash
 %pip install llama-index llama-index-vector-stores-qdrant fastembed
 ```
 
-## (Optional) Test the fastembed package
+## (İsteğe Bağlı) fastembed paketini test etme
 
-To confirm the installation worked (and also to confirm GPU usage, if used), we can run the following code.
+Kurulumun başarılı olduğunu onaylamak (ve kullanılıyorsa GPU kullanımını doğrulamak) için aşağıdaki kodu çalıştırabiliriz.
 
-This will first download (and cache) the model locally, and then embed it.
+Bu kod öncelikle modeli yerel olarak indirecek (ve önbelleğe alacak), ardından gömme (embedding) işlemini gerçekleştirecektir.
 
-```
+```python
 from fastembed import SparseTextEmbedding
 
 
 model = SparseTextEmbedding(
     model_name="Qdrant/bm42-all-minilm-l6-v2-attentions",
-    # if using fastembed-gpu with cuda+onnx installed
+    # cuda+onnx kurulu olan fastembed-gpu kullanılıyorsa
     # providers=["CudaExecutionProvider"],
 )
 
 
-embeddings = model.embed(["hello world", "goodbye world"])
+embeddings = model.embed(["merhaba dünya", "hoşça kal dünya"])
 
 
 indices, values = zip(
@@ -54,7 +54,7 @@ indices, values = zip(
 print(indices[0], values[0])
 ```
 
-```
+```bash
 Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]
 
 
@@ -63,31 +63,31 @@ Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]
 [613153351, 74040069] [0.3703993395381275, 0.3338314745830077]
 ```
 
-## Construct our Hybrid Index
+## Hibrit İndeksimizi Oluşturma
 
-In llama-index, we can construct a hybrid index in just a few lines of code.
+llama-index'te sadece birkaç satır kodla hibrit bir indeks oluşturabiliriz.
 
-If you’ve tried hybrid in the past with splade, you will notice that this is much faster!
+Geçmişte splade ile hibrit aramayı denediyseniz, bunun çok daha hızlı olduğunu fark edeceksiniz!
 
-### Loading Data
+### Veri Yükleme
 
-Here, we use `llama-parse` to read in the Llama2 paper! Using the JSON result mode, we can get detailed data about each page, including layout and images. For now, we will use the page numbers and text.
+Burada, Llama2 makalesini okumak için `llama-parse` kullanıyoruz! JSON sonuç modunu kullanarak, mizanpaj (layout) ve görseller dahil olmak üzere her sayfa hakkında detaylı veriler elde edebiliriz. Şimdilik sayfa numaralarını ve metni kullanacağız.
 
-You can get a free api key for `llama-parse` by visiting <https://cloud.llamaindex.ai>
+`llama-parse` için ücretsiz bir API anahtarını [https://cloud.llamaindex.ai](https://cloud.llamaindex.ai) adresini ziyaret ederek alabilirsiniz.
 
-```
+```bash
 !mkdir -p 'data/'
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
 ```
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 from llama_parse import LlamaParse
 from llama_index.core import Document
 
@@ -95,7 +95,7 @@ from llama_index.core import Document
 parser = LlamaParse(result_type="text", api_key="llx-...")
 
 
-# get per-page results, along with detailed layout info and metadata
+# Her sayfa için sonuçların yanı sıra detaylı mizanpaj bilgisini ve meta veriyi alın
 json_data = parser.get_json_result("data/llama2.pdf")
 
 
@@ -107,31 +107,31 @@ for document_json in json_data:
         )
 ```
 
-```
+```bash
 Started parsing the file under job_id cac11eca-4058-4a89-a94a-5603dea3d851
 ```
 
-### Construct the Index /w Qdrant
+### Qdrant ile İndeks Oluşturma
 
-With our nodes, we can construct our index with Qdrant and BM42!
+Düğümlerimizle birlikte, Qdrant ve BM42 kullanarak indeksimizi oluşturabiliriz!
 
-In this case, Qdrant is being hosted in a docker container.
+Bu senaryoda Qdrant bir docker konteynerı içinde barındırılacaktır.
 
-You can pull the latest:
+En son sürümü şu şekilde çekebilirsiniz:
 
-```
+```bash
 docker pull qdrant/qdrant
 ```
 
-And then to launch:
+Ve ardından başlatmak için:
 
-```
+```bash
 docker run -p 6333:6333 -p 6334:6334 \
     -v $(pwd)/qdrant_storage:/qdrant/storage:z \
     qdrant/qdrant
 ```
 
-```
+```python
 import qdrant_client
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 
@@ -140,7 +140,7 @@ client = qdrant_client.QdrantClient("http://localhost:6333")
 aclient = qdrant_client.AsyncQdrantClient("http://localhost:6333")
 
 
-# delete collection if it exists
+# Koleksiyon mevcutsa sil
 if client.collection_exists("llama2_bm42"):
     client.delete_collection("llama2_bm42")
 
@@ -153,11 +153,11 @@ vector_store = QdrantVectorStore(
 )
 ```
 
-```
-Both client and aclient are provided. If using `:memory:` mode, the data between clients is not synced.
+```bash
+Hem client (istemci) hem de aclient sağlanmıştır. `:memory:` modu kullanıldığında, istemciler arasındaki veri senkronize edilmez.
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.embeddings.openai import OpenAIEmbedding
 
@@ -165,7 +165,7 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     documents,
-    # our dense embedding model
+    # yoğun gömme (dense embedding) modelimiz
     embed_model=OpenAIEmbedding(
         model_name="text-embedding-3-small", api_key="sk-proj-..."
     ),
@@ -173,15 +173,15 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-As we can see, both the dense and sparse embeddings were generated super quickly!
+Gördüğümüz üzere, hem yoğun (dense) hem de seyrek (sparse) gömmeler süper hızlı bir şekilde oluşturuldu!
 
-Even though the sparse model is running locally on CPU, its very small and fast.
+Seyrek model (sparse model) yerel bir CPU üzerinde çalışıyor olmasına rağmen çok küçük ve hızlıdır.
 
-## Test out the Index
+## İndeksi Test Etme
 
-Using the powers of sparse embeddings, we can query for some very specific facts, and get the correct data.
+Seyrek gömmelerin gücünü kullanarak çok özel ve spesifik gerçekleri sorgulayabilir ve doğru verileri elde edebiliriz.
 
-```
+```python
 from llama_index.llms.openai import OpenAI
 
 
@@ -191,96 +191,96 @@ chat_engine = index.as_chat_engine(
 )
 ```
 
-```
-response = chat_engine.chat("What training hardware was used for Llama2?")
+```python
+response = chat_engine.chat("Llama2 için hangi eğitim donanımı kullanıldı?")
 print(str(response))
 ```
 
+```bash
+Llama 2 için eğitim donanımı olarak Meta'nın Araştırma Süper Kümesi (Research Super Cluster - RSC) ve dahili üretim kümeleri yer aldı. Her iki küme de NVIDIA A100 GPU'larını kullandı. Bu kümeler arasında iki önemli fark vardı:
+
+
+1. **Bağlantı Türü (Interconnect Type)**:
+   - RSC, NVIDIA Quantum InfiniBand kullandı.
+   - Dahili üretim kümesi, tüketici sınıfı (commodity) Ethernet anahtarlarına dayanan bir RoCE (RDMA over Converged Ethernet) çözümü kullandı.
+
+
+2. **GPU Başına Güç Tüketim Sınırı**:
+   - RSC'de GPU başına güç tüketimi üst sınırı 400W idi.
+   - Dahili üretim kümesinde GPU başına güç tüketimi üst sınırı 350W idi.
+
+
+Bu kurulum, bahsi geçen farklı bağlantı türlerinin büyük ölçekli eğitime olan uygunluğunu karşılaştırmaya olanak tanıdı.
 ```
-The training hardware for Llama 2 included Meta’s Research Super Cluster (RSC) and internal production clusters. Both clusters utilized NVIDIA A100 GPUs. There were two key differences between these clusters:
 
-
-1. **Interconnect Type**:
-   - RSC used NVIDIA Quantum InfiniBand.
-   - The internal production cluster used a RoCE (RDMA over Converged Ethernet) solution based on commodity Ethernet switches.
-
-
-2. **Per-GPU Power Consumption Cap**:
-   - RSC had a power consumption cap of 400W per GPU.
-   - The internal production cluster had a power consumption cap of 350W per GPU.
-
-
-This setup allowed for a comparison of the suitability of these different types of interconnects for large-scale training.
-```
-
-```
-response = chat_engine.chat("What is the main idea of Llama2?")
+```python
+response = chat_engine.chat("Llama2'nin ana fikri nedir?")
 print(str(response))
 ```
 
+```bash
+Llama 2'nin ana fikri, orijinal Llama modelinin, araştırma ve ticari kullanımlar da dahil olmak üzere çeşitli uygulamalar için daha verimli, ölçeklenebilir ve güvenli olacak şekilde tasarlanmış, güncellenmiş ve geliştirilmiş bir sürümünü sunmaktır. Llama 2'nin temel yönleri şunlardır:
+
+
+1. **Geliştirilmiş Ön Eğitim**: Llama 2, Llama 1'e kıyasla ön eğitim derlem boyutunda %40 artışla, halka açık verilerin yeni bir karışımı üzerinde eğitilmiştir. Bu, modelin performansını ve bilgi tabanını iyileştirmeyi amaçlamaktadır.
+
+
+2. **İyileştirilmiş Mimari**: Model, çıkarım ölçeklenebilirliğini ve genel performansı artırmak için daha büyük bağlam uzunluğu (context length) ve gruplandırılmış sorgu dikkati (grouped-query attention - GQA) gibi çeşitli mimari geliştirmeler içerir.
+
+
+3. **Güvenlik ve Yanıt Verme (Responsiveness)**: Llama 2'nin ince ayarlarla (fine-tune) belirlenmiş bir versiyonu olan Llama 2-Chat, diyalog kullanım senaryoları için optimize edilmiştir. Daha güvenli ve daha yararlı etkileşimler sağlamak için Denetimli İnce Ayar (Supervised Fine-Tuning) ve İnsan Geri Bildirimiyle Pekiştirmeli Öğrenme (RLHF) kullanılarak yinelemeli olarak iyileştirmeden geçer.
+
+
+4. **Açık Sürüm**: Meta, şeffaflığı ve yapay zeka topluluğundaki iş birliğini teşvik etmek amacıyla Llama 2'nin 7B, 13B ve 70B parametre modellerini araştırma ve ticari kullanım için genel kamuoyuna sunuyor.
+
+
+5. **Sorumlu Kullanım**: Sürüm paketi, Llama 2 ve Llama 2-Chat'in güvenli dağıtımını kolaylaştırmak için kılavuzlar ve kod örnekleri içerir ve güvenli test ortamlarının ve belirli uygulamalara uyarlanmış ayarlamaların önemini vurgular.
+
+
+Genel olarak Llama 2, yapay zeka topluluğu tarafından geniş çapta kullanılabilen ve daha da geliştirilebilen daha güçlü, ölçeklenebilir ve daha güvenli bir büyük dil modeli (LLM) olmayı hedefler.
 ```
-The main idea of Llama 2 is to provide an updated and improved version of the original Llama model, designed to be more efficient, scalable, and safe for various applications, including research and commercial use. Here are the key aspects of Llama 2:
 
-
-1. **Enhanced Pretraining**: Llama 2 is trained on a new mix of publicly available data, with a 40% increase in the size of the pretraining corpus compared to Llama 1. This aims to improve the model's performance and knowledge base.
-
-
-2. **Improved Architecture**: The model incorporates several architectural enhancements, such as increased context length and grouped-query attention (GQA), to improve inference scalability and overall performance.
-
-
-3. **Safety and Responsiveness**: Llama 2-Chat, a fine-tuned version of Llama 2, is optimized for dialogue use cases. It undergoes supervised fine-tuning and iterative refinement using Reinforcement Learning with Human Feedback (RLHF) to ensure safer and more helpful interactions.
-
-
-4. **Open Release**: Meta is releasing Llama 2 models with 7B, 13B, and 70B parameters to the general public for research and commercial use, promoting transparency and collaboration in the AI community.
-
-
-5. **Responsible Use**: The release includes guidelines and code examples to facilitate the safe deployment of Llama 2 and Llama 2-Chat, emphasizing the importance of safety testing and tuning tailored to specific applications.
-
-
-Overall, Llama 2 aims to be a more robust, scalable, and safer large language model that can be widely used and further developed by the AI community.
-```
-
-```
-response = chat_engine.chat("What was Llama2 evaluated and compared against?")
+```python
+response = chat_engine.chat("Llama2 nelerde değerlendirildi ve nelerle karşılaştırıldı?")
 print(str(response))
 ```
 
+```bash
+Llama 2, farklı birçok kıyaslama (benchmark) kategorisinde hem açık kaynaklı (open-source) hem de kapalı kaynaklı çeşitli diğer modellerle değerlendirildi ve onlarla karşılaştırıldı. İşte önemli kıyaslamalar:
+
+
+### Açık Kaynaklı (Open-Source) Modeller:
+1. **Llama 1**: Llama 2 modelleri kendinden öncekiler olan Llama 1 modelleriyle karşılaştırıldı. Örneğin, Llama 2 70B, Llama 1 65B'ye kıyasla MMLU'da yaklaşık 5 puanlık ve BBH'de 8 puanlık iyileşme gösterdi.
+2. **MPT Modelleri**: Llama 2 7B ve 30B modelleri, kod kıyaslamaları (code benchmarks) hariç tüm kategorilerde aynı boyuttaki MPT modellerinden daha iyi performans gösterdi.
+3. **Falcon Modelleri**: Llama 2 7B ve 34B modelleri, tüm kıyaslama kategorilerinde Falcon 7B ve 40B modellerine üstünlük sağladı.
+
+
+### Kapalı Kaynaklı Modeller:
+1. **GPT-3.5**: Llama 2 70B, GPT-3.5 ile karşılaştırıldı ve MMLU ile GSM8K'da yakın bir performans gösterirken, kodlama kıyaslamalarında ciddi bir fark yaşadı.
+2. **PaLM (540B)**: Llama 2 70B, neredeyse tüm kıyaslamalarda PaLM'e (540B) denk veya ondan daha iyi bir performans gösterdi.
+3. **GPT-4 ve PaLM-2-L**: Llama 2 70B ile bu daha gelişmiş modeller arasında hala büyük bir performans farkı (gap) bulunuyor.
+
+
+### Kıyaslamalar (Benchmarks):
+Llama 2, aralarında şunlar da olan çeşitli kıyaslamalarda değerlendirildi:
+1. **MMLU (Massive Multitask Language Understanding)**: 5 adımlı (5-shot) bir ortamda değerlendirildi.
+2. **BBH (Big Bench Hard)**: 3 adımlı (3-shot) bir ortamda değerlendirildi.
+3. **AGI Eval**: 3-5 adımlı (shot) ortamlarda, İngilizce görevlere odaklanılarak değerlendirildi.
+4. **GSM8K**: Matematik problemi çözümü için.
+5. **Human-Eval ve MBPP**: Kod üretimi için.
+6. **NaturalQuestions ve TriviaQA**: Genel dünya bilgisi için.
+7. **SQUAD ve QUAC**: Okuduğunu anlama için.
+8. **BoolQ, PIQA, SIQA, Hella-Swag, ARC-e, ARC-c, NQ, TQA**: Dil anlama ve mantık yürütmenin (reasoning) farklı yönleri için diğer çeşitli kıyaslamalar.
+
+
+Bu değerlendirmeler, Llama 2 modellerinin genel olarak kendilerinden öncekileri ve diğer açık kaynaklı modelleri geride bıraktıklarını ve aynı zamanda önde gelen bazı kapalı kaynaklı modellerle rekabet edebilir olduklarını göstermektedir.
 ```
-Llama 2 was evaluated and compared against several other models, both open-source and closed-source, across a variety of benchmarks. Here are the key comparisons:
 
+## Mevcut depodan yükleme
 
-### Open-Source Models:
-1. **Llama 1**: Llama 2 models were compared to their predecessors, Llama 1 models. For example, Llama 2 70B showed improvements of approximately 5 points on MMLU and 8 points on BBH compared to Llama 1 65B.
-2. **MPT Models**: Llama 2 7B and 30B models outperformed MPT models of corresponding sizes in all categories except code benchmarks.
-3. **Falcon Models**: Llama 2 7B and 34B models outperformed Falcon 7B and 40B models across all benchmark categories.
+Vektör indeksinizi oluşturduktan sonra, onu yeniden kolayca bağlayabiliriz!
 
-
-### Closed-Source Models:
-1. **GPT-3.5**: Llama 2 70B was compared to GPT-3.5, showing close performance on MMLU and GSM8K but a significant gap on coding benchmarks.
-2. **PaLM (540B)**: Llama 2 70B performed on par or better than PaLM (540B) on almost all benchmarks.
-3. **GPT-4 and PaLM-2-L**: There remains a large performance gap between Llama 2 70B and these more advanced models.
-
-
-### Benchmarks:
-Llama 2 was evaluated on a variety of benchmarks, including:
-1. **MMLU (Massive Multitask Language Understanding)**: Evaluated in a 5-shot setting.
-2. **BBH (Big Bench Hard)**: Evaluated in a 3-shot setting.
-3. **AGI Eval**: Evaluated in 3-5 shot settings, focusing on English tasks.
-4. **GSM8K**: For math problem-solving.
-5. **Human-Eval and MBPP**: For code generation.
-6. **NaturalQuestions and TriviaQA**: For world knowledge.
-7. **SQUAD and QUAC**: For reading comprehension.
-8. **BoolQ, PIQA, SIQA, Hella-Swag, ARC-e, ARC-c, NQ, TQA**: Various other benchmarks for different aspects of language understanding and reasoning.
-
-
-These evaluations demonstrate that Llama 2 models generally outperform their predecessors and other open-source models, while also being competitive with some of the leading closed-source models.
-```
-
-## Loading from existing store
-
-With your vector index created, we can easily connect back to it!
-
-```
+```python
 import qdrant_client
 from llama_index.core import VectorStoreIndex
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -291,7 +291,7 @@ client = qdrant_client.QdrantClient("http://localhost:6333")
 aclient = qdrant_client.AsyncQdrantClient("http://localhost:6333")
 
 
-# delete collection if it exists
+# Koleksiyon mevcutsa sil
 if client.collection_exists("llama2_bm42"):
     client.delete_collection("llama2_bm42")
 

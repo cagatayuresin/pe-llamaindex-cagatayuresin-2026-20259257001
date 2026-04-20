@@ -1,21 +1,21 @@
-# Qdrant Vector Store - Default Qdrant Filters
-
 ---
-title: Qdrant Vector Store - Default Qdrant Filters
- | LlamaIndex OSS Documentation
+title: Qdrant Vektör Deposu - Varsayılan Qdrant Filtreleri
+ | LlamaIndex OSS Belgeleri
 ---
 
-Example on how to use Filters from the qdrant\_client SDK directly in your Retriever / Query Engine
+# Qdrant Vektör Deposu - Varsayılan Qdrant Filtreleri
 
-```
+Düz olarak `qdrant_client` SDK'sından sağlanan filtrelerin Eriştirici (Retriever) / Sorgu Motorunda (Query Engine) doğrudan nasıl kullanılacağına dair örnek:
+
+```bash
 %pip install llama-index-vector-stores-qdrant
 ```
 
-```
+```bash
 !pip3 install llama-index qdrant_client
 ```
 
-```
+```python
 import openai
 import qdrant_client
 from IPython.display import Markdown, display
@@ -31,19 +31,19 @@ from llama_index.core.schema import TextNode
 
 nodes = [
     TextNode(
-        text="りんごとは",
+        text="りんごとは (Elma nedir)",
         metadata={"author": "Tanaka", "fruit": "apple", "city": "Tokyo"},
     ),
     TextNode(
-        text="Was ist Apfel?",
+        text="Was ist Apfel? (Elma nedir?)",
         metadata={"author": "David", "fruit": "apple", "city": "Berlin"},
     ),
     TextNode(
-        text="Orange like the sun",
+        text="Orange like the sun (Güneş gibi portakal)",
         metadata={"author": "Jane", "fruit": "orange", "city": "Hong Kong"},
     ),
     TextNode(
-        text="Grape is...",
+        text="Grape is... (Üzüm...)",
         metadata={"author": "Jane", "fruit": "grape", "city": "Hong Kong"},
     ),
     TextNode(
@@ -51,7 +51,7 @@ nodes = [
         metadata={"author": "George", "fruit": "grape", "city": "Toronto"},
     ),
     TextNode(
-        text="6ix Watermelons",
+        text="6ix Watermelons (6 Karpuz)",
         metadata={
             "author": "George",
             "fruit": "watermelon",
@@ -71,8 +71,8 @@ index = VectorStoreIndex(nodes, storage_context=storage_context)
 
 
 
-# Use filters directly from qdrant_client python library
-# View python examples here for more info https://qdrant.tech/documentation/concepts/filtering/
+# qdrant_client python kütüphanesindeki filtreleri doğrudan kullanın
+# Daha detaylı bilgi almak için buradaki python örneklerini inceleyebilirsiniz: https://qdrant.tech/documentation/concepts/filtering/
 
 
 filters = Filter(
@@ -108,7 +108,7 @@ filters = Filter(
 retriever = index.as_retriever(vector_store_kwargs={"qdrant_filters": filters})
 
 
-response = retriever.retrieve("Who makes grapes?")
+response = retriever.retrieve("Üzümleri kim yapar? (Who makes grapes?)")
 for node in response:
     print("node", node.score)
     print("node", node.text)

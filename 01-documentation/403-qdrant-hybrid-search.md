@@ -1,67 +1,67 @@
-# Qdrant Hybrid Search
-
 ---
-title: Qdrant Hybrid Search
- | LlamaIndex OSS Documentation
+title: Qdrant Hibrit Arama
+ | LlamaIndex OSS Belgeleri
 ---
 
-Qdrant supports hybrid search by combining search results from `sparse` and `dense` vectors.
+# Qdrant Hibrit Arama
 
-`dense` vectors are the ones you have probably already been using — embedding models from OpenAI, BGE, SentenceTransformers, etc. are typically `dense` embedding models. They create a numerical representation of a piece of text, represented as a long list of numbers. These `dense` vectors can capture rich semantics across the entire piece of text.
+Qdrant, `seyrek` (sparse) ve `yoğun` (dense) vektörlerden gelen arama sonuçlarını birleştirerek hibrit aramayı destekler.
 
-`sparse` vectors are slightly different. They use a specialized approach or model (TF-IDF, BM25, SPLADE, etc.) for generating vectors. These vectors are typically mostly zeros, making them `sparse` vectors. These `sparse` vectors are great at capturing specific keywords and similar small details.
+`Yoğun` (dense) vektörler muhtemelen halihazırda kullandığınız vektörlerdir; OpenAI, BGE, SentenceTransformers vb. gömme (embedding) modelleri genellikle `yoğun` gömme modelleridir. Bir metnin sayısal bir temsilini (representation) oluştururlar ve uzun bir sayı listesi olarak temsil edilirler. Bu `yoğun` vektörler, metnin tamamındaki zengin anlamsal özellikleri (semantics) yakalayabilir.
 
-This notebook walks through setting up and customizing hybrid search with Qdrant and `"prithvida/Splade_PP_en_v1"` variants from Huggingface.
+`Seyrek` (sparse) vektörler biraz daha farklıdır. Vektör oluşturmak için özelleştirilmiş bir yaklaşım veya model (TF-IDF, BM25, SPLADE vb.) kullanırlar. Bu vektörler temel olarak çoğunlukla sıfırlardan oluşur ve bu da onları `seyrek` vektörler yapar. Bu `seyrek` vektörler, belirli anahtar kelimeleri ve benzeri küçük ayrıntıları yakalamada harikadır.
 
-## Setup
+Bu not defteri, Huggingface'ten `"prithvida/Splade_PP_en_v1"` varyantları ve Qdrant ile hibrit aramanın nasıl kurulacağını ve özelleştirileceğini adım adım gösterir.
 
-First, we setup our env and load our data.
+## Kurulum
 
-```
+Öncelikle ortamımızı (env) kuruyor ve verilerimizi yüklüyoruz.
+
+```bash
 %pip install -U llama-index llama-index-vector-stores-qdrant fastembed
 ```
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-..."
 ```
 
-```
+```bash
 !mkdir -p 'data/'
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
 ```
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
 documents = SimpleDirectoryReader("./data/").load_data()
 ```
 
-## Indexing Data
+## Verileri İndeksleme
 
-Now, we can index our data.
+Artık verilerimizi indeksleyebiliriz.
 
-Hybrid search with Qdrant must be enabled from the beginning — we can simply set `enable_hybrid=True`.
+Qdrant ile hibrit aramanın başından itibaren etkinleştirilmiş olması gerekir; basitçe `enable_hybrid=True` ayarlayabiliriz.
 
-This will run sparse vector generation locally using the `"prithvida/Splade_PP_en_v1"` using fastembed, in addition to generating dense vectors with OpenAI.
+Bu komut, OpenAI ile yoğun vektörler oluşturmaya ek olarak, fastembed kullanarak `"prithvida/Splade_PP_en_v1"` ile yerel olarak seyrek vektör oluşturma işlemini çalıştıracaktır.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.core import Settings
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient, AsyncQdrantClient
 
 
-# creates a persistant index to disk
+# diske kalıcı (persistant) bir indeks oluşturur
 client = QdrantClient(host="localhost", port=6333)
 aclient = AsyncQdrantClient(host="localhost", port=6333)
 
 
-# create our vector store with hybrid indexing enabled
-# batch_size controls how many nodes are encoded with sparse vectors at once
+# vektör depomuzu hibrit indeksleme etkinleştirilmiş olarak oluşturun
+# batch_size, tek seferde kaç düğümün seyrek vektörlerle kodlanacağını kontrol eder
 vector_store = QdrantVectorStore(
     "llama2_paper",
     client=client,
@@ -82,45 +82,45 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-## Hybrid Queries
+## Hibrit Sorgular
 
-When querying with hybrid mode, we can set `similarity_top_k` and `sparse_top_k` separately.
+Hibrit mod ile sorgulama yaparken, `similarity_top_k` ve `sparse_top_k` parametrelerini ayrı ayrı ayarlayabiliriz.
 
-`sparse_top_k` represents how many nodes will be retrieved from each dense and sparse query. For example, if `sparse_top_k=5` is set, that means I will retrieve 5 nodes using sparse vectors and 5 nodes using dense vectors.
+`sparse_top_k`, her bir yoğun ve seyrek sorgudan kaç düğümün (node) getirileceğini temsil eder. Örneğin, `sparse_top_k=5` ayarlandığında, bu, seyrek vektörleri kullanarak 5 düğüm ve yoğun vektörleri kullanarak 5 düğüm getireceğim anlamına gelir.
 
-`similarity_top_k` controls the final number of returned nodes. In the above setting, we end up with 10 nodes. A fusion algorithm is applied to rank and order the nodes from different vector spaces ([relative score fusion](https://weaviate.io/blog/hybrid-search-fusion-algorithms#relative-score-fusion) in this case). `similarity_top_k=2` means the top two nodes after fusion are returned.
+`similarity_top_k` ise nihai olarak döndürülecek düğüm sayısını kontrol eder. Yukarıdaki ayarda işlemimiz 10 düğüm (node) ile sonlanır. Farlı vektör alanlarından sıralamak (rank) ve düğümleri düzenlemek için bir birleştirme (fusion) algoritması uygulanır (bu durumda [göreceli skor füzyonu](https://weaviate.io/blog/hybrid-search-fusion-algorithms#relative-score-fusion) - relative score fusion kullanılmıştır). `similarity_top_k=2`, füzyondan sonraki en iyi iki düğümün döndürüldüğü anlamına gelir.
 
-```
+```python
 query_engine = index.as_query_engine(
     similarity_top_k=2, sparse_top_k=12, vector_store_query_mode="hybrid"
 )
 ```
 
-```
+```python
 from IPython.display import display, Markdown
 
 
 response = query_engine.query(
-    "How was Llama2 specifically trained differently from Llama1?"
+    "Llama2, Llama1'den özel olarak farklı şekilde nasıl eğitildi?"
 )
 
 
 display(Markdown(str(response)))
 ```
 
-Llama 2 was specifically trained differently from Llama 1 by making changes such as performing more robust data cleaning, updating data mixes, training on 40% more total tokens, doubling the context length, and using grouped-query attention (GQA) to improve inference scalability for larger models. Additionally, Llama 2 adopted most of the pretraining setting and model architecture from Llama 1 but included architectural enhancements like increased context length and grouped-query attention.
+Llama 2, Llama 1'den özel olarak farklı bir şekilde eğitildi; örneğin verileri daha güçlüce temizlemek, veri harmanlarını (data mixes) güncellemek, %40 daha fazla toplam belirteç (token) üzerinde eğitim sağlamak, bağlam uzunluğunu (context length) iki katına çıkarmak ve daha büyük modeller için çıkarım ölçeklenebilirliğini geliştirmek üzere gruplandırılmış sorgu dikkati (GQA) kullanmak gibi değişiklikler yapıldı. Ek olarak, Llama 2 ön eğitim düzeninin (pretraining setting) ve model mimarisinin çoğunu Llama 1'den aldı ancak artırılmış bağlam uzunluğu ve gruplandırılmış sorgu dikkati gibi mimari geliştirmeleri de içerdi.
 
-```
+```python
 print(len(response.source_nodes))
 ```
 
-```
+```bash
 2
 ```
 
-Lets compare to not using hybrid search at all!
+Şimdi hibrit aramayı hiç kullanmamakla kıyaslayalım!
 
-```
+```python
 from IPython.display import display, Markdown
 
 
@@ -132,25 +132,25 @@ query_engine = index.as_query_engine(
 
 
 response = query_engine.query(
-    "How was Llama2 specifically trained differently from Llama1?"
+    "Llama2, Llama1'den özel olarak farklı şekilde nasıl eğitildi?"
 )
 display(Markdown(str(response)))
 ```
 
-Llama 2 was specifically trained differently from Llama 1 by making changes to improve performance, such as performing more robust data cleaning, updating data mixes, training on 40% more total tokens, doubling the context length, and using grouped-query attention (GQA) to improve inference scalability for larger models.
+Llama 2, performansı artırmak adına değişiklikler yapılarak Llama 1'den özel olarak farklı şekilde eğitildi; daha sağlam (robust) veri temizliği, veri harmanlarını (mixes) güncelleme, %40 daha fazla toplam belirteç üzerinde eğitim, bağlam (context) uzunluğunun iki katına çıkarılması ve daha büyük modeller için çıkarım (inference) ölçeklenebilirliğini iyileştirmek için gruplandırılmış sorgu dikkati (GQA) kullanılması bu değişikliklere örnektir.
 
-### Async Support
+### Asenkron Destek (Async Support)
 
-And of course, async queries are also supported (note that in-memory Qdrant data is not shared between async and sync clients!)
+Ve tabii ki, asenkron sorgular da desteklenmektedir (bellek içi (in-memory) Qdrant verilerinin asenkron ve senkron istemciler arasında paylaşılmadığına dikkat edin!)
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.core import Settings
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -158,7 +158,7 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 
 
 
-# create our vector store with hybrid indexing enabled
+# vektör depomuzu hibrit indeksleme etkinleştirilmiş olarak oluşturun
 vector_store = QdrantVectorStore(
     collection_name="llama2_paper",
     client=client,
@@ -182,21 +182,21 @@ query_engine = index.as_query_engine(similarity_top_k=2, sparse_top_k=10)
 
 
 response = await query_engine.aquery(
-    "What baseline models are measured against in the paper?"
+    "Makalede hangi temel (baseline) modellere karşı ölçüm yapılıyor?"
 )
 ```
 
-## \[Advanced] Customizing Hybrid Search with Qdrant
+## \[Gelişmiş] Qdrant ile Hibrit Aramayı Özelleştirme
 
-In this section, we walk through various settings that can be used to fully customize the hybrid search experience
+Bu bölümde, hibrit arama deneyimini tamamen özelleştirmek için kullanılabilecek çeşitli ayarları adım adım inceleyeceğiz.
 
-### Customizing Sparse Vector Generation
+### Seyrek Vektör (Sparse Vector) Üretimini Özelleştirme
 
-Sparse vector generation can be done using a single model, or sometimes distinct separate models for queries and documents. Here we use two — `"naver/efficient-splade-VI-BT-large-doc"` and `"naver/efficient-splade-VI-BT-large-query"`
+Seyrek vektör üretimi tek bir model kullanılarak veya bazen sorgular (queries) ve belgeler (documents) için ayrı ayrı farklı modeller kullanılarak yapılabilir. Burada iki model kullanıyoruz: `"naver/efficient-splade-VI-BT-large-doc"` ve `"naver/efficient-splade-VI-BT-large-query"`
 
-Below is the sample code for generating the sparse vectors and how you can set the functionality in the constructor. You can use this and customize as needed.
+Aşağıda, seyrek vektörleri oluşturmak için örnek kod ve kurucu metodda (constructor) işlevselliği nasıl ayarlayabileceğiniz yer almaktadır. Bunu kullanabilir ve ihtiyacınıza göre özelleştirebilirsiniz.
 
-```
+```python
 from typing import Any, List, Tuple
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
@@ -224,7 +224,7 @@ def sparse_doc_vectors(
     texts: List[str],
 ) -> Tuple[List[List[int]], List[List[float]]]:
     """
-    Computes vectors from logits and attention mask using ReLU, log, and max operations.
+    ReLU, log ve max işlemlerini kullanarak logits ve attention mask'ten vektörleri hesaplar.
     """
     tokens = doc_tokenizer(
         texts, truncation=True, padding=True, return_tensors="pt"
@@ -240,7 +240,7 @@ def sparse_doc_vectors(
     tvecs, _ = torch.max(weighted_log, dim=1)
 
 
-    # extract the vectors that are non-zero and their indices
+    # sıfır olmayan vektörleri ve indeks dizinlerini çıkartın
     indices = []
     vecs = []
     for batch in tvecs:
@@ -257,9 +257,9 @@ def sparse_query_vectors(
     texts: List[str],
 ) -> Tuple[List[List[int]], List[List[float]]]:
     """
-    Computes vectors from logits and attention mask using ReLU, log, and max operations.
+    ReLU, log ve max işlemlerini kullanarak logits ve attention mask'ten vektörleri hesaplar.
     """
-    # TODO: compute sparse vectors in batches if max length is exceeded
+    # YAPILACAKLAR (TODO): eğer maks (max) uzunluk aşılırsa, gruplar halinde seyrek vektörleri hesaplayın
     tokens = query_tokenizer(
         texts, truncation=True, padding=True, return_tensors="pt"
     )
@@ -274,7 +274,7 @@ def sparse_query_vectors(
     tvecs, _ = torch.max(weighted_log, dim=1)
 
 
-    # extract the vectors that are non-zero and their indices
+    # sıfır olmayan vektörleri ve indeks dizinlerini çıkartın
     indices = []
     vecs = []
     for batch in tvecs:
@@ -285,7 +285,7 @@ def sparse_query_vectors(
     return indices, vecs
 ```
 
-```
+```python
 vector_store = QdrantVectorStore(
     "llama2_paper",
     client=client,
@@ -295,15 +295,15 @@ vector_store = QdrantVectorStore(
 )
 ```
 
-### Customizing `hybrid_fusion_fn()`
+### `hybrid_fusion_fn()` Kullanımını Özelleştirme
 
-By default, when running hbyrid queries with Qdrant, Relative Score Fusion is used to combine the nodes retrieved from both sparse and dense queries.
+Varsayılan olarak, Qdrant ile hibrit sorgular çalıştırılırken, hem seyrek (sparse) hem de yoğun (dense) sorgulardan alınan düğümleri birleştirmek için Göreceli Puan Birleştirme (Relative Score Fusion) kullanılır.
 
-You can customize this function to be any other method (plain deduplication, Reciprocal Rank Fusion, etc.).
+Bu işlevi istediğiniz başka bir yönteme (düz veri tekilleştirme, Resiprokal Sıralama Füzyonu veya RRF vb.) göre özelleştirebilirsiniz.
 
-Below is the default code for our relative score fusion approach and how you can pass it into the constructor.
+Aşağıda bizim göreceli skor füzyon yaklaşımımız için varsayılan kod ve bu işlevi kurucu metoda (constructor) nasıl aktarabileceğiniz yer almaktadır.
 
-```
+```python
 from llama_index.core.vector_stores import VectorStoreQueryResult
 
 
@@ -312,20 +312,20 @@ from llama_index.core.vector_stores import VectorStoreQueryResult
 def relative_score_fusion(
     dense_result: VectorStoreQueryResult,
     sparse_result: VectorStoreQueryResult,
-    alpha: float = 0.5,  # passed in from the query engine
-    top_k: int = 2,  # passed in from the query engine i.e. similarity_top_k
+    alpha: float = 0.5,  # sorgu motorundan (query engine) geçirilir
+    top_k: int = 2,  # sorgu motorundan geçirilir yani similarity_top_k
 ) -> VectorStoreQueryResult:
     """
-    Fuse dense and sparse results using relative score fusion.
+    Göreceli puan birleştirme (relative score fusion) kullanarak yoğun (dense) ve seyrek (sparse) sonuçları birleştirin.
     """
-    # sanity check
+    # sağlık / tutarlılık kontrolü (sanity check)
     assert dense_result.nodes is not None
     assert dense_result.similarities is not None
     assert sparse_result.nodes is not None
     assert sparse_result.similarities is not None
 
 
-    # deconstruct results
+    # sonuçların yapısını çözme (deconstruct)
     sparse_result_tuples = list(
         zip(sparse_result.similarities, sparse_result.nodes)
     )
@@ -338,14 +338,14 @@ def relative_score_fusion(
     dense_result_tuples.sort(key=lambda x: x[0], reverse=True)
 
 
-    # track nodes in both results
+    # her iki sonuçta yer alan düğümleri izleme
     all_nodes_dict = {x.node_id: x for x in dense_result.nodes}
     for node in sparse_result.nodes:
         if node.node_id not in all_nodes_dict:
             all_nodes_dict[node.node_id] = node
 
 
-    # normalize sparse similarities from 0 to 1
+    # seyrek benzerlikleri (sparse similarities) 0'dan 1'e doğru normalleştir (normalize)
     sparse_similarities = [x[0] for x in sparse_result_tuples]
     max_sparse_sim = max(sparse_similarities)
     min_sparse_sim = min(sparse_similarities)
@@ -359,7 +359,7 @@ def relative_score_fusion(
     }
 
 
-    # normalize dense similarities from 0 to 1
+    # yoğun benzerlikleri (dense similarities) 0'dan 1'e doğru normalleştir
     dense_similarities = [x[0] for x in dense_result_tuples]
     max_dense_sim = max(dense_similarities)
     min_dense_sim = min(dense_similarities)
@@ -373,7 +373,7 @@ def relative_score_fusion(
     }
 
 
-    # fuse the scores
+    # Puanları birleştir / bütünleştir
     fused_similarities = []
     for node_id in all_nodes_dict:
         sparse_sim = sparse_per_node.get(node_id, 0)
@@ -386,7 +386,7 @@ def relative_score_fusion(
     fused_similarities = fused_similarities[:top_k]
 
 
-    # create final response object
+    # son yanıt (response) nesnesini oluştur
     return VectorStoreQueryResult(
         nodes=[x[1] for x in fused_similarities],
         similarities=[x[0] for x in fused_similarities],
@@ -394,7 +394,7 @@ def relative_score_fusion(
     )
 ```
 
-```
+```python
 vector_store = QdrantVectorStore(
     "llama2_paper",
     client=client,
@@ -403,19 +403,19 @@ vector_store = QdrantVectorStore(
 )
 ```
 
-You may have noticed the alpha parameter in the above function. This can be set directely in the `as_query_engine()` call, which will set it in the vector index retriever.
+Yukarıdaki fonksiyonda alfa (alpha) parametresini fark etmişsinizdir. Bu değişken, doğrudan `as_query_engine()` çağrısında ayarlanabilir ve böylece bu onu vektör indeks erişicisine (vector index retriever) kuracaktır.
 
-```
+```python
 index.as_query_engine(alpha=0.5, similarity_top_k=2)
 ```
 
-### Customizing Hybrid Qdrant Collections
+### Hibrit Qdrant Koleksiyonlarını Özelleştirme
 
-Instead of letting llama-index do it, you can also configure your Qdrant hybrid collections ahead of time.
+İşlemi llama-index'in gerçekleştirmesine izin vermek yerine, Qdrant hibrit koleksiyonlarınızı da önceden kendiniz yapılandırabilirsiniz.
 
-**NOTE:** The names of vector configs must be `text-dense` and `text-sparse` if creating a hybrid index.
+**NOT:** Hibrit bir indeks oluşturuluyorsa vektör konfigürasyonlarının (vector configs) adları `text-dense` ve `text-sparse` olmalıdır.
 
-```
+```python
 from qdrant_client import models
 
 
@@ -423,7 +423,7 @@ client.recreate_collection(
     collection_name="llama2_paper",
     vectors_config={
         "text-dense": models.VectorParams(
-            size=1536,  # openai vector size
+            size=1536,  # openai vektör boyutu
             distance=models.Distance.COSINE,
         )
     },
@@ -435,7 +435,7 @@ client.recreate_collection(
 )
 
 
-# enable hybrid since we created a sparse collection
+# Önceden seyrek koleksiyon oluşturduğumuzdan hibrit aramayı yeniden etkinleştir
 vector_store = QdrantVectorStore(
     collection_name="llama2_paper", client=client, enable_hybrid=True
 )

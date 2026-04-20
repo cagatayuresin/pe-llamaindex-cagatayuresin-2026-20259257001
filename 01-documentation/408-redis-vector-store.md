@@ -1,19 +1,19 @@
-# Redis Vector Store
-
 ---
-title: Redis Vector Store
- | LlamaIndex OSS Documentation
+title: Redis Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of using the RedisVectorStore.
+# Redis Vektör Deposu (Vector Store)
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu not defterinde RedisVectorStore'un kullanımına dair hızlı bir demo göstereceğiz.
 
-```
+Bu Not Defterini Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install -U llama-index llama-index-vector-stores-redis llama-index-embeddings-cohere llama-index-embeddings-openai
 ```
 
-```
+```python
 import os
 import getpass
 import sys
@@ -25,7 +25,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# Uncomment to see debug logs
+# Hata ayıklama (debug) günlüklerini görmek için açıklama satırını kaldırın
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
@@ -33,242 +33,241 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.redis import RedisVectorStore
 ```
 
-### Start Redis
+### Redis'i Başlatın
 
-The easiest way to start Redis is using the [Redis Stack](https://hub.docker.com/r/redis/redis-stack) docker image or quickly signing up for a [FREE Redis Cloud](https://redis.com/try-free) instance.
+Redis'i başlatmanın en kolay yolu [Redis Stack](https://hub.docker.com/r/redis/redis-stack) docker imajını kullanmak veya [ÜCRETSİZ Redis Cloud](https://redis.com/try-free) örneği (instance) için hızlıca kayıt olmaktır.
 
-To follow every step of this tutorial, launch the image as follows:
+Bu eğitimin her adımını takip etmek için imajı aşağıdaki gibi başlatın:
 
-Terminal window
+Terminal penceresi
 
-```
+```bash
 docker run --name redis-vecdb -d -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 ```
 
-This will also launch the RedisInsight UI on port 8001 which you can view at <http://localhost:8001>.
+Bu ayrıca 8001 bağlantı noktasında (port) RedisInsight kullanıcı arayüzünü (UI) başlatacaktır ve bunu <http://localhost:8001> adresinden görüntüleyebilirsiniz.
 
-### Setup OpenAI
+### OpenAI'yi Kurun
 
-Lets first begin by adding the openai api key. This will allow us to access openai for embeddings and to use chatgpt.
+Öncelikle openai API anahtarını ekleyerek başlayalım. Bu, gömmeler (embeddings) için openai'ye erişmemizi ve chatgpt'yi kullanmamızı sağlayacaktır.
 
-```
-oai_api_key = getpass.getpass("OpenAI API Key:")
+```python
+oai_api_key = getpass.getpass("OpenAI API Anahtarı:")
 os.environ["OPENAI_API_KEY"] = oai_api_key
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
+```bash
 --2024-04-10 19:35:33--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 2606:50c0:8003::154, 2606:50c0:8000::154, 2606:50c0:8002::154, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|2606:50c0:8003::154|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+raw.githubusercontent.com (raw.githubusercontent.com) Çözümleniyor... 2606:50c0:8003::154, 2606:50c0:8000::154, 2606:50c0:8002::154, ...
+raw.githubusercontent.com (raw.githubusercontent.com)|2606:50c0:8003::154|:443 adresine bağlanılıyor... bağlanıldı.
+HTTP isteği gönderildi, yanıt bekleniyor... 200 OK
+Uzunluk: 75042 (73K) [text/plain]
+Kaydediliyor: ‘data/paul_graham/paul_graham_essay.txt’
 
 
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.03s
+data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    0.03sn içinde
 
 
-2024-04-10 19:35:33 (2.15 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
+2024-04-10 19:35:33 (2.15 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ kaydedildi [75042/75042]
 ```
 
-### Read in a dataset
+### Bir veri seti okuyun
 
-Here we will use a set of Paul Graham essays to provide the text to turn into embeddings, store in a `RedisVectorStore` and query to find context for our LLM QnA loop.
+Burada, `RedisVectorStore` içinde depolamak üzere gömmelere (embeddings) dönüştürülecek metni sağlamak ve LLM Soru-Cevap (QnA) döngümüz (loop) için bağlam (context) bulmak üzere bir dizi Paul Graham makalesi kullanacağız.
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 print(
-    "Document ID:",
+    "Belge (Document) Kimliği:",
     documents[0].id_,
-    "Document Filename:",
+    "Belge Dosya Adı (Filename):",
     documents[0].metadata["file_name"],
 )
 ```
 
-```
-Document ID: 7056f7ba-3513-4ef4-9792-2bd28040aaed Document Filename: paul_graham_essay.txt
+```bash
+Belge (Document) Kimliği: 7056f7ba-3513-4ef4-9792-2bd28040aaed Belge Dosya Adı (Filename): paul_graham_essay.txt
 ```
 
-### Initialize the default Redis Vector Store
+### Varsayılan (default) Redis Vektör Deposunu başlatın
 
-Now we have our documents prepared, we can initialize the Redis Vector Store with **default** settings. This will allow us to store our vectors in Redis and create an index for real-time search.
+Artık belgelerimiz hazır olduğuna göre, Redis Vektör Deposunu **varsayılan** ayarlarla başlatabiliriz. Bu, vektörlerimizi Redis'te saklamamıza ve gerçek zamanlı arama için bir indeks oluşturmamıza olanak tanıyacaktır.
 
-```
+```python
 from llama_index.core import StorageContext
 from redis import Redis
 
 
-# create a Redis client connection
+# bir Redis istemci (client) bağlantısı oluştur
 redis_client = Redis.from_url("redis://localhost:6379")
 
 
-# create the vector store wrapper
+# vektör deposu sarmalayıcısını (wrapper) oluştur
 vector_store = RedisVectorStore(redis_client=redis_client, overwrite=True)
 
 
-# load storage context
+# depolama bağlamını (storage context) yükle
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-# build and load index from documents and storage context
+# belgelerden ve depolama bağlamından indeks oluştur ve yükle
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 # index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 ```
 
+```bash
+19:39:17 llama_index.vector_stores.redis.base INFO   Varsayılan (default) RedisVectorStore şeması (schema) kullanılıyor.
+19:39:19 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+19:39:19 llama_index.vector_stores.redis.base INFO   Llama_index indeksine 22 belge eklendi.
 ```
-19:39:17 llama_index.vector_stores.redis.base INFO   Using default RedisVectorStore schema.
-19:39:19 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-19:39:19 llama_index.vector_stores.redis.base INFO   Added 22 documents to index llama_index
-```
 
-### Query the default vector store
+### Varsayılan vektör deposunu sorgulayın
 
-Now that we have our data stored in the index, we can ask questions against the index.
+Verilerimizi indekste depoladığımıza göre, indekse yönelik sorular sorabiliriz.
 
-The index will use the data as the knowledge base for an LLM. The default setting for as\_query\_engine() utilizes OpenAI embeddings and GPT as the language model. Therefore, an OpenAI key is required unless you opt for a customized or local language model.
+İndeks, verileri bir Yüksek Lisans Programı (LLM) için bilgi tabanı (knowledge base) olarak kullanacaktır. as\_query\_engine() varsayılan ayarı, OpenAI gömmelerini (embeddings) ve dil modeli olarak GPT'yi kullanır. Bu nedenle, özelleştirilmiş veya yerel bir dil modeli seçmediğiniz sürece bir OpenAI anahtarı gereklidir.
 
-Below we will test searches against out index and then full RAG with an LLM.
+Aşağıda indeksimize yönelik aramaları (searches) ve ardından bir LLM ile tam RAG'yi test edeceğiz.
 
-```
+```python
 query_engine = index.as_query_engine()
 retriever = index.as_retriever()
 ```
 
-```
-result_nodes = retriever.retrieve("What did the author learn?")
+```python
+result_nodes = retriever.retrieve("Yazar (author) ne öğrendi?")
 for node in result_nodes:
     print(node)
 ```
 
-```
-19:39:22 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-19:39:22 llama_index.vector_stores.redis.base INFO   Querying index llama_index with filters *
-19:39:22 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
-Node ID: adb6b7ce-49bb-4961-8506-37082c02a389
-Text: What I Worked On  February 2021  Before college the two main
-things I worked on, outside of school, were writing and programming. I
-didn't write essays. I wrote what beginning writers were supposed to
-write then, and probably still are: short stories. My stories were
-awful. They had hardly any plot, just characters with strong feelings,
-which I ...
+```bash
+19:39:22 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+19:39:22 llama_index.vector_stores.redis.base INFO   llama_index indeksi * filtreleriyle sorgulanıyor
+19:39:22 llama_index.vector_stores.redis.base INFO   Şu kimliğe (id) sahip sorgu için 2 sonuç bulundu: ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
+Düğüm (Node) Kimliği: adb6b7ce-49bb-4961-8506-37082c02a389
+Metin (Text): Ne Üzerinde Çalıştım (What I Worked On) Şubat 2021 Üniversiteden önce 
+okul dışında üzerinde çalıştığım iki ana şey yazma ve programlamaydı. 
+Makaleler (essays) yazmadım. O zamanlar yeni başlayan yazarların yazması gerekenleri yazdım, 
+ki muhtemelen hala öyledir: kısa hikayeler (short stories). Hikayelerim
+korkunçtu. Neredeyse hiç olay örgüleri yoktu, sadece benim ...
 Score:  0.820
 
 
-Node ID: e39be1fe-32d0-456e-b211-4efabd191108
-Text: Except for a few officially anointed thinkers who went to the
-right parties in New York, the only people allowed to publish essays
-were specialists writing about their specialties. There were so many
-essays that had never been written, because there had been no way to
-publish them. Now they could be, and I was going to write them. [12]
-I've wor...
+Düğüm (Node) Kimliği: e39be1fe-32d0-456e-b211-4efabd191108
+Metin (Text): New York'taki doğru partilere giden, resmi olarak atanmış birkaç düşünür dışında, 
+makale yayınlamasına izin verilen tek kişiler 
+kendi uzmanlıkları hakkında yazan uzmanlardı. Daha önce yayınlanmaları için
+hiçbir yol olmadığı için yazılmamış pek çok
+makale vardı. Artık olabilirlerdi ve ben onları yazacaktım. [12]
+Çalıştım...
 Score:  0.819
 ```
 
-```
-response = query_engine.query("What did the author learn?")
+```python
+response = query_engine.query("Yazar (author) ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-19:39:25 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-19:39:25 llama_index.vector_stores.redis.base INFO   Querying index llama_index with filters *
-19:39:25 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
-19:39:27 httpx INFO   HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-The author learned that working on things that weren't prestigious often led to valuable discoveries
-and indicated the right kind of motives. Despite the lack of initial prestige, pursuing such work
-could be a sign of genuine potential and appropriate motivations, steering clear of the common
-pitfall of being driven solely by the desire to impress others.
+```bash
+19:39:25 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+19:39:25 llama_index.vector_stores.redis.base INFO   llama_index indeksi * filtreleriyle sorgulanıyor
+19:39:25 llama_index.vector_stores.redis.base INFO   Şu kimliğe (id) sahip sorgu için 2 sonuç bulundu: ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
+19:39:27 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+Yazar, prestijli olmayan şeyler üzerinde çalışmanın çoğu zaman değerli keşiflere yol açtığını
+ve doğru türde motivasyonlara işaret ettiğini öğrendi. İlk prestij eksikliğine rağmen, bu tür çalışmaları
+sürdürmek, sadece başkalarını etkileme arzusuyla hareket etmenin ortak
+tuzaklarından uzak durarak, gerçek potansiyelin ve uygun motivasyonların bir işareti olabilir.
 ```
 
-```
-result_nodes = retriever.retrieve("What was a hard moment for the author?")
+```python
+result_nodes = retriever.retrieve("Yazar için zor olan an neydi?")
 for node in result_nodes:
     print(node)
 ```
 
-```
-19:39:27 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-19:39:27 llama_index.vector_stores.redis.base INFO   Querying index llama_index with filters *
-19:39:27 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
-Node ID: adb6b7ce-49bb-4961-8506-37082c02a389
-Text: What I Worked On  February 2021  Before college the two main
-things I worked on, outside of school, were writing and programming. I
-didn't write essays. I wrote what beginning writers were supposed to
-write then, and probably still are: short stories. My stories were
-awful. They had hardly any plot, just characters with strong feelings,
-which I ...
+```bash
+19:39:27 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+19:39:27 llama_index.vector_stores.redis.base INFO   llama_index indeksi * filtreleriyle sorgulanıyor
+19:39:27 llama_index.vector_stores.redis.base INFO   Şu kimliğe (id) sahip sorgu için 2 sonuç bulundu: ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
+Düğüm (Node) Kimliği: adb6b7ce-49bb-4961-8506-37082c02a389
+Metin (Text): Ne Üzerinde Çalıştım (What I Worked On) Şubat 2021 Üniversiteden önce 
+okul dışında üzerinde çalıştığım iki ana şey yazma ve programlamaydı. 
+Makaleler (essays) yazmadım. O zamanlar yeni başlayan yazarların yazması gerekenleri yazdım, 
+ki muhtemelen hala öyledir: kısa hikayeler (short stories). Hikayelerim
+korkunçtu. Neredeyse hiç olay örgüleri yoktu, sadece benim ...
 Score:  0.802
 
 
-Node ID: e39be1fe-32d0-456e-b211-4efabd191108
-Text: Except for a few officially anointed thinkers who went to the
-right parties in New York, the only people allowed to publish essays
-were specialists writing about their specialties. There were so many
-essays that had never been written, because there had been no way to
-publish them. Now they could be, and I was going to write them. [12]
-I've wor...
+Düğüm (Node) Kimliği: e39be1fe-32d0-456e-b211-4efabd191108
+Metin (Text): New York'taki doğru partilere giden, resmi olarak atanmış birkaç düşünür dışında, 
+makale yayınlamasına izin verilen tek kişiler 
+kendi uzmanlıkları hakkında yazan uzmanlardı. Daha önce yayınlanmaları için
+hiçbir yol olmadığı için yazılmamış pek çok
+makale vardı. Artık olabilirlerdi ve ben onları yazacaktım. [12]
+Çalıştım...
 Score:  0.799
 ```
 
-```
-response = query_engine.query("What was a hard moment for the author?")
+```python
+response = query_engine.query("Yazar için zor olan an neydi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-19:39:29 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-19:39:29 llama_index.vector_stores.redis.base INFO   Querying index llama_index with filters *
-19:39:29 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
-19:39:31 httpx INFO   HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-A hard moment for the author was when one of his programs on the IBM 1401 mainframe didn't
-terminate, leading to a technical error and an uncomfortable situation with the data center manager.
+```bash
+19:39:29 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+19:39:29 llama_index.vector_stores.redis.base INFO   llama_index indeksi * filtreleriyle sorgulanıyor
+19:39:29 llama_index.vector_stores.redis.base INFO   Şu kimliğe (id) sahip sorgu için 2 sonuç bulundu: ['llama_index/vector_adb6b7ce-49bb-4961-8506-37082c02a389', 'llama_index/vector_e39be1fe-32d0-456e-b211-4efabd191108']
+19:39:31 httpx INFO   HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+Yazar için zor an, IBM 1401 ana bilgisayarındaki (mainframe) programlarından birinin 
+sonlanmaması (terminate etmemesi) sonucunda teknik bir hataya yol açması 
+ve veri merkezi (data center) yöneticisi ile rahatsız edici bir durumun yaşanmasıydı.
 ```
 
-```
+```python
 index.vector_store.delete_index()
 ```
 
+```bash
+19:39:34 llama_index.vector_stores.redis.base INFO   llama_index indeksi siliniyor
 ```
-19:39:34 llama_index.vector_stores.redis.base INFO   Deleting index llama_index
-```
 
-### Use a custom index schema
+### Özel (custom) bir indeks şeması kullanma
 
-In most use cases, you need the ability to customize the underling index configuration and specification. For example, this is handy in order to define specific metadata filters you wish to enable.
+Çoğu kullanım durumunda (use cases), temel indeks yapılandırmasını ve spesifikasyonunu özelleştirme yeteneğine ihtiyaç duyarsınız. Örneğin, etkinleştirmek (enable) istediğiniz belirli meta veri filtrelerini tanımlamak için bu kullanışlıdır.
 
-With Redis, this is as simple as defining an index schema object (from file or dict) and passing it through to the vector store client wrapper.
+Redis söz konusu olduğunda, bu işlem tıpkı dosya (file) veya sözlükten (dict) indeks şeması nesnesinin yaratılması ve ardından bu nesnenin vektör saklayıcı (vector store) istemcisinin iç sarmalayıcısına (client wrapper) iletilmesi kadar basittir.
 
-For this example, we will:
+Bu örnekte, şunları yapacağız:
 
-1. switch the embedding model to [Cohere](cohereai.com)
-2. add an additional metadata field for the document `updated_at` timestamp
-3. index the existing `file_name` metadata field
+1. gömme modelini (embedding model) [Cohere](cohereai.com)'a geçireceğiz
+2. belgenin zaman damgası, `updated_at` (güncelleme\_zamanı) için ekstra bir özellik barındıran meta veri alanı ekleyeceğiz
+3. halihazırda var olan `file_name` (dosya\_adı) meta veri alanını indeksleyeceğiz
 
-```
+```python
 from llama_index.core.settings import Settings
 from llama_index.embeddings.cohere import CohereEmbedding
 
 
-# set up Cohere Key
-co_api_key = getpass.getpass("Cohere API Key:")
+# Cohere Anahtarını (Key) ayarla
+co_api_key = getpass.getpass("Cohere API Anahtarı:")
 os.environ["CO_API_KEY"] = co_api_key
 
 
-# set llamaindex to use Cohere embeddings
+# llamaindex'i Cohere gömmelerini kullanacak şekilde ayarla
 Settings.embed_model = CohereEmbedding()
 ```
 
-```
+```python
 from redisvl.schema import IndexSchema
 
 
@@ -276,22 +275,22 @@ from redisvl.schema import IndexSchema
 
 custom_schema = IndexSchema.from_dict(
     {
-        # customize basic index specs
+        # temel indeks özelliklerini (specs) özelleştir
         "index": {
             "name": "paul_graham",
             "prefix": "essay",
             "key_separator": ":",
         },
-        # customize fields that are indexed
+        # indekslenen alanları özelleştir
         "fields": [
-            # required fields for llamaindex
+            # llamaindex için gerekli alanlar
             {"type": "tag", "name": "id"},
             {"type": "tag", "name": "doc_id"},
             {"type": "text", "name": "text"},
-            # custom metadata fields
+            # özel (custom) meta veri alanları
             {"type": "numeric", "name": "updated_at"},
             {"type": "tag", "name": "file_name"},
-            # custom vector field definition for cohere embeddings
+            # cohere gömmeleri (embeddings) için özel vektör alanı tanımı
             {
                 "type": "vector",
                 "name": "vector",
@@ -306,19 +305,19 @@ custom_schema = IndexSchema.from_dict(
 )
 ```
 
-```
+```python
 custom_schema.index
 ```
 
-```
+```bash
 IndexInfo(name='paul_graham', prefix='essay', key_separator=':', storage_type=<StorageType.HASH: 'hash'>)
 ```
 
-```
+```python
 custom_schema.fields
 ```
 
-```
+```bash
 {'id': TagField(name='id', type='tag', path=None, attrs=TagFieldAttributes(sortable=False, separator=',', case_sensitive=False, withsuffixtrie=False)),
  'doc_id': TagField(name='doc_id', type='tag', path=None, attrs=TagFieldAttributes(sortable=False, separator=',', case_sensitive=False, withsuffixtrie=False)),
  'text': TextField(name='text', type='text', path=None, attrs=TextFieldAttributes(sortable=False, weight=1, no_stem=False, withsuffixtrie=False, phonetic_matcher=None)),
@@ -327,9 +326,9 @@ custom_schema.fields
  'vector': HNSWVectorField(name='vector', type='vector', path=None, attrs=HNSWVectorFieldAttributes(dims=1024, algorithm=<VectorIndexAlgorithm.HNSW: 'HNSW'>, datatype=<VectorDataType.FLOAT32: 'FLOAT32'>, distance_metric=<VectorDistanceMetric.COSINE: 'COSINE'>, initial_cap=None, m=16, ef_construction=200, ef_runtime=10, epsilon=0.01))}
 ```
 
-Learn more about [schema and index design](https://redisvl.com) with redis.
+Redis ile [şema ve indeks tasarımı (schema and index design)](https://redisvl.com) hakkında daha fazla bilgi edinin.
 
-```
+```python
 from datetime import datetime
 
 
@@ -342,16 +341,16 @@ def date_to_timestamp(date_string: str) -> int:
 
 
 
-# iterate through documents and add new field
+# belgeler arasında gezin ve yeni alan ekle
 for document in documents:
     document.metadata["updated_at"] = date_to_timestamp(
         document.metadata["last_modified_date"]
     )
 ```
 
-```
+```python
 vector_store = RedisVectorStore(
-    schema=custom_schema,  # provide customized schema
+    schema=custom_schema,  # özelleştirilmiş şema (customized schema) sağlayın
     redis_client=redis_client,
     overwrite=True,
 )
@@ -360,24 +359,24 @@ vector_store = RedisVectorStore(
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-# build and load index from documents and storage context
+# belgelerden ve depolama bağlamından indeks oluştur ve yükle
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-```
-19:40:05 httpx INFO   HTTP Request: POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
-19:40:06 httpx INFO   HTTP Request: POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
-19:40:06 httpx INFO   HTTP Request: POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
-19:40:06 llama_index.vector_stores.redis.base INFO   Added 22 documents to index paul_graham
+```bash
+19:40:05 httpx INFO   HTTP İsteği (Request): POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
+19:40:06 httpx INFO   HTTP İsteği (Request): POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
+19:40:06 httpx INFO   HTTP İsteği (Request): POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
+19:40:06 llama_index.vector_stores.redis.base INFO   paul_graham indeksine 22 belge eklendi
 ```
 
-### Query the vector store and filter on metadata
+### Vektör deposunu sorgulama ve meta veri üzerinde filtreleme
 
-Now that we have additional metadata indexed in Redis, let’s try some queries with filters.
+Artık Redis'te ek meta verilerin indekslendiğine göre, bazı filtreli sorgular deneyelim.
 
-```
+```python
 from llama_index.core.vector_stores import (
     MetadataFilters,
     MetadataFilter,
@@ -406,61 +405,60 @@ retriever = index.as_retriever(
 )
 ```
 
-```
-result_nodes = retriever.retrieve("What did the author learn?")
+```python
+result_nodes = retriever.retrieve("Yazar (author) ne öğrendi?")
 
 
 for node in result_nodes:
     print(node)
 ```
 
-```
-19:40:22 httpx INFO   HTTP Request: POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
+```bash
+19:40:22 httpx INFO   HTTP İsteği (Request): POST https://api.cohere.ai/v1/embed "HTTP/1.1 200 OK"
 
 
 
 
-19:40:22 llama_index.vector_stores.redis.base INFO   Querying index paul_graham with filters ((@file_name:{paul_graham_essay\.txt} @updated_at:[1672549200 +inf]) @text:(learn))
-19:40:22 llama_index.vector_stores.redis.base INFO   Found 3 results for query with id ['essay:0df3b734-ecdb-438e-8c90-f21a8c80f552', 'essay:01108c0d-140b-4dcc-b581-c38b7df9251e', 'essay:ced36463-ac36-46b0-b2d7-935c1b38b781']
-Node ID: 0df3b734-ecdb-438e-8c90-f21a8c80f552
-Text: All that seemed left for philosophy were edge cases that people
-in other fields felt could safely be ignored.  I couldn't have put
-this into words when I was 18. All I knew at the time was that I kept
-taking philosophy courses and they kept being boring. So I decided to
-switch to AI.  AI was in the air in the mid 1980s, but there were two
-things...
+19:40:22 llama_index.vector_stores.redis.base INFO   paul_graham indeksi şu filtrelerle sorgulanıyor: ((@file_name:{paul_graham_essay\.txt} @updated_at:[1672549200 +inf]) @text:(learn))
+19:40:22 llama_index.vector_stores.redis.base INFO   Şu kimliğe (id) sahip sorgu için 3 sonuç bulundu: ['essay:0df3b734-ecdb-438e-8c90-f21a8c80f552', 'essay:01108c0d-140b-4dcc-b581-c38b7df9251e', 'essay:ced36463-ac36-46b0-b2d7-935c1b38b781']
+Düğüm (Node) Kimliği: 0df3b734-ecdb-438e-8c90-f21a8c80f552
+Metin (Text): Felsefe adına görünürde tek işe yarar alan olarak geriye kalan şey, farklı 
+disiplinler üzerindeki kişilerin kendi alanlarında ihmale gelmeyebileceğini düşündükleri istisnai olan durumlardı (edge cases).  18 yaşındayken ben bunu
+kelimelere dökemezdim. O zamanlar tek bildiğim, felsefe 
+dersleri almaya devam ettiğim ve bunların sürekli sıkıcı olduğuydu. Bu yüzden Yapay Zeka'ya (AI) geçmeye
+karar verdim.  1980'lerin ortalarında yapay zeka havada uçuşuyordu ama iki
+şey...
 Score:  0.410
 
 
-Node ID: 01108c0d-140b-4dcc-b581-c38b7df9251e
-Text: It was not, in fact, simply a matter of teaching SHRDLU more
-words. That whole way of doing AI, with explicit data structures
-representing concepts, was not going to work. Its brokenness did, as
-so often happens, generate a lot of opportunities to write papers
-about various band-aids that could be applied to it, but it was never
-going to get us ...
+Düğüm (Node) Kimliği: 01108c0d-140b-4dcc-b581-c38b7df9251e
+Metin (Text): Aslında bu, SHRDLU'ya daha fazla kelime 
+öğretmekten ibaret değildi. Kavramları temsil eden açık veri yapılarıyla 
+Yapay Zeka yapmanın o bütünsel yolu işe yaramayacaktı. Onun bozukluğu (brokenness), 
+çoğu zaman olduğu gibi, ona uygulanabilecek çeşitli geçici önlemler (band-aids) hakkında makaleler 
+yazmak için bir sürü fırsat yarattı ama bu bizi hiçbir zaman ...
 Score:  0.390
 
 
-Node ID: ced36463-ac36-46b0-b2d7-935c1b38b781
-Text: Grad students could take classes in any department, and my
-advisor, Tom Cheatham, was very easy going. If he even knew about the
-strange classes I was taking, he never said anything.  So now I was in
-a PhD program in computer science, yet planning to be an artist, yet
-also genuinely in love with Lisp hacking and working away at On Lisp.
-In other...
+Düğüm (Node) Kimliği: ced36463-ac36-46b0-b2d7-935c1b38b781
+Metin (Text): Yüksek lisans (Grad) öğrencileri herhangi bir bölümden dersler alabiliyordu ve
+danışmanım Tom Cheatham çok uyumluydu. Aldığım bu garip derslerden
+haberdar olsaydı bile asla bir şey söylemezdi.  Şimdi ben;
+hayatıma sanatçı olarak devam edebilmenin kurgusu paralelinde bilgisayar bilimlerinde Doktora (PhD) yapıyor,
+bunlara ilaveten Lisp hack ve de "On Lisp" üzerindeki işime gerçekten ve
+tüm samimiyetimle arzu bağlıyordum. Diğe...
 Score:  0.389
 ```
 
-### Restoring from an existing index in Redis
+### Redis'teki mevcut bir indeksten geri yükleme
 
-Restoring from an index requires a Redis connection client (or URL), `overwrite=False`, and passing in the same schema object used before. (This can be offloaded to a YAML file for convenience using `.to_yaml()`)
+Bir indeksten geri yükleme işlemi; bir Redis bağlantı istemcisine (veya URL), `overwrite=False` atamasına ve daha önce kullanılan aynı şema (schema) nesnesinin aktarılmasına (passing in) ihtiyaç duyar. (Kolaylık sağlamak için bu `.to_yaml()` kullanılarak bir YAML dosyasına aktarılabilir (offloaded))
 
-```
+```python
 custom_schema.to_yaml("paul_graham.yaml")
 ```
 
-```
+```python
 vector_store = RedisVectorStore(
     schema=IndexSchema.from_yaml("paul_graham.yaml"),
     redis_client=redis_client,
@@ -468,98 +466,98 @@ vector_store = RedisVectorStore(
 index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 ```
 
-```
-19:40:28 redisvl.index.index INFO   Index already exists, not overwriting.
+```bash
+19:40:28 redisvl.index.index INFO   İndeks zaten (already) var, üzerine yazılmıyor (not overwriting).
 ```
 
-**In the near future** — we will implement a convenience method to load just using an index name:
+**Yakın gelecekte** — sadece bir indeks adını (index name) kullanarak yüklemeye imkân tanıyacak kullanışlı bir yöntem (convenience method) uygulayacağız:
 
-```
+```python
 RedisVectorStore.from_existing_index(index_name="paul_graham", redis_client=redis_client)
 ```
 
-### Deleting documents or index completely
+### Belgeleri veya indeksi tamamen silme
 
-Sometimes it may be useful to delete documents or the entire index. This can be done using the `delete` and `delete_index` methods.
+Bazen belgeleri veya tüm indeksi büsbütün silmek yararlı olabilir. Bu eylem ise `delete` (sil) ve `delete_index` method formülleri yardımıyla tatbik edilebilir.
 
-```
+```python
 document_id = documents[0].doc_id
 document_id
 ```
 
-```
+```python
 '7056f7ba-3513-4ef4-9792-2bd28040aaed'
 ```
 
-```
-print("Number of documents before deleting", redis_client.dbsize())
+```python
+print("Silmeden önceki belge sayısı (Number of documents before deleting)", redis_client.dbsize())
 vector_store.delete(document_id)
-print("Number of documents after deleting", redis_client.dbsize())
+print("Sildikten sonraki belge sayısı (Number of documents after deleting)", redis_client.dbsize())
 ```
 
-```
-Number of documents before deleting 22
-19:40:32 llama_index.vector_stores.redis.base INFO   Deleted 22 documents from index paul_graham
-Number of documents after deleting 0
+```bash
+Silmeden önceki belge sayısı (Number of documents before deleting) 22
+19:40:32 llama_index.vector_stores.redis.base INFO   paul_graham indeksinden 22 belge silindi
+Sildikten sonraki belge sayısı (Number of documents after deleting) 0
 ```
 
-However, the Redis index still exists (with no associated documents) for continuous upsert.
+Bununla birlikte, sürekli ekleme/güncelleme (continuous upsert) için Redis indeksi (kendisiyle ilişkili hiçbir belge olmasa da) var olmaya devam eder.
 
-```
+```python
 vector_store.index_exists()
 ```
 
-```
+```bash
 True
 ```
 
-```
-# now lets delete the index entirely
-# this will delete all the documents and the index
+```python
+# şimdi indeksi tamamen silelim
+# bu, tüm belgeleri ve indeksi silecektir
 vector_store.delete_index()
 ```
 
-```
-19:40:37 llama_index.vector_stores.redis.base INFO   Deleting index paul_graham
-```
-
-```
-print("Number of documents after deleting", redis_client.dbsize())
+```bash
+19:40:37 llama_index.vector_stores.redis.base INFO   paul_graham indeksi siliniyor
 ```
 
+```python
+print("Sildikten sonraki belge sayısı (Number of documents after deleting)", redis_client.dbsize())
 ```
-Number of documents after deleting 0
+
+```bash
+Sildikten sonraki belge sayısı (Number of documents after deleting) 0
 ```
 
-### Troubleshooting
+### Sorun Giderme (Troubleshooting)
 
-If you get an empty query result, there a couple of issues to check:
+Boş bir sorgu sonucu alırsanız, kontrol edilmesi gereken birkaç sorun vardır:
 
-#### Schema
+#### Şema (Schema)
 
-Unlike other vector stores, Redis expects users to explicitly define the schema for the index. This is for a few reasons:
+Diğer vektör depoları örneklerinden farklı olarak Redis, kullanıcılardan ilgili olan (kullandıkları) indeks şemasının tanımını bariz/kesin sınırlar içinde bir netlik yaratarak yapmasını arzu/talep eder. Bunun birkaç nedeni vardır:
 
-1. Redis is used for many use cases, including real-time vector search, but also for standard document storage/retrieval, caching, messaging, pub/sub, session mangement, and more. Not all attributes on records need to be indexed for search. This is partially an efficiency thing, and partially an attempt to minimize user foot guns.
-2. All index schemas, when using Redis & LlamaIndex, must include the following fields `id`, `doc_id`, `text`, and `vector`, at a minimum.
+1. Redis sadece eş zamanlı (real-time) vektörel arama için değil; ayrıca dosya/evrak (document) aramaları-depolanmaları, önbelleğe (cache) alma, anlık olan uyarı (mesajlaşma), pub/sub sistem yapıları ve de en nihayetinde oturum tabanlı sistemlerde vs. muhtelif işlemler ile yaygın bir kullanıma sahiptir. Arama amacıyla kayıtlara ait her bileşen veya özellik kodunun ayrıntısıyla taranmasına ihtiyaç yoktur. İşin tabiatı; bu tarz konularda sadece kısmen etkinliğe yaslanırken, büyük ölçüde de kullanıcı cephesindeki pürüzleri bertaraf (minimize) etmeye odaklanır.
+2. Redis ile LLamaIndex platformlarında kullanıma sokulan formların ve indeks türlerinin bütünü `id`, `doc_id`, `text`, ve bunlara ek olacak biçimde de asgari vasıfta minimum ebatlı bir `vector` dosyası/nesnesi içerir.
 
-Instantiate your `RedisVectorStore` with the default schema (assumes OpenAI embeddings), or with a custom schema (see above).
+`RedisVectorStore` eklentinizi yukarıda bahsettiğimiz özel/şahsi yapı (custom schema) ile kombine şekilde (açık biçimde tanımlanmış olmasını da dikkate alarak) veya basit bir yaklaşımla olağan ayarıyla (OpenAI gömmeleri olan (assumes) varsayılan (default) tabanlı şema/modül konfigürasyonu) sisteme işleyin.
 
-#### Prefix issues
+#### Önek (Prefix) sorunları
 
-Redis expects all records to have a key prefix that segments the keyspace into “partitions” for potentially different applications, use cases, and clients.
+Redis, tüm kayıtlar ile verileri ilgili sistemde çeşitli uygulama/yazılım ve müşteri formatlarına uygun şekilde kilit tabanlı kullanım "partitions" ebatlarına ("bölümlere") parçalamak (segment) üzere öneklerin/değerlerin olmasını beklemekte.
 
-Make sure that the chosen `prefix`, as part of the index schema, is consistent across your code (tied to a specific index).
+İndeks şemasının bir uzvu (ve de bir parçası) sayılan seçili modelin/yapının `prefix` bazlı uyumluluklarında her şartta ve kurguda bir tutarlılık olduğunu birimsel ölçeklerdeki indeks parametrelerine (a specific index) sâdık kalarak takip edin.
 
-To see what prefix your index was created with, you can run `FT.INFO <name of your index>` in the Redis CLI and look under `index_definition` => `prefixes`.
+İndeksinizin hangi öneklerle yaratıldığını görmek maksadıyla; yazılım dillerinizde ve derlemelerinizde Redis İstemcisinden (Redis CLI) şu komutları test edebilir, böylelikle `FT.INFO <indeksinizin_adı (name of your index)>` yazarak `index_definition` => `prefixes` sekmesinin altında yer tutan yapıya bakabilirsiniz.
 
-#### Data vs Index
+#### Veri ile İndeks Ayrımı (Data vs Index)
 
-Redis treats the records in the dataset and the index as different entities. This allows you more flexibility in performing updates, upserts, and index schema migrations.
+Redis, dizindeki kayıtları (records) ve indeks modülünü iki farklı (ilkesel olarak apayrı) hususiyet şeklinde (different entities) kabul ve telakki eder. Böylece sizin ek güncellemelerdeki veya yeni işlenen girdiler ile eklenen tabanlı tasarımların göç ettirilmesi (migrations/upserts) konularında size bariz bir serbestlik-rahatlık kazandırır (more flexibility).
 
-If you have an existing index and want to make sure it’s dropped, you can run `FT.DROPINDEX <name of your index>` in the Redis CLI. Note that this will *not* drop your actual data unless you pass `DD`
+Eğer mevcut ve kullanılabilir/hazır bir indeks yapınız (an existing index) varsa; hem bundan sonlanma garantisi almanız hem de yapıyı tamamlayarak imha suretiyle devreden tecrit edilmesi beklentilerinizi somutlaştırmak nâmına; dilediğiniz gibi Redis İstemcisindeki ilgili bölüme (Redis CLI) `FT.DROPINDEX <indeksinizin_adı>` ekleyerek/yazarak isteğinizi yerine getirebilirsiniz. Unutmayın ve aklınızda kalsın ki; sistemsel komutlar ve yönlendirmeler bünyesinde söz konusu olarak tasvir edilen yapılar; siz kendiniz bir eklenti argümanı olarak `DD` girmezseniz ve ibaresini geçirmezseniz aslî (actual data) ana/esas unsurlarınızı silmez.
 
-#### Empty queries when using metadata
+#### Meta verileri kullanırken alınan boş sorgular (Empty queries)
 
-If you add metadata to the index *after* it has already been created and then try to query over that metadata, your queries will come back empty.
+Eğer meta verileri var edilmiş olan mevcut bir dizine (index) *sonradan (after)* iliştirir ve ardından ilave ettiğiniz o meta alanı için taramalarla sorgu yürütürseniz neticeleriniz cevapsız/boş dönecektir.
 
-Redis indexes fields upon index creation only (similar to how it indexes the prefixes, above).
+Redis dizin sahalarını; tıpkı evvelce tanımlanmış ibareler olarak izahı yapılmış ('özellikler-prefixes' durumundaki anlatımların paralelliğinde olduğu minvalde) yalnız ve yalnız o dizinin var ediliş evresinde indeksler (indexes fields upon index creation only).
