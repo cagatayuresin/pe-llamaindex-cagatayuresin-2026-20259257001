@@ -1,35 +1,35 @@
 # vLLM
 
 ---
-title: vLLM  
+title: vLLM
  | LlamaIndex OSS Documentation
 ---
 
-There’s two modes of using vLLM local and remote. Let’s start form the former one, which requeries CUDA environment available locally.
+vLLM'i kullanmanın yerel (local) ve uzak (remote) olmak üzere iki modu vardır. Yerel olarak kullanılabilir bir CUDA ortamı gerektiren ilk moddan başlayalım.
 
-### Install vLLM
+### vLLM'i Yükleme
 
 `pip install vllm`\
-or if you want to compile you can [compile from source](https://docs.vllm.ai/en/latest/getting_started/installation.html)
+veya kendiniz derlemek isterseniz [kaynaktan derleyebilirsiniz](https://docs.vllm.ai/en/latest/getting_started/installation.html).
 
-### Orca-7b Completion Example
+### Orca-7b Tamamlama Örneği (Completion Example)
 
-```
+```python
 %pip install llama-index-llms-vllm
 ```
 
-```
+```python
 import os
 
 
 os.environ["HF_HOME"] = "model/"
 ```
 
-```
+```python
 from llama_index.llms.vllm import Vllm, VllmServer
 ```
 
-```
+```python
 llm = Vllm(
     model="microsoft/Orca-2-7b",
     tensor_parallel_size=4,
@@ -38,13 +38,13 @@ llm = Vllm(
 )
 ```
 
-```
-llm.complete("[INST]You are a helpful assistant[/INST] What is a black hole ?")
+```python
+llm.complete("[INST]Yardımsever bir asistansın[/INST] Kara delik nedir?")
 ```
 
-### LLama-2-7b Completion Example
+### LLama-2-7b Tamamlama Örneği (Completion Example)
 
-```
+```python
 llm = Vllm(
     model="codellama/CodeLlama-7b-hf",
     dtype="float16",
@@ -59,13 +59,13 @@ llm = Vllm(
 )
 ```
 
-```
+```python
 llm.complete("import socket\n\ndef ping_exponential_backoff(host: str):")
 ```
 
-### Mistral chat 7b Completion Example
+### Mistral chat 7b Tamamlama Örneği (Completion Example)
 
-```
+```python
 llm = Vllm(
     model="mistralai/Mistral-7B-Instruct-v0.1",
     dtype="float16",
@@ -80,68 +80,68 @@ llm = Vllm(
 )
 ```
 
-```
-Vllm mock initialized
-```
-
-```
-llm.complete(" What is a black hole ?")
+```text
+vLLM mock başlatıldı
 ```
 
-# Calling vLLM via HTTP
-
-In this mode there is no need to install `vllm` model nor have CUDA available locally. To setup the vLLM API you can follow the guide present [here](https://docs.vllm.ai/en/latest/serving/distributed_serving.html). Note: `llama-index-llms-vllm` module is a client for `vllm.entrypoints.api_server` which is only [a demo](https://github.com/vllm-project/vllm/blob/abfc4f3387c436d46d6701e9ba916de8f9ed9329/vllm/entrypoints/api_server.py#L2).\
-If vLLM server is launched with `vllm.entrypoints.openai.api_server` as [OpenAI Compatible Server](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server) or via [Docker](https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html) you need `OpenAILike` class from `llama-index-llms-openai-like` [module](localai.ipynb#llamaindex-interaction)
-
-### Completion Response
-
+```python
+llm.complete(" Kara delik nedir?")
 ```
+
+# vLLM'i HTTP Üzerinden Çağırma
+
+Bu modda `vllm` modelini yüklemeye veya yerel olarak CUDA'ya sahip olmaya gerek yoktur. vLLM API-sini kurmak için [buradaki](https://docs.vllm.ai/en/latest/serving/distributed_serving.html) kılavuzu takip edebilirsiniz. Not: `llama-index-llms-vllm` modülü, yalnızca [bir demo](https://github.com/vllm-project/vllm/blob/abfc4f3387c436d46d6701e9ba916de8f9ed9329/vllm/entrypoints/api_server.py#L2) olan `vllm.entrypoints.api_server` için bir istemcidir.\
+Eğer vLLM sunucusu [OpenAI Uyumlu Sunucu](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server) olarak `vllm.entrypoints.openai.api_server` ile veya [Docker](https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html) aracılığıyla başlatıldıysa, `llama-index-llms-openai-like` [modülünden](localai.ipynb#llamaindex-interaction) `OpenAILike` sınıfına ihtiyacınız olacaktır.
+
+### Tamamlama Yanıtı (Completion Response)
+
+```python
 from llama_index.core.llms import ChatMessage
 ```
 
-```
+```python
 llm = VllmServer(
     api_url="http://localhost:8000/generate", max_new_tokens=100, temperature=0
 )
 ```
 
-```
-llm.complete("what is a black hole ?")
+```python
+llm.complete("kara delik nedir?")
 ```
 
-```
-message = [ChatMessage(content="hello", role="user")]
+```python
+message = [ChatMessage(content="merhaba", role="user")]
 llm.chat(message)
 ```
 
-### Streaming Response
+### Akışlı Yanıt (Streaming Response)
 
-```
-list(llm.stream_complete("what is a black hole"))[-1]
+```python
+list(llm.stream_complete("kara delik nedir"))[-1]
 ```
 
-```
-message = [ChatMessage(content="what is a black hole", role="user")]
+```python
+message = [ChatMessage(content="kara delik nedir", role="user")]
 [x for x in llm.stream_chat(message)][-1]
 ```
 
-### Async Response
+### Asenkron Yanıt (Async Response)
 
-```
+```python
 import asyncio
 
 
-await llm.acomplete("What is a black hole")
+await llm.acomplete("Kara delik nedir")
 ```
 
-```
+```python
 await llm.achat(message)
 ```
 
-```
-[x async for x in await llm.astream_complete("what is a black hole")][-1]
+```python
+[x async for x in await llm.astream_complete("kara delik nedir")][-1]
 ```
 
-```
+```python
 [x async for x in await llm.astream_chat(message)][-1]
 ```

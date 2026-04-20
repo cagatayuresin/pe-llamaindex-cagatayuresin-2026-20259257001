@@ -5,11 +5,11 @@ title: Xorbits Inference
  | LlamaIndex OSS Documentation
 ---
 
-In this demo notebook, we show how to use Xorbits Inference (Xinference for short) to deploy local LLMs in three steps.
+Bu demo not defterinde, yerel LLM'leri üç adımda dağıtmak için Xorbits Inference'ın (kısaca Xinference) nasıl kullanılacağını gösteriyoruz.
 
-We will be using the Llama 2 chat model in GGML format in the example, but the code should be easily transfrerable to all LLM chat models supported by Xinference. Below are a few examples:
+Örnekte GGML formatındaki Llama 2 sohbet (chat) modelini kullanacağız, ancak kod Xinference tarafından desteklenen tüm LLM sohbet modellerine kolayca uyarlanabilir. Aşağıda birkaç örnek verilmiştir:
 
-| Name          | Type       | Language | Format | Size (in billions) | Quantization                                |
+| Ad            | Tür        | Dil    | Format | Boyut (milyar parametre) | Kuantizasyon                                |
 | ------------- | ---------- | -------- | ------ | ------------------ | ------------------------------------------- |
 | llama-2-chat  | RLHF Model | en       | ggmlv3 | 7, 13, 70          | ’q2\_K’, ‘q3\_K\_L’, … , ‘q6\_K’, ‘q8\_0’   |
 | chatglm       | SFT Model  | en, zh   | ggmlv3 | 6                  | ’q4\_0’, ‘q4\_1’, ‘q5\_0’, ‘q5\_1’, ‘q8\_0’ |
@@ -18,48 +18,48 @@ We will be using the Llama 2 chat model in GGML format in the example, but the c
 | wizardlm-v1.1 | SFT Model  | en       | ggmlv3 | 13                 | ’q2\_K’, ‘q3\_K\_L’, … , ‘q6\_K’, ‘q8\_0’   |
 | vicuna-v1.3   | SFT Model  | en       | ggmlv3 | 7, 13              | ’q2\_K’, ‘q3\_K\_L’, … , ‘q6\_K’, ‘q8\_0’   |
 
-The latest complete list of supported models can be found in Xorbits Inference’s [official GitHub page](https://github.com/xorbitsai/inference/blob/main/README.md).
+Desteklenen modellerin güncel ve tam listesi Xorbits Inference'ın [resmi GitHub sayfasında](https://github.com/xorbitsai/inference/blob/main/README.md) bulunabilir.
 
-## 🤖 Install Xinference
+## 🤖 Xinference'ı Yükleyin
 
-i. Run `pip install "xinference[all]"` in a terminal window.
+i. Terminal penceresinde `pip install "xinference[all]"` komutunu çalıştırın.
 
-ii. After installation is complete, restart this jupyter notebook.
+ii. Kurulum tamamlandıktan sonra bu jupyter not defterini yeniden başlatın.
 
-iii. Run `xinference` in a new terminal window.
+iii. Yeni bir terminal penceresinde `xinference` komutunu çalıştırın.
 
-iv. You should see something similar to the following output:
+iv. Aşağıdakine benzer bir çıktı görmelisiniz:
 
-```
+```text
 INFO:xinference:Xinference successfully started. Endpoint: http://127.0.0.1:9997
 INFO:xinference.core.service:Worker 127.0.0.1:21561 has been added successfully
 INFO:xinference.deploy.worker:Xinference worker successfully started.
 ```
 
-v. In the endpoint description, locate the endpoint port number after the colon. In the above case it is `9997`.
+v. Uç nokta (endpoint) açıklamasında, iki noktadan sonraki uç nokta port numarasını bulun. Yukarıdaki durumda bu port `9997`'dir.
 
-vi. Set the port number with the following cell:
+vi. Port numarasını aşağıdaki hücre ile ayarlayın:
 
-```
+```python
 %pip install llama-index-llms-xinference
 ```
 
+```python
+port = 9997  # uç nokta port numaranızla değiştirin
 ```
-port = 9997  # replace with your endpoint port number
-```
 
-## 🚀 Launch Local Models
+## 🚀 Yerel Modelleri Başlatın
 
-In this step, we begin with importing the relevant libraries from `llama_index`
+Bu adımda, ilgili kütüphaneleri `llama_index` içerisinden içe aktararak başlıyoruz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 !pip install llama-index
 ```
 
-```
-# If Xinference can not be imported, you may need to restart jupyter notebook
+```python
+# Eğer Xinference içe aktarılamıyorsa, jupyter not defterini yeniden başlatmanız gerekebilir
 from llama_index.core import SummaryIndex
 from llama_index.core import (
     TreeIndex,
@@ -73,30 +73,30 @@ from xinference.client import RESTfulClient
 from IPython.display import Markdown, display
 ```
 
-Then, we launch a model and use it. This allows us to connect the model to documents and queries in later steps.
+Ardından, bir model başlatıyor ve kullanıyoruz. Bu, modeli sonraki adımlarda belgelere ve sorgulara bağlamamıza olanak tanır.
 
-Feel free to change the parameters for better performance! In order to achieve optimal results, it is recommended to use models above 13B in size. That being said, 7B models is more than enough for this short demo.
+Daha iyi performans için parametreleri değiştirmekten çekinmeyin! En iyi sonuçları elde etmek için 13B boyutunun üzerindeki modellerin kullanılması önerilir. Bununla birlikte, bu kısa demo için 7B modelleri fazlasıyla yeterlidir.
 
-Here are some more parameter options for the Llama 2 chat model in GGML format, listed from the least space-consuming to the most resource-intensive but high-performing.
+GGML formatındaki Llama 2 sohbet modeli için, en az alan kaplayandan en fazla kaynak tüketen ancak yüksek performanslı olana doğru sıralanmış bazı parametre seçenekleri aşağıdadır.
 
 model\_size\_in\_billions:
 
 `7`, `13`, `70`
 
-quantization for 7B and 13B models:
+7B ve 13B modelleri için kuantizasyon:
 
 `q2_K`, `q3_K_L`, `q3_K_M`, `q3_K_S`, `q4_0`, `q4_1`, `q4_K_M`, `q4_K_S`, `q5_0`, `q5_1`, `q5_K_M`, `q5_K_S`, `q6_K`, `q8_0`
 
-quantizations for 70B models:
+70B modelleri için kuantizasyon:
 
 `q4_0`
 
-```
-# Define a client to send commands to xinference
+```python
+# xinference'a komut göndermek için bir istemci tanımlayın
 client = RESTfulClient(f"http://localhost:{port}")
 
 
-# Download and Launch a model, this may take a while the first time
+# Bir model indirin ve başlatın, bu ilk seferde biraz zaman alabilir
 model_uid = client.launch_model(
     model_name="llama-2-chat",
     model_size_in_billions=7,
@@ -105,7 +105,7 @@ model_uid = client.launch_model(
 )
 
 
-# Initiate Xinference object to use the LLM
+# LLM'yi kullanmak için Xinference nesnesini başlatın
 llm = Xinference(
     endpoint=f"http://localhost:{port}",
     model_uid=model_uid,
@@ -114,45 +114,45 @@ llm = Xinference(
 )
 ```
 
-## 🕺 Index the Data… and Chat!
+## 🕺 Verileri İndeksleyin... ve Sohbet Edin!
 
-In this step, we combine the model and the data to create a query engine. The query engine can then be used as a chat bot, answering our queries based on the given data.
+Bu adımda, bir sorgu motoru oluşturmak için model ve verileri birleştiriyoruz. Sorgu motoru daha sonra bir sohbet robotu olarak kullanılabilir ve verilen verilere dayanarak sorgularımızı yanıtlayabilir.
 
-We will be using `VetorStoreIndex` since it is relatively fast. That being said, feel free to change the index for different experiences. Here are some available indexes already imported from the previous step:
+Nispeten hızlı olduğu için `VectorStoreIndex` kullanacağız. Bununla birlikte, farklı deneyimler için indeksi değiştirmekten çekinmeyin. Bir önceki adımda içe aktarılan bazı kullanılabilir indeksler şunlardır:
 
-`ListIndex`, `TreeIndex`, `VetorStoreIndex`, `KeywordTableIndex`, `KnowledgeGraphIndex`
+`ListIndex`, `TreeIndex`, `VectorStoreIndex`, `KeywordTableIndex`, `KnowledgeGraphIndex`
 
-To change index, simply replace `VetorStoreIndex` with another index in the following code.
+İndeksi değiştirmek için, aşağıdaki koddaki `VectorStoreIndex` yerine başka bir indeks yazmanız yeterlidir.
 
-The latest complete list of all available indexes can be found in Llama Index’s [official Docs](https://gpt-index.readthedocs.io/en/latest/core_modules/data_modules/index/modules.html)
+Tüm kullanılabilir indekslerin güncel ve tam listesi Llama Index'in [resmi dokümanlarında](https://gpt-index.readthedocs.io/en/latest/core_modules/data_modules/index/modules.html) bulunabilir.
 
-```
-# create index from the data
+```python
+# verilerden indeks oluştur
 documents = SimpleDirectoryReader("../data/paul_graham").load_data()
 
 
-# change index name in the following line
+# aşağıdaki satırda indeks adını değiştirin
 index = VectorStoreIndex.from_documents(documents=documents)
 
 
-# create the query engine
+# sorgu motorunu oluştur
 query_engine = index.as_query_engine(llm=llm)
 ```
 
-We can optionally set the temperature and the max answer length (in tokens) directly through the `Xinference` object before asking a question. This allows us to change parameters for different questions without rebuilding the query engine every time.
+İsteğe bağlı olarak, bir soru sormadan önce `temperature` ve maksimum yanıt uzunluğunu (token cinsinden) doğrudan `Xinference` nesnesi üzerinden ayarlayabiliriz. Bu, sorgu motorunu her seferinde yeniden oluşturmadan farklı sorular için parametreleri değiştirmemize olanak tanır.
 
-`temperature` is a number between 0 and 1 that controls the randomness of responses. Higher values increase creativity but may lead to off-topic replies. Setting to zero guarentees the same response every time.
+`temperature`, yanıtların rastgeleliğini kontrol eden 0 ile 1 arasında bir sayıdır. Daha yüksek değerler yaratıcılığı artırır ancak konu dışı yanıtlara yol açabilir. Sıfıra ayarlamak her seferinde aynı yanıtın alınmasını garanti eder.
 
-`max_tokens` is an integer that sets an upper bound for the response length. Increase it if answers seem cut off, but be aware that too long a response may exceed the context window and cause errors.
+`max_tokens`, yanıt uzunluğu için bir üst sınır belirleyen bir tamsayıdır. Yanıtlar kesilmiş gibi görünüyorsa bu değeri artırın, ancak çok uzun bir yanıtın bağlam penceresini aşabileceğini ve hatalara neden olabileceğini unutmayın.
 
-```
-# optionally, update the temperature and max answer length (in tokens)
+```python
+# isteğe bağlı olarak, sıcaklığı ve maksimum yanıt uzunluğunu (token cinsinden) güncelleyin
 llm.__dict__.update({"temperature": 0.0})
 llm.__dict__.update({"max_tokens": 2048})
 
 
-# ask a question and display the answer
-question = "What did the author do after his time at Y Combinator?"
+# bir soru sorun ve yanıtı görüntüleyin
+question = "Yazar, Y Combinator'daki vaktinden sonra ne yaptı?"
 
 
 response = query_engine.query(question)

@@ -81,13 +81,3 @@ if ref_doc_id:
     store.delete(ref_doc_id)
     print(store._collection.count_documents({}))
 ```
-
-```
-4454
-1
-4453
-```
-
-Note: For MongoDB Atlas, you have to create an Atlas Search Index.
-
-[MongoDB Docs | Create an Atlas Vector Search Index](https://www.mongodb.com/docs/atlas/atlas-vector-search/create-index/)

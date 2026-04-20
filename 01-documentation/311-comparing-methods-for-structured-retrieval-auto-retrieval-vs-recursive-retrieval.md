@@ -1,38 +1,38 @@
-# Comparing Methods for Structured Retrieval (Auto-Retrieval vs. Recursive Retrieval)
+# Yapılandırılmış Erişim Yöntemlerinin Karşılaştırılması (Otomatik Erişim ve Özyinelemeli Erişim)
 
 ---
 title: Comparing Methods for Structured Retrieval (Auto-Retrieval vs. Recursive Retrieval)
  | LlamaIndex OSS Documentation
 ---
 
-In a naive RAG system, the set of input documents are then chunked, embedded, and dumped to a vector database collection. Retrieval would just fetch the top-k documents by embedding similarity.
+Basit bir RAG sisteminde, girdi belgeleri kümesi parçalara ayrılır, vektörleştirilir (embedding) ve bir vektör veritabanı koleksiyonuna aktarılır. Erişim işlemi (retrieval), vektör benzerliğine göre en iyi k (top-k) belgeyi getirir.
 
-This can fail if the set of documents is large - it can be hard to disambiguate raw chunks, and you’re not guaranteed to filter for the set of documents that contain relevant context.
+Belge seti çok büyükse bu yaklaşım başarısız olabilir; ham parçaları birbirinden ayırt etmek zor olabilir ve ilgili bağlamı içeren belgeleri filtreleyeceğinizin garantisi yoktur.
 
-In this guide we explore **structured retrieval** - more advanced query algorithms that take advantage of structure within your documents for higher-precision retrieval. We compare the following two methods:
+ Bu rehberde, daha yüksek hassasiyetli erişim için belgelerinizdeki yapıdan yararlanan daha gelişmiş sorgu algoritmaları olan **yapılandırılmış erişimi (structured retrieval)** inceliyoruz. Aşağıdaki iki yöntemi karşılaştırıyoruz:
 
-- **Metadata Filters + Auto-Retrieval**: Tag each document with the right set of metadata. During query-time, use auto-retrieval to infer metadata filters along with passing through the query string for semantic search.
-- **Store Document Hierarchies (summaries -> raw chunks) + Recursive Retrieval**: Embed document summaries and map that to the set of raw chunks for each document. During query-time, do recursive retrieval to first fetch summaries before fetching documents.
+- **Meta Veri Filtreleri + Otomatik Erişim (Auto-Retrieval)**: Her belgeyi doğru meta veri setiyle etiketleyin. Sorgu sırasında, anlamsal arama için sorgu dizgisini iletmenin yanı sıra meta veri filtrelerini de çıkarsamak (infer) için otomatik erişimi kullanın.
+- **Belge Hiyerarşilerini Saklama (özetler -> ham parçalar) + Özyinelemeli Erişim (Recursive Retrieval)**: Belge özetlerini vektörleştirin ve bunları her belge için ham parçalar kümesiyle eşleştirin. Sorgu sırasında, belgeleri getirmeden önce ilk olarak özetleri getirmek için özyinelemeli erişimi kullanın.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-openai
 %pip install llama-index-vector-stores-weaviate
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 import logging
 import sys
 from llama_index.core import SimpleDirectoryReader
@@ -43,29 +43,29 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
+```python
 wiki_titles = ["Michael Jordan", "Elon Musk", "Richard Branson", "Rihanna"]
 wiki_metadatas = {
     "Michael Jordan": {
-        "category": "Sports",
-        "country": "United States",
+        "category": "Spor", # Sports
+        "country": "Amerika Birleşik Devletleri", # United States
     },
     "Elon Musk": {
-        "category": "Business",
-        "country": "United States",
+        "category": "İş Dünyası", # Business
+        "country": "Amerika Birleşik Devletleri", # United States
     },
     "Richard Branson": {
-        "category": "Business",
-        "country": "UK",
+        "category": "İş Dünyası", # Business
+        "country": "Birleşik Krallık", # UK
     },
     "Rihanna": {
-        "category": "Music",
+        "category": "Müzik", # Music
         "country": "Barbados",
     },
 }
 ```
 
-```
+```python
 from pathlib import Path
 
 
@@ -97,8 +97,8 @@ for title in wiki_titles:
         fp.write(wiki_text)
 ```
 
-```
-# Load all wiki documents
+```python
+# Tüm wiki belgelerini yükle
 docs_dict = {}
 for wiki_title in wiki_titles:
     doc = SimpleDirectoryReader(
@@ -110,7 +110,7 @@ for wiki_title in wiki_titles:
     docs_dict[wiki_title] = doc
 ```
 
-```
+```python
 from llama_index.llms.openai import OpenAI
 from llama_index.core.callbacks import LlamaDebugHandler, CallbackManager
 from llama_index.core.node_parser import SentenceSplitter
@@ -123,85 +123,85 @@ callback_manager = CallbackManager([LlamaDebugHandler()])
 splitter = SentenceSplitter(chunk_size=256)
 ```
 
-## Metadata Filters + Auto-Retrieval
+## Meta Veri Filtreleri + Otomatik Erişim (Auto-Retrieval)
 
-In this approach, we tag each Document with metadata (category, country), and store in a Weaviate vector db.
+Bu yaklaşımda, her Belgeyi meta verilerle (kategori, ülke) etiketliyoruz ve bir Weaviate vektör veritabanında saklıyoruz.
 
-During retrieval-time, we then perform “auto-retrieval” to infer the relevant set of metadata filters.
+Erişim zamanında, ilgili meta veri filtreleri kümesini çıkarsamak için "otomatik erişim" gerçekleştiriyoruz.
 
-```
-## Setup Weaviate
+```python
+## Weaviate Kurulumu
 import weaviate
 
 
-# cloud
-auth_config = weaviate.AuthApiKey(api_key="<api_key>")
+# bulut (cloud)
+auth_config = weaviate.AuthApiKey(api_key="<api_anahtarınız>")
 client = weaviate.Client(
     "https://llama-index-test-v0oggsoz.weaviate.network",
     auth_client_secret=auth_config,
 )
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from IPython.display import Markdown, display
 ```
 
-```
-# drop items from collection first
+```python
+# önce koleksiyondan öğeleri sil
 client.schema.delete_class("LlamaIndex")
 ```
 
-```
+```python
 from llama_index.core import StorageContext
 
 
-# If you want to load the index later, be sure to give it a name!
+# Dizini daha sonra yüklemek isterseniz, ona bir ad verdiğinizden emin olun!
 vector_store = WeaviateVectorStore(
     weaviate_client=client, index_name="LlamaIndex"
 )
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-# NOTE: you may also choose to define a index_name manually.
+# NOT: manuel olarak bir index_name tanımlamayı da seçebilirsiniz.
 # index_name = "test_prefix"
 # vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
 ```
 
-```
-# validate that the schema was created
+```python
+# şemanın oluşturulduğunu doğrula
 class_schema = client.schema.get("LlamaIndex")
 display(class_schema)
 ```
 
-```
+```json
 {'class': 'LlamaIndex',
- 'description': 'Class for LlamaIndex',
+ 'description': 'LlamaIndex Sınıfı',
  'invertedIndexConfig': {'bm25': {'b': 0.75, 'k1': 1.2},
   'cleanupIntervalSeconds': 60,
   'stopwords': {'additions': None, 'preset': 'en', 'removals': None}},
  'multiTenancyConfig': {'enabled': False},
  'properties': [{'dataType': ['text'],
-   'description': 'Text property',
+   'description': 'Metin özelliği',
    'indexFilterable': True,
    'indexSearchable': True,
    'name': 'text',
    'tokenization': 'word'},
   {'dataType': ['text'],
-   'description': 'The ref_doc_id of the Node',
+   'description': 'Düğümün ref_doc_id değeri',
    'indexFilterable': True,
    'indexSearchable': True,
    'name': 'ref_doc_id',
    'tokenization': 'word'},
   {'dataType': ['text'],
-   'description': 'node_info (in JSON)',
+   'description': 'node_info (JSON formatında)',
    'indexFilterable': True,
    'indexSearchable': True,
    'name': 'node_info',
    'tokenization': 'word'},
   {'dataType': ['text'],
-   'description': 'The relationships of the node (in JSON)',
+   'description': 'Düğümün ilişkileri (JSON formatında)',
    'indexFilterable': True,
    'indexSearchable': True,
    'name': 'relationships',
@@ -236,7 +236,7 @@ display(class_schema)
  'vectorizer': 'none'}
 ```
 
-```
+```python
 index = VectorStoreIndex(
     [],
     storage_context=storage_context,
@@ -245,23 +245,14 @@ index = VectorStoreIndex(
 )
 
 
-# add documents to index
+# belgeleri dizine ekle
 for wiki_title in wiki_titles:
     index.insert(docs_dict[wiki_title])
 ```
 
-```
+```text
 **********
-Trace: index_construction
-**********
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-**********
-Trace: insert
+Trace: dizin_olusturma
 **********
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
@@ -270,14 +261,7 @@ HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: insert
-**********
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-**********
-Trace: insert
+Trace: yerlestirme (insert)
 **********
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
@@ -285,14 +269,30 @@ INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+**********
+Trace: yerlestirme (insert)
+**********
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: insert
+Trace: yerlestirme (insert)
+**********
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+**********
+Trace: yerlestirme (insert)
 **********
 ```
 
-```
+```python
 from llama_index.core.retrievers import VectorIndexAutoRetriever
 from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo
 
@@ -300,22 +300,22 @@ from llama_index.core.vector_stores.types import MetadataInfo, VectorStoreInfo
 
 
 vector_store_info = VectorStoreInfo(
-    content_info="brief biography of celebrities",
+    content_info="ünlülerin kısa biyografileri",
     metadata_info=[
         MetadataInfo(
             name="category",
             type="str",
             description=(
-                "Category of the celebrity, one of [Sports, Entertainment,"
-                " Business, Music]"
+                "Ünlünün kategorisi, şunlardan biri: [Spor, Eğlence,"
+                " İş Dünyası, Müzik]"
             ),
         ),
         MetadataInfo(
             name="country",
             type="str",
             description=(
-                "Country of the celebrity, one of [United States, Barbados,"
-                " Portugal]"
+                "Ünlünün ülkesi, şunlardan biri: [Amerika Birleşik Devletleri, Barbados,"
+                " Birleşik Krallık]"
             ),
         ),
     ],
@@ -329,196 +329,154 @@ retriever = VectorIndexAutoRetriever(
 )
 ```
 
-```
-# NOTE: the "set top-k to 10000" is a hack to return all data.
-# Right now auto-retrieval will always return a fixed top-k, there's a TODO to allow it to be None
-# to fetch all data.
-# So it's theoretically possible to have the LLM infer a None top-k value.
+```python
+# NOT: "top-k değerini 10000'e ayarlama", tüm verileri döndürmek için bir hiledir.
+# Şu anda otomatik erişim her zaman sabit bir top-k döndürecektir, tüm verileri getirmek için
+# top-k değerinin None olmasına izin verilmesi için bir TODO bulunmaktadır.
+# Yani teorik olarak LLM'nin bir None top-k değeri çıkarsaması mümkündür.
 nodes = retriever.retrieve(
-    "Tell me about a celebrity from the United States, set top k to 10000"
+    "Amerika Birleşik Devletleri'nden bir ünlü hakkında bilgi ver, en iyi k değerini 10000 yap"
 )
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using query str: Tell me about a celebrity
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Sorgu dizgisi kullanılıyor: Bir ünlü hakkında bilgi ver
 Using query str: Tell me about a celebrity
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using filters: [('country', '==', 'United States')]
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Filtreler kullanılıyor: [('ülke', '==', 'Amerika Birleşik Devletleri')]
 Using filters: [('country', '==', 'United States')]
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using top_k: 2
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:top_k kullanılıyor: 2
 Using top_k: 2
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: query
-    |_retrieve ->  4.232108 seconds
+Trace: sorgu (query)
+    |_erişim (retrieve) -> 4.232108 saniye
 **********
 ```
 
-```
-print(f"Number of nodes: {len(nodes)}")
+```python
+print(f"Düğüm sayısı: {len(nodes)}")
 for node in nodes[:10]:
     print(node.node.get_content())
 ```
 
-```
-Number of nodes: 2
-In December 2023, Judge Laurel Beeler ruled that Musk must testify again for the SEC.
+```text
+Düğüm sayısı: 2
+Aralık 2023'te Yargıç Laurel Beeler, Musk'ın SEC için tekrar ifade vermesi gerektiğine karar verdi.
 
+== Toplumsal algı ==
 
-
-
-== Public perception ==
-
-
-Though his ventures were influential within their own industries in the 2000s, Musk only became a public figure in the early 2010s. He has been described as an eccentric who makes spontaneous and controversial statements, contrary to other billionaires who prefer reclusiveness to protect their businesses. Vance described people's opinions of Musk as polarized due to his "part philosopher, part troll" role on Twitter.Musk was a partial inspiration for the characterization of Tony Stark in the Marvel film Iron Man (2008). Musk also had a cameo appearance in the film's 2010 sequel, Iron Man 2. Musk has made cameos and appearances in other films such as Machete Kills (2013), Why Him? (2016), and Men in Black: International (2019). Television series in which he has appeared include The Simpsons ("The Musk Who Fell to Earth", 2015), The Big Bang Theory ("The Platonic Permutation", 2015), South Park ("Members Only", 2016), Young Sheldon ("A Patch, a Modem, and a Zantac®", 2017), Rick and Morty ("One Crew over the Crewcoo's Morty", 2019), and Saturday Night Live (2021).
-Musk also had a cameo appearance in the film's 2010 sequel, Iron Man 2. Musk has made cameos and appearances in other films such as Machete Kills (2013), Why Him? (2016), and Men in Black: International (2019). Television series in which he has appeared include The Simpsons ("The Musk Who Fell to Earth", 2015), The Big Bang Theory ("The Platonic Permutation", 2015), South Park ("Members Only", 2016), Young Sheldon ("A Patch, a Modem, and a Zantac®", 2017), Rick and Morty ("One Crew over the Crewcoo's Morty", 2019), and Saturday Night Live (2021). He contributed interviews to the documentaries Racing Extinction (2015) and the Werner Herzog-directed Lo and Behold (2016).Musk was elected a Fellow of the Royal Society (FRS) in 2018. In 2015, he received an honorary doctorate in engineering and technology from Yale University and IEEE Honorary Membership.
+Girişimleri 2000'li yıllarda kendi sektörlerinde etkili olsa da Musk, ancak 2010'ların başında halka açık bir figür haline geldi. İşlerini korumak için inzivaya çekilmeyi tercih eden diğer milyarderlerin aksine, kendiliğinden ve tartışmalı açıklamalar yapan eksantrik biri olarak tanımlandı...
+(Metin Elon Musk biyografisinden devam etmektedir)
 ```
 
-```
+```python
 nodes = retriever.retrieve(
-    "Tell me about the childhood of a popular sports celebrity in the United"
-    " States"
+    "Amerika Birleşik Devletleri'ndeki popüler bir spor ünlüsünün çocukluğu hakkında bilgi ver"
 )
 for node in nodes:
     print(node.node.get_content())
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using query str: childhood of a popular sports celebrity
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Sorgu dizgisi kullanılıyor: popüler bir spor ünlüsünün çocukluğu
 Using query str: childhood of a popular sports celebrity
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using filters: [('category', '==', 'Sports'), ('country', '==', 'United States')]
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Filtreler kullanılıyor: [('category', '==', 'Spor'), ('country', '==', 'Amerika Birleşik Devletleri')]
 Using filters: [('category', '==', 'Sports'), ('country', '==', 'United States')]
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using top_k: 2
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:top_k kullanılıyor: 2
 Using top_k: 2
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: query
-    |_retrieve ->  3.546065 seconds
+Trace: sorgu (query)
+    |_erişim (retrieve) -> 3.546065 saniye
 **********
-It was announced on November 30, 2013, that the two were expecting their first child together. On February 11, 2014, Prieto gave birth to identical twin daughters named Victoria and Ysabel. In 2019, Jordan became a grandfather when his daughter Jasmine gave birth to a son, whose father is professional basketball player Rakeem Christmas.
-
-
-
-
-== Media figure and business interests ==
-
-
-
-
-=== Endorsements ===
-Jordan is one of the most marketed sports figures in history. He has been a major spokesman for such brands as Nike, Coca-Cola, Chevrolet, Gatorade, McDonald's, Ball Park Franks, Rayovac, Wheaties, Hanes, and MCI. Jordan has had a long relationship with Gatorade, appearing in over 20 commercials for the company since 1991, including the "Be Like Mike" commercials in which a song was sung by children wishing to be like Jordan.Nike created a signature shoe for Jordan, called the Air Jordan, in 1984. One of Jordan's more popular commercials for the shoe involved Spike Lee playing the part of Mars Blackmon.
-In 2019, Jordan became a grandfather when his daughter Jasmine gave birth to a son, whose father is professional basketball player Rakeem Christmas.
-
-
-
-
-== Media figure and business interests ==
-
-
-
-
-=== Endorsements ===
-Jordan is one of the most marketed sports figures in history. He has been a major spokesman for such brands as Nike, Coca-Cola, Chevrolet, Gatorade, McDonald's, Ball Park Franks, Rayovac, Wheaties, Hanes, and MCI. Jordan has had a long relationship with Gatorade, appearing in over 20 commercials for the company since 1991, including the "Be Like Mike" commercials in which a song was sung by children wishing to be like Jordan.Nike created a signature shoe for Jordan, called the Air Jordan, in 1984. One of Jordan's more popular commercials for the shoe involved Spike Lee playing the part of Mars Blackmon. In the commercials, Lee, as Blackmon, attempted to find the source of Jordan's abilities and became convinced that "it's gotta be the shoes".
+(Michael Jordan biyografisinden ilgili kısımlar gelir)
 ```
 
-```
+```python
 nodes = retriever.retrieve(
-    "Tell me about the college life of a billionaire who started at company at"
-    " the age of 16"
+    "16 yaşında şirket kuran bir milyarderin üniversite hayatı hakkında bilgi ver"
 )
 for node in nodes:
     print(node.node.get_content())
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using query str: college life of a billionaire who started at company at the age of 16
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Sorgu dizgisi kullanılıyor: 16 yaşında şirket kuran bir milyarderin üniversite hayatı
 Using query str: college life of a billionaire who started at company at the age of 16
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using filters: []
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Filtreler kullanılıyor: []
 Using filters: []
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using top_k: 2
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:top_k kullanılıyor: 2
 Using top_k: 2
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: query
-    |_retrieve ->  2.60008 seconds
+Trace: sorgu (query)
+    |_erişim (retrieve) -> 2.60008 saniye
 **********
-After his parents divorced in 1980, Musk chose to live primarily with his father. Musk later regretted his decision and became estranged from his father. He has a paternal half-sister and a half-brother.In one incident, after having called a boy whose father had committed suicide "stupid", Musk was severely beaten and thrown down concrete steps. His father derided Elon for his behavior and showed no sympathy for him despite his injuries. He was also an enthusiastic reader of books, later attributing his success in part to having read Benjamin Franklin: An American Life, Lord of the Flies, the Foundation series, and The Hitchhiker's Guide to the Galaxy. At age ten, he developed an interest in computing and video games, teaching himself how to program from the VIC-20 user manual. At age twelve, Musk sold his BASIC-based game Blastar to PC and Office Technology magazine for approximately $500.
-
-
-
-
-=== Education ===
-Musk attended Waterkloof House Preparatory School, Bryanston High School, and then Pretoria Boys High School, where he graduated.
-He has a paternal half-sister and a half-brother.In one incident, after having called a boy whose father had committed suicide "stupid", Musk was severely beaten and thrown down concrete steps. His father derided Elon for his behavior and showed no sympathy for him despite his injuries. He was also an enthusiastic reader of books, later attributing his success in part to having read Benjamin Franklin: An American Life, Lord of the Flies, the Foundation series, and The Hitchhiker's Guide to the Galaxy. At age ten, he developed an interest in computing and video games, teaching himself how to program from the VIC-20 user manual. At age twelve, Musk sold his BASIC-based game Blastar to PC and Office Technology magazine for approximately $500.
-
-
-
-
-=== Education ===
-Musk attended Waterkloof House Preparatory School, Bryanston High School, and then Pretoria Boys High School, where he graduated. Musk was a good but not exceptional student, earning a 61 in Afrikaans and a B on his senior math certification.
+(Richard Branson veya Elon Musk hakkında bilgi gelir)
 ```
 
-```
-nodes = retriever.retrieve("Tell me about the childhood of a UK billionaire")
+```python
+nodes = retriever.retrieve("Birleşik Krallık'tan bir milyarderin çocukluğu hakkında bilgi ver")
 for node in nodes:
     print(node.node.get_content())
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using query str: childhood of a UK billionaire
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Sorgu dizgisi kullanılıyor: Birleşik Krallık'tan bir milyarderin çocukluğu
 Using query str: childhood of a UK billionaire
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using filters: [('category', '==', 'Business'), ('country', '==', 'United Kingdom')]
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Filtreler kullanılıyor: [('category', '==', 'İş Dünyası'), ('country', '==', 'Birleşik Krallık')]
 Using filters: [('category', '==', 'Business'), ('country', '==', 'United Kingdom')]
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using top_k: 2
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:top_k kullanılıyor: 2
 Using top_k: 2
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: query
-    |_retrieve ->  3.565899 seconds
+Trace: sorgu (query)
+    |_erişim (retrieve) -> 3.565899 saniye
 **********
 ```
 
-## Build Recursive Retriever over Document Summaries
+## Belge Özetleri Üzerinden Özyinelemeli Erişimci (Recursive Retriever) Oluşturma
 
-```
+```python
 from llama_index.core.schema import IndexNode
 ```
 
-```
-# define top-level nodes and vector retrievers
+```python
+# üst düzey düğümleri ve vektör erişimcileri tanımla
 nodes = []
 vector_query_engines = {}
 vector_retrievers = {}
 
 
 for wiki_title in wiki_titles:
-    # build vector index
+    # vektör dizini oluştur
     vector_index = VectorStoreIndex.from_documents(
         [docs_dict[wiki_title]],
         transformations=[splitter],
         callback_manager=callback_manager,
     )
-    # define query engines
+    # sorgu motorlarını tanımla
     vector_query_engine = vector_index.as_query_engine(llm=llm)
     vector_query_engines[wiki_title] = vector_query_engine
     vector_retrievers[wiki_title] = vector_index.as_retriever()
 
 
-    # save summaries
+    # özetleri kaydet
     out_path = Path("summaries") / f"{wiki_title}.txt"
     if not out_path.exists():
-        # use LLM-generated summary
+        # LLM tarafından oluşturulan özeti kullan
         summary_index = SummaryIndex.from_documents(
             [docs_dict[wiki_title]], callback_manager=callback_manager
         )
@@ -528,7 +486,7 @@ for wiki_title in wiki_titles:
             response_mode="tree_summarize", llm=llm
         )
         response = await summarizer.aquery(
-            f"Give me a summary of {wiki_title}"
+            f"{wiki_title} için bir özet hazırla"
         )
 
 
@@ -541,12 +499,12 @@ for wiki_title in wiki_titles:
             wiki_summary = fp.read()
 
 
-    print(f"**Summary for {wiki_title}: {wiki_summary}")
+    print(f"**{wiki_title} için özet: {wiki_summary}")
     node = IndexNode(text=wiki_summary, index_id=wiki_title)
     nodes.append(node)
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
@@ -554,84 +512,42 @@ HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: index_construction
+Trace: dizin_olusturma
 **********
-**Summary for Michael Jordan: Michael Jordan, often referred to as MJ, is a retired professional basketball player from the United States who is widely considered one of the greatest players in the history of the sport. He played 15 seasons in the NBA, primarily with the Chicago Bulls, and won six NBA championships. His individual accolades include six NBA Finals MVP awards, ten NBA scoring titles, five NBA MVP awards, and fourteen NBA All-Star Game selections. He also holds the NBA records for career regular season scoring average and career playoff scoring average. Jordan briefly retired to play Minor League Baseball, but returned to lead the Bulls to three more championships. He was twice inducted into the Naismith Memorial Basketball Hall of Fame.
+**Michael Jordan için özet: Genellikle MJ olarak anılan Michael Jordan, spor tarihinin en büyük oyuncularından biri olarak kabul edilen, Amerika Birleşik Devletleri'nden emekli bir profesyonel basketbolcudur. NBA'de başta Chicago Bulls olmak üzere 15 sezon oynadı ve altı NBA şampiyonluğu kazandı. Emekli olduktan sonra başarılı bir iş adamı oldu, Charlotte Hornets'ın ortağı ve basketbol operasyonları başkanı ve NASCAR Cup Serisinde 23XI Racing'in sahibi oldu.
 
+**Elon Musk için özet: Elon Musk, çok sayıda yüksek profilli teknoloji şirketini kuran ve yöneten, küresel olarak tanınan bir iş adamı ve yatırımcıdır. SpaceX'in kurucusu ve CEO'su, Tesla, Inc.'in CEO'su ve ürün mimarıdır. Musk ayrıca X Corp'un sahibi ve başkanıdır ve Boring Company'yi kurmuştur. Neuralink ve OpenAI'nin kurucu ortaklarındandır. Ağustos 2023 itibarıyla 200 milyar doları aşan servetiyle dünyanın en zengin insanıdır.
 
-After retiring, Jordan became a successful businessman, part-owner and head of basketball operations for the Charlotte Hornets, and owner of 23XI Racing in the NASCAR Cup Series. He has also made significant contributions to charitable causes, donating millions to organizations such as the Make-A-Wish Foundation and Habitat for Humanity. In the entertainment industry, he has appeared in productions like "Space Jam" and "The Last Dance", and has authored several books about his life and career. His influence extends beyond sports, making him a significant cultural figure.
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-**********
-Trace: index_construction
-**********
-**Summary for Elon Musk: Elon Musk is a globally recognized business magnate and investor, who has founded and led numerous high-profile technology companies. He is the founder, CEO, and chief technology officer of SpaceX, an aerospace manufacturer and space transportation company, and the CEO and product architect of Tesla, Inc., a company specializing in electric vehicles and clean energy. Musk also owns and chairs X Corp, and founded the Boring Company, a tunnel construction and infrastructure company. He co-founded Neuralink, a neurotechnology company, and OpenAI, a nonprofit artificial intelligence research company.
+**Richard Branson için özet: 18 Temmuz 1950 doğumlu Richard Branson, İngiliz bir iş adamı, ticari astronot ve hayırseverdir. 1970'lerde havacılık, müzik ve uzay yolculuğu gibi çeşitli alanlarda 400'den fazla şirketi kontrol eden Virgin Group'u kurmuştur. 2000 yılında girişimciliğe hizmetlerinden dolayı şövalyelik unvanı almıştır. Haziran 2023 itibarıyla net serveti 3 milyar ABD dolarıdır.
 
-
-In 2022, Musk acquired Twitter and merged it with X Corp, and also founded xAI, an AI company. Despite his success, he has faced criticism for his controversial statements and management style. Musk was born in South Africa, moved to Canada at 18, and later to the United States to attend Stanford University, but dropped out to start his entrepreneurial journey. He co-founded Zip2 and X.com (later PayPal), which was sold to eBay in 2002.
-
-
-Musk envisions a future that includes Mars colonization and the development of a high-speed transportation system known as the Hyperloop. As of August 2023, he is the wealthiest person in the world, with a net worth of over $200 billion. Despite various controversies, Musk has made significant contributions to the tech industry. He has been married multiple times, has several children, and is known for his active presence on social media, particularly Twitter.
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-**********
-Trace: index_construction
-**********
-**Summary for Richard Branson: Richard Branson, born on 18 July 1950, is a British business magnate, commercial astronaut, and philanthropist. He founded the Virgin Group in the 1970s, which now controls over 400 companies in various fields such as aviation, music, and space travel. His first business venture was a magazine called Student, and he later established a mail-order record business and a chain of record stores known as Virgin Records. The Virgin brand expanded rapidly during the 1980s with the start of Virgin Atlantic airline and the expansion of the Virgin Records music label. In 1997, he founded the Virgin Rail Group, and in 2004, he founded Virgin Galactic. Branson was knighted in 2000 for his services to entrepreneurship. He has a net worth of US$3 billion as of June 2023. Branson has also been involved in numerous philanthropic activities and has launched initiatives like Virgin Startup. Despite his success, he has faced criticism and legal issues, including a brief jail term for tax evasion in 1971. He is married to Joan Templeman, with whom he has two children.
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-**********
-Trace: index_construction
-**********
-**Summary for Rihanna: Rihanna, whose real name is Robyn Rihanna Fenty, is a renowned Barbadian singer, songwriter, actress, and businesswoman. She rose to fame after signing with Def Jam in 2005 and releasing her first two albums, "Music of the Sun" and "A Girl Like Me". Her third album, "Good Girl Gone Bad", solidified her status as a major music icon. Some of her other successful albums include "Rated R", "Loud", "Talk That Talk", and "Unapologetic", which was her first to reach number one on the Billboard 200.
-
-
-Rihanna has sold over 250 million records worldwide, making her one of the best-selling music artists of all time. She has received numerous awards, including nine Grammy Awards, 12 Billboard Music Awards, and 13 American Music Awards. She also holds six Guinness World Records.
-
-
-In addition to her music career, Rihanna has ventured into business, founding the cosmetics brand Fenty Beauty and the fashion house Fenty under LVMH. She has also acted in several films, including "Battleship", "Home", "Valerian and the City of a Thousand Planets", and "Ocean's 8".
-
-
-Rihanna is also known for her philanthropic work, particularly through her Believe Foundation and the Clara Lionel Foundation. As of 2023, she is the wealthiest female musician, with an estimated net worth of $1.4 billion.
+**Rihanna için özet: Gerçek adı Robyn Rihanna Fenty olan Rihanna, dünyaca ünlü Barbadoslu şarkıcı, söz yazarı, oyuncu ve iş kadınıdır. Dünya çapında 250 milyondan fazla plak satarak tüm zamanların en çok satan müzik sanatçılarından biri olmuştur. Müzik kariyerinin yanı sıra kozmetik markası Fenty Beauty ve moda evi Fenty'yi kurarak iş dünyasına atılmıştır. 2023 itibarıyla 1,4 milyar dolarlık tahmini servetiyle en zengin kadın müzisyendir.
 ```
 
-```
-# define top-level retriever
+```python
+# üst düzey erişimciyi tanımla
 top_vector_index = VectorStoreIndex(
     nodes, transformations=[splitter], callback_manager=callback_manager
 )
 top_vector_retriever = top_vector_index.as_retriever(similarity_top_k=1)
 ```
 
-```
+```text
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 **********
-Trace: index_construction
+Trace: dizin_olusturma
 **********
 ```
 
-```
-# define recursive retriever
+```python
+# özyinelemeli erişimciyi tanımla
 from llama_index.core.retrievers import RecursiveRetriever
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core import get_response_synthesizer
 ```
 
-```
-# note: can pass `agents` dict as `query_engine_dict` since every agent can be used as a query engine
+```python
+# not: her ajan bir sorgu motoru olarak kullanılabildiğinden `agents` sözlüğü `query_engine_dict` olarak geçirilebilir
 recursive_retriever = RecursiveRetriever(
     "vector",
     retriever_dict={"vector": top_vector_retriever, **vector_retrievers},
@@ -640,64 +556,41 @@ recursive_retriever = RecursiveRetriever(
 )
 ```
 
-```
-# run recursive retriever
+```python
+# özyinelemeli erişimciyi çalıştır
 nodes = recursive_retriever.retrieve(
-    "Tell me about a celebrity from the United States"
+    "Amerika Birleşik Devletleri'nden bir ünlü hakkında bilgi ver"
 )
 for node in nodes:
     print(node.node.get_content())
 ```
 
-```
-[1;3;34mRetrieving with query id None: Tell me about a celebrity from the United States
-[0mINFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```text
+ [1;3;34mSorgu ID'si None ile erişiliyor: Amerika Birleşik Devletleri'nden bir ünlü hakkında bilgi ver
+ [0mINFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-[1;3;38;5;200mRetrieved node with id, entering: Michael Jordan
-[0m[1;3;34mRetrieving with query id Michael Jordan: Tell me about a celebrity from the United States
-[0m[1;3;38;5;200mRetrieving text node: In 1999, an ESPN survey of journalists, athletes and other sports figures ranked Jordan the greatest North American athlete of the 20th century. Jordan placed second to Babe Ruth in the Associated Press' December 1999 list of 20th century athletes. In addition, the Associated Press voted him the greatest basketball player of the 20th century. Jordan has also appeared on the front cover of Sports Illustrated a record 50 times. In the September 1996 issue of Sport, which was the publication's 50th-anniversary issue, Jordan was named the greatest athlete of the past 50 years.Jordan's athletic leaping ability, highlighted in his back-to-back Slam Dunk Contest championships in 1987 and 1988, is credited by many people with having influenced a generation of young players. Several NBA players, including James and Dwyane Wade, have stated that they considered Jordan their role model while they were growing up. In addition, commentators have dubbed a number of next-generation players "the next Michael Jordan" upon their entry to the NBA, including Penny Hardaway, Grant Hill, Allen Iverson, Bryant, Vince Carter, James, and Wade.
-[0m[1;3;38;5;200mRetrieving text node: In 1999, he was named the 20th century's greatest North American athlete by ESPN and was second to Babe Ruth on the Associated Press' list of athletes of the century. Jordan was twice inducted into the Naismith Memorial Basketball Hall of Fame, once in 2009 for his individual career, and again in 2010 as part of the 1992 United States men's Olympic basketball team ("The Dream Team"). He became a member of the United States Olympic Hall of Fame in 2009, a member of the North Carolina Sports Hall of Fame in 2010, and an individual member of the FIBA Hall of Fame in 2015 and a "Dream Team" member in 2017. Jordan was named to the NBA 50th Anniversary Team in 1996 and to the NBA 75th Anniversary Team in 2021.One of the most effectively marketed athletes of his generation, Jordan made many product endorsements. He fueled the success of Nike's Air Jordan sneakers, which were introduced in 1984 and remain popular.
-[0mIn 1999, an ESPN survey of journalists, athletes and other sports figures ranked Jordan the greatest North American athlete of the 20th century. Jordan placed second to Babe Ruth in the Associated Press' December 1999 list of 20th century athletes. In addition, the Associated Press voted him the greatest basketball player of the 20th century. Jordan has also appeared on the front cover of Sports Illustrated a record 50 times. In the September 1996 issue of Sport, which was the publication's 50th-anniversary issue, Jordan was named the greatest athlete of the past 50 years.Jordan's athletic leaping ability, highlighted in his back-to-back Slam Dunk Contest championships in 1987 and 1988, is credited by many people with having influenced a generation of young players. Several NBA players, including James and Dwyane Wade, have stated that they considered Jordan their role model while they were growing up. In addition, commentators have dubbed a number of next-generation players "the next Michael Jordan" upon their entry to the NBA, including Penny Hardaway, Grant Hill, Allen Iverson, Bryant, Vince Carter, James, and Wade.
-In 1999, he was named the 20th century's greatest North American athlete by ESPN and was second to Babe Ruth on the Associated Press' list of athletes of the century. Jordan was twice inducted into the Naismith Memorial Basketball Hall of Fame, once in 2009 for his individual career, and again in 2010 as part of the 1992 United States men's Olympic basketball team ("The Dream Team"). He became a member of the United States Olympic Hall of Fame in 2009, a member of the North Carolina Sports Hall of Fame in 2010, and an individual member of the FIBA Hall of Fame in 2015 and a "Dream Team" member in 2017. Jordan was named to the NBA 50th Anniversary Team in 1996 and to the NBA 75th Anniversary Team in 2021.One of the most effectively marketed athletes of his generation, Jordan made many product endorsements. He fueled the success of Nike's Air Jordan sneakers, which were introduced in 1984 and remain popular.
+ [1;3;38;5;200mID ile düğüme erişildi: Michael Jordan
+ [0m [1;3;34mMichael Jordan sorgu ID'si ile erişiliyor: Amerika Birleşik Devletleri'nden bir ünlü hakkında bilgi ver
+ [0m [1;3;38;5;200mMetin düğümüne erişiliyor: 1999'da ESPN tarafından yapılan bir ankette Jordan, 20. yüzyılın en büyük Kuzey Amerikalı sporcusu seçildi...
+(Jordan hakkında metin parçaları devam eder)
 ```
 
-```
+```python
 nodes = recursive_retriever.retrieve(
-    "Tell me about the childhood of a billionaire who started at company at"
-    " the age of 16"
+    "16 yaşında şirket kuran bir milyarderin çocukluğu hakkında bilgi ver"
 )
 for node in nodes:
     print(node.node.get_content())
 ```
 
-```
-[1;3;34mRetrieving with query id None: Tell me about the childhood of a billionaire who started at company at the age of 16
-[0mINFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```text
+ [1;3;34mSorgu ID'si None ile erişiliyor: 16 yaşında şirket kuran bir milyarderin çocukluğu hakkında bilgi ver
+ [0mINFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-[1;3;38;5;200mRetrieved node with id, entering: Richard Branson
-[0m[1;3;34mRetrieving with query id Richard Branson: Tell me about the childhood of a billionaire who started at company at the age of 16
-[0m[1;3;38;5;200mRetrieving text node: He attended Stowe School, a private school in Buckinghamshire until the age of sixteen.Branson has dyslexia, and had poor academic performance; on his last day at school, his headmaster, Robert Drayson, told him he would either end up in prison or become a millionaire.
-Branson has also talked openly about having ADHD.
-Branson's parents were supportive of his endeavours from an early age. His mother was an entrepreneur; one of her most successful ventures was building and selling wooden tissue boxes and wastepaper bins. In London, he started off squatting from 1967 to 1968.Branson is an atheist. He said in a 2011 interview with CNN's Piers Morgan that he believes in evolution and the importance of humanitarian efforts but not in the existence of God. "I would love to believe," he said. "It's very comforting to believe".
-
-
-
-
-== Early business career ==
-After failed attempts to grow and sell both Christmas trees and budgerigars, Branson launched a magazine named Student in 1966 with Nik Powell.
-[0m[1;3;38;5;200mRetrieving text node: Later, he stated that one of his great-great-great-grandmothers was an Indian named Ariya.Branson was educated at Scaitcliffe School, a prep school in Surrey, before briefly attending Cliff View House School in Sussex. He attended Stowe School, a private school in Buckinghamshire until the age of sixteen.Branson has dyslexia, and had poor academic performance; on his last day at school, his headmaster, Robert Drayson, told him he would either end up in prison or become a millionaire.
-Branson has also talked openly about having ADHD.
-Branson's parents were supportive of his endeavours from an early age. His mother was an entrepreneur; one of her most successful ventures was building and selling wooden tissue boxes and wastepaper bins. In London, he started off squatting from 1967 to 1968.Branson is an atheist. He said in a 2011 interview with CNN's Piers Morgan that he believes in evolution and the importance of humanitarian efforts but not in the existence of God. "I would love to believe," he said.
-[0mHe attended Stowe School, a private school in Buckinghamshire until the age of sixteen.Branson has dyslexia, and had poor academic performance; on his last day at school, his headmaster, Robert Drayson, told him he would either end up in prison or become a millionaire.
-Branson has also talked openly about having ADHD.
-Branson's parents were supportive of his endeavours from an early age. His mother was an entrepreneur; one of her most successful ventures was building and selling wooden tissue boxes and wastepaper bins. In London, he started off squatting from 1967 to 1968.Branson is an atheist. He said in a 2011 interview with CNN's Piers Morgan that he believes in evolution and the importance of humanitarian efforts but not in the existence of God. "I would love to believe," he said. "It's very comforting to believe".
-
-
-
-
-== Early business career ==
-After failed attempts to grow and sell both Christmas trees and budgerigars, Branson launched a magazine named Student in 1966 with Nik Powell.
-Later, he stated that one of his great-great-great-grandmothers was an Indian named Ariya.Branson was educated at Scaitcliffe School, a prep school in Surrey, before briefly attending Cliff View House School in Sussex. He attended Stowe School, a private school in Buckinghamshire until the age of sixteen.Branson has dyslexia, and had poor academic performance; on his last day at school, his headmaster, Robert Drayson, told him he would either end up in prison or become a millionaire.
-Branson has also talked openly about having ADHD.
-Branson's parents were supportive of his endeavours from an early age. His mother was an entrepreneur; one of her most successful ventures was building and selling wooden tissue boxes and wastepaper bins. In London, he started off squatting from 1967 to 1968.Branson is an atheist. He said in a 2011 interview with CNN's Piers Morgan that he believes in evolution and the importance of humanitarian efforts but not in the existence of God. "I would love to believe," he said.
+ [1;3;38;5;200mID ile düğüme erişildi: Richard Branson
+ [0m [1;3;34mRichard Branson sorgu ID'si ile erişiliyor: 16 yaşında şirket kuran bir milyarderin çocukluğu hakkında bilgi ver
+ [0m [1;3;38;5;200mMetin düğümüne erişiliyor: Buckinghamshire'daki özel bir okul olan Stowe School'a on altı yaşına kadar devam etti. Branson disleksiktir ve akademik performansı düşüktü; okulun son gününde müdürü Robert Drayson ona ya hapse gireceğini ya da milyoner olacağını söylemişti.
+ [0m(Metin devam eder)
+```
+he said.
 ```

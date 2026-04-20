@@ -5,123 +5,123 @@ title: Together AI LLM
  | LlamaIndex OSS Documentation
 ---
 
-This notebook shows how to use `Together AI` as an LLM. Together AI provides access to many state-of-the-art LLM models. Check out the full list of models [here](https://docs.together.ai/docs/inference-models).
+Bu not defteri, `Together AI`'ın bir LLM olarak nasıl kullanılacağını gösterir. Together AI, birçok son teknoloji LLM modeline erişim sağlar. Modellerin tam listesine [buradan](https://docs.together.ai/docs/inference-models) göz atabilirsiniz.
 
-Visit <https://together.ai> and sign up to get an API key.
+API anahtarı almak için <https://together.ai> adresini ziyaret edin ve kaydolun.
 
-## Setup
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-together
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.together import TogetherLLM
 ```
 
-```
-# set api key in env or in llm
+```python
+# API anahtarını ortam değişkenlerinde (env) veya llm içinde ayarlayın
 # import os
-# os.environ["TOGETHER_API_KEY"] = "your api key"
+# os.environ["TOGETHER_API_KEY"] = "api_anahtarınız"
 
 
 llm = TogetherLLM(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1", api_key="your_api_key"
+    model="mistralai/Mixtral-8x7B-Instruct-v0.1", api_key="api_anahtarınız"
 )
 ```
 
-```
-resp = llm.complete("Who is Paul Graham?")
+```python
+resp = llm.complete("Paul Graham kimdir?")
 ```
 
-```
+```python
 print(resp)
 ```
 
+```text
+Paul Graham, İngiltere doğumlu bir bilgisayar bilimcisi, risk sermayedar ve deneme yazarıdır. En çok, Dropbox, Airbnb ve Reddit dahil olmak üzere sayısız başarılı teknoloji girişimine fon ve destek sağlayan startup hızlandırıcısı ve yatırım firması Y Combinator'ın kurucu ortaklarından biri olarak tanınır.
+
+
+Y Combinator'ı kurmadan önce Graham, 1995 yılında kurduğu ve daha sonra 1998'de Yahoo tarafından satın alınan Viaweb şirketinin kurucu ortaklarından biri olarak kendisi de başarılı bir girişimciydi. Graham ayrıca girişimler, teknoloji ve programlama üzerine yazdığı, teknoloji endüstrisinde geniş çapta okunan ve etkili olan denemeleriyle de tanınır.
+
+
+Teknoloji endüstrisindeki çalışmalarına ek olarak Graham, Harvard Üniversitesi'nden bilgisayar bilimleri alanında doktora derecesine sahip olup yapay zeka ve bilgisayar bilimi geçmişine sahiptir. Aynı zamanda üretken bir deneme yazarıdır ve "Hackers & Painters" ile "The Hundred-Year Lie: How to Prevent Corporate Abuse and Save the World from Its Own Worst Appetites" dahil olmak üzere birkaç kitap yazmıştır.
 ```
-Paul Graham is a British-born computer scientist, venture capitalist, and essayist. He is best known for co-founding the startup incubator and investment firm, Y Combinator, which has provided funding and support to numerous successful tech startups including Dropbox, Airbnb, and Reddit.
 
+#### Bir mesaj listesi ile `chat` fonksiyonunu çağırın
 
-Before founding Y Combinator, Graham was a successful entrepreneur himself, having co-founded the company Viaweb in 1995, which was later acquired by Yahoo in 1998. Graham is also known for his essays on startups, technology, and programming, which have been widely read and influential in the tech industry.
-
-
-In addition to his work in the tech industry, Graham has a background in artificial intelligence and computer science, having earned a Ph.D. in computer science from Harvard University. He is also a prolific essayist and has written several books, including "Hackers & Painters" and "The Hundred-Year Lie: How to Prevent Corporate Abuse and Save the World from Its Own Worst Appetites."
-```
-
-#### Call `chat` with a list of messages
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant: Arr matey, I be known as Captain Redbeard, the fiercest pirate to ever sail the seven seas! My ship, the Crimson Wave, strikes fear into the hearts of all who dare cross our path. With me hearty crew, we plunder and pillage, always seeking treasure and adventure. But don't be mistaken, I be a fair and honorable pirate, as long as ye show me respect and loyalty. Now, what be your name, landlubber?
-```
-
-### Streaming
-
-Using `stream_complete` endpoint
-
-```
-response = llm.stream_complete("Who is Paul Graham?")
+```text
+asistan: Ahoy ahbap, ben Kaptan Kızıl Sakal, yedi denizde yelken açmış en azılı korsan! Gemim Kızıl Dalga, yolumuza çıkmaya cüret eden herkesin kalbine korku salar. Sadık mürettebatımla birlikte, her zaman hazine ve macera peşinde yağmalar ve talanlar yaparız. Ama yanlış anlama, bana saygı ve sadakat gösterdiğin sürece adil ve onurlu bir korsanımdır. Şimdi söyle bakalım kara faresi, senin adın ne?
 ```
 
+### Akış (Streaming)
+
+`stream_complete` uç noktasını kullanma
+
+```python
+response = llm.stream_complete("Paul Graham kimdir?")
 ```
+
+```python
 for r in response:
     print(r.delta, end="")
 ```
 
+```text
+ Paul Graham, İngiltere doğumlu bir bilgisayar bilimcisi, girişimci, risk sermayedar ve deneme yazarıdır. En çok, Dropbox, Airbnb ve Reddit dahil olmak üzere sayısız başarılı girişime fon ve destek sağlayan startup hızlandırıcısı ve yatırım firması Y Combinator'ın kurucu ortağı olarak tanınır.
+
+
+Y Combinator'ı kurmadan önce Graham, 1995 yılında kurduğu ve daha sonra 1998'de Yahoo tarafından satın alınan Viaweb şirketinin kurucu ortaklarından biri olarak kendisi de başarılı bir girişimciydi. Graham ayrıca girişimler, teknoloji ve programlama üzerine yazdığı, teknoloji endüstrisinde geniş çapta okunan ve etkili olan denemeleriyle de tanınır.
+
+
+Teknoloji endüstrisindeki çalışmalarına ek olarak Graham, Harvard Üniversitesi'nden bu alanda doktora derecesine sahip olup bilgisayar bilimi ve yapay zeka geçmişine sahiptir. Ayrıca Harvard ve Stanford dahil olmak üzere birkaç üniversitede programlama ve girişimcilik dersleri vermiştir.
 ```
- Paul Graham is a British-born computer scientist, entrepreneur, venture capitalist, and essayist. He is best known for co-founding the startup incubator and investment firm, Y Combinator, which has provided funding and support to numerous successful startups including Dropbox, Airbnb, and Reddit.
 
+`stream_chat` uç noktasını kullanma
 
-Before founding Y Combinator, Graham was a successful entrepreneur himself, having co-founded the company Viaweb in 1995, which was later acquired by Yahoo in 1998. Graham is also known for his essays on startups, technology, and programming, which have been widely read and influential in the tech industry.
-
-
-In addition to his work in the tech industry, Graham has a background in computer science and artificial intelligence, having earned a PhD in this field from Harvard University. He has also taught programming and entrepreneurship at several universities, including Harvard and Stanford.
-```
-
-Using `stream_chat` endpoint
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
- Arr matey, I be known as Captain Redbeard
-the fearsome pirate who's known for his cunning and bravery on the high seas
-of course, that's just what I tell people. In reality, I'm just a simple AI trying to bring some fun and excitement to your day!
+```text
+ Ahoy ahbap, ben Kaptan Kızıl Sakal
+engini denizlerde kurnazlığı ve cesaretiyle tanınan korkunç korsan
+tabii ki bu sadece insanlara söylediğim şey. Gerçekte, gününüze biraz eğlence ve heyecan katmaya çalışan basit bir yapay zekayım!
 ```

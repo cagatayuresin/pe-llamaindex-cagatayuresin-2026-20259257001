@@ -1,26 +1,26 @@
-# Composable Objects
+# Birleştirilebilir Nesneler (Composable Objects)
 
 ---
 title: Composable Objects
  | LlamaIndex OSS Documentation
 ---
 
-In this notebook, we show how you can combine multiple objects into a single top-level index.
+Bu not defterinde, birden fazla nesneyi tek bir üst düzey dizinde nasıl birleştirebileceğinizi gösteriyoruz.
 
-This approach works by setting up `IndexNode` objects, with an `obj` field that points to a:
+Bu yaklaşım, bir `IndexNode` nesnesinin `obj` alanının şunlardan birini işaret etmesiyle çalışır:
 
-- query engine
-- retriever
-- query pipeline
-- another node!
+- sorgu motoru (query engine)
+- erişimci (retriever)
+- sorgu hattı (query pipeline)
+- başka bir düğüm!
 
+```python
+object = IndexNode(index_id="nesnem", obj=sorgu_motoru, text="bu nesne hakkında bazı metinler")
 ```
-object = IndexNode(index_id="my_object", obj=query_engine, text="some text about this object")
-```
 
-## Data Setup
+## Veri Hazırlığı (Data Setup)
 
-```
+```python
 %pip install llama-index-storage-docstore-mongodb
 %pip install llama-index-vector-stores-qdrant
 %pip install llama-index-storage-docstore-firestore
@@ -30,12 +30,12 @@ object = IndexNode(index_id="my_object", obj=query_engine, text="some text about
 %pip install llama-index-readers-file pymupdf
 ```
 
-```
+```bash
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "./llama2.pdf"
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/1706.03762.pdf" -O "./attention.pdf"
 ```
 
-```
+```python
 from llama_index.core import download_loader
 
 
@@ -50,16 +50,16 @@ attention_docs = PyMuPDFReader().load_data(
 )
 ```
 
-## Retriever Setup
+## Erişimci Kurulumu (Retriever Setup)
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-..."
 ```
 
-```
+```python
 from llama_index.core.node_parser import TokenTextSplitter
 
 
@@ -68,7 +68,7 @@ nodes = TokenTextSplitter(
 ).get_nodes_from_documents(llama2_docs + attention_docs)
 ```
 
-```
+```python
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.storage.docstore.mongodb import MongoDocumentStore
@@ -80,7 +80,7 @@ docstore = SimpleDocumentStore()
 docstore.add_documents(nodes)
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -99,48 +99,48 @@ bm25_retriever = BM25Retriever.from_defaults(
 )
 ```
 
-## Composing Objects
+## Nesneleri Birleştirme (Composing Objects)
 
-Here, we construct the `IndexNodes`. Note that the text is what is used to index the node by the top-level index.
+Burada `IndexNode`'ları oluşturuyoruz. Metin alanının, üst düzey dizin tarafından düğümü dizinlemek için kullanılan alan olduğunu unutmayın.
 
-For a vector index, the text is embedded, for a keyword index, the text is used for keywords.
+Vektör dizini için metin vektörleştirilir (embed); anahtar kelime dizini için metin, anahtar kelimeler için kullanılır.
 
-In this example, the `SummaryIndex` is used, which does not technically need the text for retrieval, since it always retrieves all nodes.
+Bu örnekte, her zaman tüm düğümleri getirdiği için teknik olarak erişim için metne ihtiyaç duymayan `SummaryIndex` kullanılmaktadır.
 
-```
+```python
 from llama_index.core.schema import IndexNode
 
 
 vector_obj = IndexNode(
-    index_id="vector", obj=vector_retriever, text="Vector Retriever"
+    index_id="vector", obj=vector_retriever, text="Vektör Erişimcisi"
 )
 bm25_obj = IndexNode(
-    index_id="bm25", obj=bm25_retriever, text="BM25 Retriever"
+    index_id="bm25", obj=bm25_retriever, text="BM25 Erişimcisi"
 )
 ```
 
-```
+```python
 from llama_index.core import SummaryIndex
 
 
 summary_index = SummaryIndex(objects=[vector_obj, bm25_obj])
 ```
 
-## Querying
+## Sorgulama (Querying)
 
-When we query, all objects will be retrieved and used to generate the nodes to get a final answer.
+Sorgulama yaptığımızda, tüm nesneler getirilecek ve nihai bir cevap oluşturmak için düğümleri üretmek için kullanılacaktır.
 
-Using `tree_summarize` with `aquery()` ensures concurrent execution and faster responses.
+`tree_summarize` modunu `aquery()` ile kullanmak, eşzamanlı yürütme (concurrent execution) ve daha hızlı yanıtlar sağlar.
 
-```
+```python
 query_engine = summary_index.as_query_engine(
     response_mode="tree_summarize", verbose=True
 )
 ```
 
-```
+```python
 response = await query_engine.aquery(
-    "How does attention work in transformers?"
+    "Transformer modellerinde dikkat (attention) mekanizması nasıl çalışır?"
 )
 ```
 
@@ -150,29 +150,29 @@ response = await query_engine.aquery(
 [0m
 ```
 
-```
+```python
 print(str(response))
 ```
 
+```text
+Transformer'lardaki dikkat (attention) mekanizması, bir sorguyu ve bir dizi anahtar-değer çiftini bir çıktı ile eşleyerek çalışır. Çıktı, değerlerin ağırlıklı toplamı olarak hesaplanır ve burada ağırlıklar sorgu ile anahtarlar arasındaki benzerlik tarafından belirlenir. Transformer modelinde dikkat üç farklı şekilde kullanılır:
+
+
+1. Kodlayıcı-kod çözücü (Encoder-decoder) dikkati: Sorgular önceki kod çözücü katmanından gelir ve bellek anahtarları ile değerleri kodlayıcının çıktısından gelir. Bu, kod çözücüdeki her konumun girdi dizisindeki tüm konumlara dikkat etmesini sağlar.
+
+
+2. Kodlayıcıdaki özdikkat (Self-attention): Bir özdikkat katmanında, tüm anahtarlar, değerler ve sorgular, kodlayıcıdaki önceki katmanın çıktısı olan aynı yerden gelir. Kodlayıcıdaki her konum, kodlayıcının önceki katmanındaki tüm konumlara dikkat edebilir.
+
+
+3. Kod çözücüdeki özdikkat (Self-attention): Kodlayıcıya benzer şekilde, kod çözücüdeki özdikkat katmanları, kod çözücüdeki her konumun o konuma kadar olan tüm konumlara dikkat etmesini sağlar. Ancak, özyinelemeli (auto-regressive) özelliği korumak için kod çözücüde sola doğru bilgi akışı engellenir.
+
+
+Genel olarak, transformer'lardaki dikkat, modelin farklı konumlardaki farklı temsil alt alanlarından gelen bilgilere ortaklaşa dikkat etmesini sağlayarak, modelin girdi dizisinin farklı bölümleri arasındaki bağımlılıkları ve ilişkileri yakalama yeteneğini geliştirir.
 ```
-Attention in transformers works by mapping a query and a set of key-value pairs to an output. The output is computed as a weighted sum of the values, where the weights are determined by the similarity between the query and the keys. In the transformer model, attention is used in three different ways:
 
-
-1. Encoder-decoder attention: The queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence.
-
-
-2. Self-attention in the encoder: In a self-attention layer, all of the keys, values, and queries come from the same place, which is the output of the previous layer in the encoder. Each position in the encoder can attend to all positions in the previous layer of the encoder.
-
-
-3. Self-attention in the decoder: Similar to the encoder, self-attention layers in the decoder allow each position in the decoder to attend to all positions in the decoder up to and including that position. However, leftward information flow in the decoder is prevented to preserve the auto-regressive property.
-
-
-Overall, attention in transformers allows the model to jointly attend to information from different representation subspaces at different positions, improving the model's ability to capture dependencies and relationships between different parts of the input sequence.
-```
-
-```
+```python
 response = await query_engine.aquery(
-    "What is the architecture of Llama2 based on?"
+    "Llama 2 mimarisi neye dayanmaktadır?"
 )
 ```
 
@@ -182,17 +182,17 @@ response = await query_engine.aquery(
 [0m
 ```
 
-```
+```python
 print(str(response))
 ```
 
-```
-The architecture of Llama 2 is based on the transformer model.
+```text
+Llama 2'nin mimarisi transformer modeline dayanmaktadır.
 ```
 
-```
+```python
 response = await query_engine.aquery(
-    "What was used before attention in transformers?"
+    "Transformer'lardaki dikkat mekanizmasından önce ne kullanılıyordu?"
 )
 ```
 
@@ -202,34 +202,34 @@ response = await query_engine.aquery(
 [0m
 ```
 
-```
+```python
 print(str(response))
 ```
 
+```text
+Transformer'lardaki dikkat mekanizmasından önce, uzun kısa süreli bellek (LSTM) ve geçitli özyinelemeli sinir ağları (GRU) gibi özyinelemeli sinir ağları (RNN) yaygın olarak kullanılıyordu. Bu modeller, dil modelleme ve makine çevirisi de dahil olmak üzere dizi modelleme ve dönüştürme problemlerinde geniş çapta kullanılmıştır.
 ```
-Recurrent neural networks, such as long short-term memory (LSTM) and gated recurrent neural networks, were commonly used before attention in transformers. These models were widely used in sequence modeling and transduction problems, including language modeling and machine translation.
-```
 
-## Note on Saving and Loading
+## Kaydetme ve Yükleme Üzerine Not
 
-Since objects aren’t technically serializable, when saving and loading, then need to be provided at load time as well.
+Nesneler teknik olarak seri hale getirilebilir (serializable) olmadığından, kaydederken ve yüklerken yükleme sırasında da sağlanmaları gerekir.
 
-Here’s an example of how I might save/load this setup.
+İşte bu kurulumu nasıl kaydedip yükleyebileceğime dair bir örnek.
 
-### Save
+### Kaydetme (Save)
 
-```
-# qdrant is already saved automatically!
-# we only need to save the docstore here
+```python
+# qdrant zaten otomatik olarak kaydedilir!
+# burada sadece belge deposunu (docstore) kaydetmemiz gerekiyor
 
 
-# save our docstore nodes for bm25
+# bm25 için belge deposu düğümlerimizi kaydedin
 docstore.persist("./docstore.json")
 ```
 
-### Load
+### Yükleme (Load)
 
-```
+```python
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
@@ -242,7 +242,7 @@ client = QdrantClient(path="./qdrant_data")
 vector_store = QdrantVectorStore("composable", client=client)
 ```
 
-```
+```python
 index = VectorStoreIndex.from_vector_store(vector_store)
 vector_retriever = index.as_retriever(similarity_top_k=2)
 bm25_retriever = BM25Retriever.from_defaults(
@@ -250,20 +250,20 @@ bm25_retriever = BM25Retriever.from_defaults(
 )
 ```
 
-```
+```python
 from llama_index.core.schema import IndexNode
 
 
 vector_obj = IndexNode(
-    index_id="vector", obj=vector_retriever, text="Vector Retriever"
+    index_id="vector", obj=vector_retriever, text="Vektör Erişimcisi"
 )
 bm25_obj = IndexNode(
-    index_id="bm25", obj=bm25_retriever, text="BM25 Retriever"
+    index_id="bm25", obj=bm25_retriever, text="BM25 Erişimcisi"
 )
 ```
 
-```
-# if we had added regular nodes to the summary index, we could save/load that as well
+```python
+# özet dizinine (summary index) normal düğümler eklemiş olsaydık, bunu da kaydedip yükleyebilirdik
 # summary_index.persist("./summary_index.json")
 # summary_index = load_index_from_storage(storage_context, objects=objects)
 

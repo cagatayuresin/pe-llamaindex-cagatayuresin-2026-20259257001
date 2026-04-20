@@ -5,34 +5,34 @@ title: Replicate - Vicuna 13B
  | LlamaIndex OSS Documentation
 ---
 
-## Setup
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-replicate
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-Make sure you have the `REPLICATE_API_TOKEN` environment variable set.\
-If you don’t have one yet, go to <https://replicate.com/> to obtain one.
+`REPLICATE_API_TOKEN` ortam değişkeninin ayarlandığından emin olun.\
+Eğer henüz bir hesabınız yoksa, bir anahtar almak için <https://replicate.com/> adresine gidin.
 
-```
+```python
 import os
 ```
 
-```
-os.environ["REPLICATE_API_TOKEN"] = "<your API key>"
+```python
+os.environ["REPLICATE_API_TOKEN"] = "<API anahtarınız>"
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-We showcase the “vicuna-13b” model, which you can play with directly at: <https://replicate.com/replicate/vicuna-13b>
+Doğrudan şu adresten deneyebileceğiniz "vicuna-13b" modelini gösteriyoruz: <https://replicate.com/replicate/vicuna-13b>
 
-```
+```python
 from llama_index.llms.replicate import Replicate
 
 
@@ -41,108 +41,108 @@ llm = Replicate(
 )
 ```
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` fonksiyonunu çağırın
 
-```
-resp = llm.complete("Who is Paul Graham?")
+```python
+resp = llm.complete("Paul Graham kimdir?")
 ```
 
-```
+```python
 print(resp)
 ```
 
+```text
+Paul Graham İngiliz bir fizikçi, matematikçi ve bilgisayar bilimcisidir. En çok kuantum mekaniğinin temelleri üzerine yaptığı çalışmalar ve kuantum bilişim alanının gelişimine yaptığı katkılarla tanınır.
+
+
+Graham 15 Ağustos 1957'de Cambridge, İngiltere'de doğdu. Lisans derecesini 1979'da Cambridge Üniversitesi'nden matematik alanında aldı ve daha sonra 1984'te Kaliforniya Üniversitesi, Berkeley'den teorik fizik alanında doktora derecesini kazandı.
+
+
+Kariyeri boyunca Graham, kuantum mekaniği alanına önemli katkılarda bulunmuştur. Konuyla ilgili "Yarı fiyatına kuantum mekaniği", "Kuantum mekaniğinin holonomisi" ve "Sınırlı öz-eş operatörlerin varlığında kuantum mekaniği" gibi bir dizi etkili makale yayınlamıştır.
+
+
+Graham ayrıca kuantum bilişimin geliştirilmesinde kilit bir figür olmuştur. Kuantum bilişim şirketi QxBranch'in kurucu ortağıdır ve pratik kuantum algoritmaları geliştirme ve büyük ölçekli kuantum bilgisayarlar inşa etme çabalarında lider bir rol oynamıştır.
+
+
+Buna ek olarak...
 ```
-PaulGraham is a British physicist, mathematician, and computer scientist. He is best known for his work on the foundations of quantum mechanics and his contributions to the development of the field of quantum computing.
 
+#### Bir mesaj listesi ile `chat` fonksiyonunu çağırın
 
-Graham was born on August 15, 1957, in Cambridge, England. He received his undergraduate degree in mathematics from the University of Cambridge in 1979 and later earned his Ph.D. in theoretical physics from the University of California, Berkeley in 1984.
-
-
-Throughout his career, Graham has made significant contributions to the field of quantum mechanics. He has published a number of influential papers on the subject, including "Quantum mechanics at 1/2 price," "The holonomy of quantum mechanics," and "Quantum mechanics in the presence of bounded self-adjoint operators."
-
-
-Graham has also been a key figure in the development of quantum computing. He is a co-founder of the quantum computing company, QxBranch, and has played a leading role in efforts to develop practical quantum algorithms and build large-scale quantum computers.
-
-
-In addition
-```
-
-#### Call `chat` with a list of messages
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant: ​
-```
-
-### Streaming
-
-Using `stream_complete` endpoint
-
-```
-response = llm.stream_complete("Who is Paul Graham?")
+```text
+asistan: ​
 ```
 
+### Akış (Streaming)
+
+`stream_complete` uç noktasını kullanma
+
+```python
+response = llm.stream_complete("Paul Graham kimdir?")
 ```
+
+```python
 for r in response:
     print(r.delta, end="")
 ```
 
+```text
+Paul Graham İngiliz bir filozof, bilişsel bilimci ve girişimcidir. En çok zihin felsefesi ve bilinç üzerine yaptığı çalışmaların yanı sıra Yapay Zeka (AI) alanının gelişimine yaptığı katkılarla tanınır.
+
+
+Graham 1938'de Londra'da doğdu ve felsefe ve doğa bilimleri okuduğu Cambridge Üniversitesi'nde eğitim gördü. Eğitimini tamamladıktan sonra Oxford Üniversitesi ve Kaliforniya Üniversitesi, Berkeley dahil olmak üzere birçok prestijli üniversitede akademik görevlerde bulundu.
+
+
+Kariyeri boyunca Graham; zihin felsefesi, bilinç, AI ve bilim ile din arasındaki ilişki gibi geniş bir yelpazedeki konularda çok sayıda makale ve kitap yayınlayan üretken bir yazar ve düşünür olmuştur. Ayrıca Viaweb (daha sonra Yahoo! tarafından satın alındı) ve Palantir Technologies dahil olmak üzere birkaç başarılı teknoloji girişiminin geliştirilmesinde yer almıştır.
+
+
+Pek çok başarısına rağmen Graham, belki de en çok zihin felsefesi ve bilinç konusundaki katkılarıyla tanınır. Özellikle... kavramı üzerindeki çalışmaları...
 ```
-PaulGraham is a British philosopher, cognitive scientist, and entrepreneur. He is best known for his work on the philosophy of the mind and consciousness, as well as his contributions to the development of the field of Artificial Intelligence (AI).
 
+`stream_chat` uç noktasını kullanma
 
-Graham was born in London in 1938 and received his education at the University of Cambridge, where he studied philosophy and the natural sciences. After completing his studies, he went on to hold academic appointments at several prestigious universities, including the University of Oxford and the University of California, Berkeley.
-
-
-Throughout his career, Graham has been a prolific writer and thinker, publishing numerous articles and books on a wide range of topics, including the philosophy of mind, consciousness, AI, and the relationship between science and religion. He has also been involved in the development of several successful technology startups, including Viaweb (which was later acquired by Yahoo!) and Palantir Technologies.
-
-
-Despite his many achievements, Graham is perhaps best known for his contributions to the philosophy of the mind and consciousness. In particular, his work on the concept of
-```
-
-Using `stream_chat` endpoint
-
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
+```text
 ​
 ```
 
-## Configure Model
+## Modeli Yapılandırma
 
-```
+```python
 from llama_index.llms.replicate import Replicate
 
 
@@ -153,14 +153,14 @@ llm = Replicate(
 )
 ```
 
-```
-resp = llm.complete("Who is Paul Graham?")
+```python
+resp = llm.complete("Paul Graham kimdir?")
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-PaulGraham is an influential computer scientist, venture capitalist, and essayist. He is best known as
+```text
+Paul Graham, etkili bir bilgisayar bilimcisi, risk sermayedar ve deneme yazarıdır. En çok ... olarak tanınır.
 ```

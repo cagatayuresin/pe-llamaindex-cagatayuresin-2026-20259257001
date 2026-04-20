@@ -3,21 +3,21 @@
 ---
 title: Vercel AI Gateway
  | LlamaIndex OSS Documentation
----
+ ---
 
-The AI Gateway is a proxy service from Vercel that routes model requests to various AI providers. It offers a unified API to multiple providers and gives you the ability to set budgets, monitor usage, load-balance requests, and manage fallbacks. You can find out more from their [docs](https://vercel.com/docs/ai-gateway)
+AI Gateway, çeşitli AI sağlayıcılarına yönelik model isteklerini yönlendiren, Vercel tarafından sunulan bir proxy hizmetidir. Birden fazla sağlayıcıya birleşik bir API sunar ve bütçe ayarlama, kullanımı izleme, istekleri yük dengeleme ve yedekleri yönetme yeteneği sağlar. Daha fazlasını [dokümanlarından](https://vercel.com/docs/ai-gateway) öğrenebilirsiniz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-vercel-ai-gateway
 ```
 
-```
+```python
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.vercel_ai_gateway import VercelAIGateway
 from llama_index.core.llms import ChatMessage
 
@@ -26,10 +26,10 @@ llm = VercelAIGateway(
     model="anthropic/claude-4-sonnet",
     max_tokens=64000,
     context_window=200000,
-    api_key="your-api-key",
+    api_key="api-anahtarınız",
     default_headers={
-        "http-referer": "https://myapp.com/",  # Optional: Your app URL
-        "x-title": "My App",  # Optional: Your app name
+        "http-referer": "https://myapp.com/",  # Opsiyonel: Uygulama URL'niz
+        "x-title": "Uygulamam",  # Opsiyonel: Uygulama adınız
     },
 )
 
@@ -37,13 +37,13 @@ llm = VercelAIGateway(
 print(llm.model)
 ```
 
-## Call `chat` with ChatMessage List
+## ChatMessage Listesi ile `chat` Çağrısı
 
-You need to either set env var `VERCEL_AI_GATEWAY_API_KEY` or `VERCEL_OIDC_TOKEN` or set api\_key in the class constructor
+`VERCEL_AI_GATEWAY_API_KEY` veya `VERCEL_OIDC_TOKEN` ortam değişkenini ayarlamanız ya da sınıf yapıcısında (constructor) `api_key` değerini belirtmeniz gerekir.
 
-```
+```python
 # import os
-# os.environ['VERCEL_AI_GATEWAY_API_KEY'] = '<your-api-key>'
+# os.environ['VERCEL_AI_GATEWAY_API_KEY'] = '<api-anahtarınız>'
 
 
 llm = VercelAIGateway(
@@ -54,45 +54,45 @@ llm = VercelAIGateway(
 )
 ```
 
-```
-message = ChatMessage(role="user", content="Tell me a joke")
+```python
+message = ChatMessage(role="user", content="Bana bir fıkra anlat")
 resp = llm.chat([message])
 print(resp)
 ```
 
-### Streaming
+### Akış (Streaming)
 
-```
-message = ChatMessage(role="user", content="Tell me a story in 250 words")
+```python
+message = ChatMessage(role="user", content="Bana yaklaşık 250 kelimelik bir hikaye anlat")
 resp = llm.stream_chat([message])
 for r in resp:
     print(r.delta, end="")
 ```
 
-## Call `complete` with Prompt
+## İstem (Prompt) ile `complete` Çağrısı
 
-```
-resp = llm.complete("Tell me a joke")
+```python
+resp = llm.complete("Bana bir fıkra anlat")
 print(resp)
 ```
 
-```
-resp = llm.stream_complete("Tell me a story in 250 words")
+```python
+resp = llm.stream_complete("Bana yaklaşık 250 kelimelik bir hikaye anlat")
 for r in resp:
     print(r.delta, end="")
 ```
 
-## Model Configuration
+## Model Yapılandırması
 
-```
-# This example uses Anthropic's Claude 4 Sonnet (models are specified as `provider/model`):
+```python
+# Bu örnek Anthropic'in Claude 4 Sonnet modelini kullanır (modeller `sağlayıcı/model` şeklinde belirtilir):
 llm = VercelAIGateway(
     model="anthropic/claude-4-sonnet",
     api_key="pBiuCWfswZCDxt8D50DSoBfU",
 )
 ```
 
-```
-resp = llm.complete("Write a story about a dragon who can code in Rust")
+```python
+resp = llm.complete("Rust dilinde kod yazabilen bir ejderha hakkında bir hikaye yaz")
 print(resp)
 ```

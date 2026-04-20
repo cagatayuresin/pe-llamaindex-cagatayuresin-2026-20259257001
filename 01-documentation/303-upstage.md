@@ -5,113 +5,113 @@ title: Upstage
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex kurmanız gerekecektir 🦙.
 
-```
+```python
 %pip install llama-index-llms-upstage llama-index
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` fonksiyonunu çağırın
 
-```
+```python
 import os
 
 
-os.environ["UPSTAGE_API_KEY"] = "YOUR_API_KEY"
+os.environ["UPSTAGE_API_KEY"] = "API_ANAHTARINIZ"
 ```
 
-```
+```python
 from llama_index.llms.upstage import Upstage
 
 
 llm = Upstage(
     model="solar-mini",
-    # api_key="YOUR_API_KEY"  # uses UPSTAGE_API_KEY env var by default
+    # api_key="API_ANAHTARINIZ"  # varsayılan olarak UPSTAGE_API_KEY ortam değişkenini kullanır
 )
 
 
-resp = llm.complete("Paul Graham is ")
+resp = llm.complete("Paul Graham ")
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-Paul Graham is a computer scientist, entrepreneur, and essayist. He is best known as the co-founder of the venture capital firm Y Combinator, which has funded and incubated many successful startups. He is also the author of several influential essays on entrepreneurship, startup culture, and technology.
+```text
+Paul Graham bir bilgisayar bilimcisi, girişimci ve deneme yazarıdır. En çok, birçok başarılı girişime fon sağlayan ve kuluçka merkezi olan risk sermayesi şirketi Y Combinator'ın kurucu ortağı olarak tanınır. Ayrıca girişimcilik, startup kültürü ve teknoloji üzerine yazdığı birkaç etkili denemenin de yazarıdır.
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesi ile `chat` fonksiyonunu çağırın
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-assistant: I am Captain Redbeard, the fearless pirate!
-```
-
-## Streaming
-
-Using `stream_complete` endpoint
-
-```
-resp = llm.stream_complete("Paul Graham is ")
+```text
+asistan: Ben Kaptan Kızıl Sakal, korkusuz korsan!
 ```
 
+## Akış (Streaming)
+
+`stream_complete` uç noktasını kullanma
+
+```python
+resp = llm.stream_complete("Paul Graham ")
 ```
+
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-Paul Graham is a computer scientist, entrepreneur, and essayist. He is best known for co-founding the startup accelerator Y Combinator, which has helped launch some of the most successful tech companies in the world, including Airbnb, Dropbox, and Stripe. He is also the author of several influential essays on startup culture and entrepreneurship, including "How to Start a Startup" and "Hackers & Painters."
+```text
+Paul Graham bir bilgisayar bilimcisi, girişimci ve deneme yazarıdır. En çok, Airbnb, Dropbox ve Stripe gibi dünyanın en başarılı teknoloji şirketlerinden bazılarının kurulmasına yardımcı olan startup hızlandırıcısı Y Combinator'ın kurucu ortağı olarak tanınır. Ayrıca, "How to Start a Startup" ve "Hackers & Painters" dahil olmak üzere startup kültürü ve girişimcilik üzerine yazdığı birkaç etkili denemenin yazarıdır.
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın"
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
-```
-I am Captain Redbeard, the fearless pirate!
+```text
+Ben Kaptan Kızıl Sakal, korkusuz korsan!
 ```
 
-## Function Calling
+## Fonksiyon Çağırma (Function Calling)
 
-Upstage models have native support for function calling. This conveniently integrates with LlamaIndex tool abstractions, letting you plug in any arbitrary Python function to the LLM.
+Upstage modelleri, fonksiyon çağırma için yerel desteğe sahiptir. Bu, LlamaIndex araç soyutlamalarıyla kolayca entegre olur ve herhangi bir Python fonksiyonunu LLM'ye bağlamanıza olanak tanır.
 
-```
+```python
 from pydantic import BaseModel
 from llama_index.core.tools import FunctionTool
 
@@ -119,7 +119,7 @@ from llama_index.core.tools import FunctionTool
 
 
 class Song(BaseModel):
-    """A song with name and artist"""
+    """Adı ve sanatçısı olan bir şarkı"""
 
 
     name: str
@@ -129,7 +129,7 @@ class Song(BaseModel):
 
 
 def generate_song(name: str, artist: str) -> Song:
-    """Generates a song with provided name and artist."""
+    """Sağlanan ad ve sanatçı ile bir şarkı oluşturur."""
     return Song(name=name, artist=artist)
 
 
@@ -138,78 +138,78 @@ def generate_song(name: str, artist: str) -> Song:
 tool = FunctionTool.from_defaults(fn=generate_song)
 ```
 
-```
+```python
 from llama_index.llms.upstage import Upstage
 
 
 llm = Upstage()
-response = llm.predict_and_call([tool], "Generate a song")
+response = llm.predict_and_call([tool], "Bir şarkı oluştur")
 print(str(response))
 ```
 
-```
-name='My Song' artist='John Doe'
+```text
+name='Şarkım' artist='Can Doe'
 ```
 
-We can also do multiple function calling.
+Ayrıca birden fazla fonksiyon çağırma işlemi de yapabiliriz.
 
-```
+```python
 llm = Upstage()
 response = llm.predict_and_call(
     [tool],
-    "Generate five songs from the Beatles",
+    "Beatles'tan beş şarkı oluştur",
     allow_parallel_tool_calls=True,
 )
 for s in response.sources:
-    print(f"Name: {s.tool_name}, Input: {s.raw_input}, Output: {str(s)}")
+    print(f"Ad: {s.tool_name}, Girdi: {s.raw_input}, Çıktı: {str(s)}")
 ```
 
-```
-Name: generate_song, Input: {'args': (), 'kwargs': {'name': 'Beatles', 'artist': 'Beatles'}}, Output: name='Beatles' artist='Beatles'
+```text
+Ad: generate_song, Girdi: {'args': (), 'kwargs': {'name': 'Beatles', 'artist': 'Beatles'}}, Çıktı: name='Beatles' artist='Beatles'
 ```
 
-## Async
+## Asenkron (Async)
 
-```
+```python
 from llama_index.llms.upstage import Upstage
 
 
 llm = Upstage()
 ```
 
-```
-resp = await llm.acomplete("Paul Graham is ")
+```python
+resp = await llm.acomplete("Paul Graham ")
 ```
 
-```
+```python
 print(resp)
 ```
 
-```
-Paul Graham is a computer scientist, entrepreneur, and essayist. He is best known as the co-founder of the startup accelerator Y Combinator, which has helped launch and fund many successful tech companies. He is also the author of several influential essays on startups, entrepreneurship, and technology, including "How to Start a Startup" and "Hackers & Painters."
-```
-
-```
-resp = await llm.astream_complete("Paul Graham is ")
+```text
+Paul Graham bir bilgisayar bilimcisi, girişimci ve deneme yazarıdır. En çok, birçok başarılı teknoloji şirketinin kurulmasına ve fonlanmasına yardımcı olan startup hızlandırıcısı Y Combinator'ın kurucu ortağı olarak tanınır. Ayrıca, "How to Start a Startup" ve "Hackers & Painters" dahil olmak üzere startup'lar, girişimcilik ve teknoloji üzerine yazdığı birkaç etkili denemenin yazarıdır.
 ```
 
+```python
+resp = await llm.astream_complete("Paul Graham ")
 ```
+
+```python
 async for delta in resp:
     print(delta.delta, end="")
 ```
 
-```
-Paul Graham is a computer scientist, entrepreneur, and essayist. He is best known as the co-founder of the startup accelerator Y Combinator, which has helped launch some of the most successful tech companies in the world, including Airbnb, Dropbox, and Stripe. Graham is also a prolific writer, and his essays on topics such as startup advice, artificial intelligence, and the future of work have been widely read and influential in the tech industry.
+```text
+Paul Graham bir bilgisayar bilimcisi, girişimci ve deneme yazarıdır. En çok, Airbnb, Dropbox ve Stripe gibi dünyanın en başarılı teknoloji şirketlerinden bazılarının kurulmasına yardımcı olan startup hızlandırıcısı Y Combinator'ın kurucu ortağı olarak tanınır. Graham aynı zamanda üretken bir yazardır ve startup tavsiyeleri, yapay zeka ve işin geleceği gibi konulardaki denemeleri teknoloji endüstrisinde geniş çapta okunmuş ve etkili olmuştur.
 ```
 
-Async function calling is also supported.
+Asenkron fonksiyon çağırma da desteklenmektedir.
 
-```
+```python
 llm = Upstage()
-response = await llm.apredict_and_call([tool], "Generate a song")
+response = await llm.apredict_and_call([tool], "Bir şarkı oluştur")
 print(str(response))
 ```
 
-```
-name='My Song' artist='Me'
+```text
+name='Şarkım' artist='Ben'
 ```

@@ -1,56 +1,56 @@
-# Ensemble Retrieval Guide
+# Topluluk Erişimi Rehberi (Ensemble Retrieval Guide)
 
 ---
-title: Ensemble Retrieval Guide
- | LlamaIndex OSS Documentation
+title: Topluluk Erişimi Rehberi (Ensemble Retrieval Guide)
+ | LlamaIndex OSS Belgeleri
 ---
 
-Oftentimes when building a RAG applications there are many retreival parameters/strategies to decide from (from chunk size to vector vs. keyword vs. hybrid search, for instance).
+RAG uygulamaları oluştururken, karar verilmesi gereken birçok erişim parametresi/stratejisi vardır (örneğin; parça boyutundan -chunk size-, vektör aramaya karşı anahtar kelime veya hibrit arama seçimine kadar).
 
-Thought: what if we could try a bunch of strategies at once, and have any AI/reranker/LLM prune the results?
+Düşünce: Ya aynı anda bir dizi stratejiyi deneyebilseydik ve sonuçları herhangi bir AI/reranker (yeniden sıralayıcı)/LLM'e eletebilseydik?
 
-This achieves two purposes:
+Bu iki amaca hizmet eder:
 
-- Better (albeit more costly) retrieved results by pooling results from multiple strategies, assuming the reranker is good
-- A way to benchmark different retrieval strategies against each other (w\.r.t reranker)
+- Yeniden sıralayıcının iyi olduğu varsayımıyla, birden fazla stratejiden sonuçları havuzda toplayarak daha iyi (ancak daha maliyetli) erişim sonuçları elde etmek.
+- Farklı erişim stratejilerini birbirleriyle (yeniden sıralayıcıya göre) kıyaslamak için bir yol sunmak.
 
-This guide showcases this over the Llama 2 paper. We do ensemble retrieval over different chunk sizes and also different indices.
+Bu rehber, Llama 2 makalesi üzerinden bunu göstermektedir. Farklı parça boyutları (chunk sizes) ve ayrıca farklı indeksler üzerinden topluluk erişimi (ensemble retrieval) gerçekleştiriyoruz.
 
-**NOTE**: A closely related guide is our [Ensemble Query Engine Guide](https://gpt-index.readthedocs.io/en/stable/examples/query_engine/ensemble_qury_engine.html) - make sure to check it out!
+**NOT**: Yakından ilgili bir rehber, [Topluluk Sorgu Motoru Rehberimizdir (Ensemble Query Engine Guide)](https://gpt-index.readthedocs.io/en/stable/examples/query_engine/ensemble_qury_engine.html) - ona da göz atmayı unutmayın!
 
-```
+```bash
 %pip install llama-index-llms-openai
 %pip install llama-index-postprocessor-cohere-rerank
 %pip install llama-index-readers-file pymupdf
 ```
 
-```
+```python
 %load_ext autoreload
 %autoreload 2
 ```
 
-## Setup
+## Kurulum (Setup)
 
-Here we define the necessary imports.
+Burada gerekli içe aktarmaları (imports) tanımlıyoruz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Notebook'u Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i kurmanız gerekecektir 🦙.
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
-# NOTE: This is ONLY necessary in jupyter notebook.
-# Details: Jupyter runs an event-loop behind the scenes.
-#          This results in nested event-loops when we start an event-loop to make async queries.
-#          This is normally not allowed, we use nest_asyncio to allow it for convenience.
+```python
+# NOT: Bu SADECE jupyter notebook'ta gereklidir.
+# Detaylar: Jupyter arka planda bir olay döngüsü (event-loop) çalıştırır.
+#          Bu, asenkron sorgular yapmak için bir olay döngüsü başlattığımızda iç içe geçmiş olay döngülerine neden olur.
+#          Buna normalde izin verilmez, kolaylık sağlaması için nest_asyncio kullanıyoruz.
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 import logging
 import sys
 
@@ -70,20 +70,20 @@ from llama_index.core.response.notebook_utils import display_response
 from llama_index.llms.openai import OpenAI
 ```
 
-```
-Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-NumExpr defaulting to 8 threads.
+```text
+Not: NumExpr 12 çekirdek tespit etti ancak "NUMEXPR_MAX_THREADS" ayarlanmadı, bu nedenle 8 olan güvenli sınır uygulanıyor.
+NumExpr varsayılan olarak 8 iş parçacığına (threads) ayarlandı.
 ```
 
-## Load Data
+## Veri Yükleme (Load Data)
 
-In this section we first load in the Llama 2 paper as a single document. We then chunk it multiple times, according to different chunk sizes. We build a separate vector index corresponding to each chunk size.
+Bu bölümde ilk olarak Llama 2 makalesini tek bir belge olarak yüklüyoruz. Ardından, farklı parça boyutlarına göre (chunk sizes) birden çok kez parçalara ayırıyoruz. Her parça boyutuna karşılık gelen ayrı bir vektör indeksi (vector index) oluşturuyoruz.
 
-```
+```bash
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
 ```
 
-```
+```text
 --2023-09-28 12:56:38--  https://arxiv.org/pdf/2307.09288.pdf
 Resolving arxiv.org (arxiv.org)... 128.84.21.199
 Connecting to arxiv.org (arxiv.org)|128.84.21.199|:443... connected.
@@ -98,34 +98,34 @@ data/llama2.pdf     100%[===================>]  13.03M   521KB/s    in 42s
 2023-09-28 12:57:20 (320 KB/s) - ‘data/llama2.pdf’ saved [13661300/13661300]
 ```
 
-```
+```python
 from pathlib import Path
 from llama_index.core import Document
 from llama_index.readers.file import PyMuPDFReader
 ```
 
-```
+```python
 loader = PyMuPDFReader()
 docs0 = loader.load(file_path=Path("./data/llama2.pdf"))
 doc_text = "\n\n".join([d.get_content() for d in docs0])
 docs = [Document(text=doc_text)]
 ```
 
-Here we try out different chunk sizes: 128, 256, 512, and 1024.
+Burada farklı parça boyutlarını deniyoruz: 128, 256, 512 ve 1024.
 
-```
-# initialize modules
+```python
+# modülleri ilklendir (initialize)
 llm = OpenAI(model="gpt-4")
 chunk_sizes = [128, 256, 512, 1024]
 nodes_list = []
 vector_indices = []
 for chunk_size in chunk_sizes:
-    print(f"Chunk Size: {chunk_size}")
+    print(f"Parça Boyutu (Chunk Size): {chunk_size}")
     splitter = SentenceSplitter(chunk_size=chunk_size)
     nodes = splitter.get_nodes_from_documents(docs)
 
 
-    # add chunk size to nodes to track later
+    # daha sonra takip etmek için parçalara parça boyutunu ekle
     for node in nodes:
         node.metadata["chunk_size"] = chunk_size
         node.excluded_embed_metadata_keys = ["chunk_size"]
@@ -135,31 +135,31 @@ for chunk_size in chunk_sizes:
     nodes_list.append(nodes)
 
 
-    # build vector index
+    # vektör indeksi oluştur
     vector_index = VectorStoreIndex(nodes)
     vector_indices.append(vector_index)
 ```
 
+```text
+Parça Boyutu: 128
+Parça Boyutu: 256
+Parça Boyutu: 512
+Parça Boyutu: 1024
 ```
-Chunk Size: 128
-Chunk Size: 256
-Chunk Size: 512
-Chunk Size: 1024
-```
 
-## Define Ensemble Retriever
+## Topluluk Erişicisinin Tanımlanması (Define Ensemble Retriever)
 
-We setup an “ensemble” retriever primarily using our recursive retrieval abstraction. This works like the following:
+Öncelikle özyinelemeli erişim (recursive retrieval) soyutlamamızı kullanarak bir "topluluk" erişicisi kuruyoruz. Bu şu şekilde çalışır:
 
-- Define a separate `IndexNode` corresponding to the vector retriever for each chunk size (retriever for chunk size 128, retriever for chunk size 256, and more)
-- Put all IndexNodes into a single `SummaryIndex` - when the corresponding retriever is called, *all* nodes are returned.
-- Define a Recursive Retriever, with the root node being the summary index retriever. This will first fetch all nodes from the summary index retriever, and then recursively call the vector retriever for each chunk size.
-- Rerank the final results.
+- Her parça boyutu için vektör erişicisine karşılık gelen ayrı bir `IndexNode` tanımlayın (128 parça boyutu için erişici, 256 parça boyutu için erişici ve dahası).
+- Tüm `IndexNode` nesnelerini tek bir `SummaryIndex` içine yerleştirin; ilgili erişici çağrıldığında *tüm* düğümler döndürülür.
+- Kök düğümü (root node) özet indeks erişicisi (summary index retriever) olan bir Özyinelemeli Erişici (Recursive Retriever) tanımlayın. Bu, önce özet indeks erişicisinden tüm düğümleri getirecek ve ardından her parça boyutu için vektör erişicisini özyinelemeli olarak çağıracaktır.
+- Nihai sonuçları yeniden sıralayın (rerank).
 
-The end result is that all vector retrievers are called when a query is run.
+Sonuç olarak, bir sorgu çalıştırıldığında tüm vektör erişicileri çağrılmış olur.
 
-```
-# try ensemble retrieval
+```python
+# topluluk erişimini (ensemble retrieval) dene
 
 
 from llama_index.core.tools import RetrieverTool
@@ -173,7 +173,7 @@ for chunk_size, vector_index in zip(chunk_sizes, vector_indices):
     node_id = f"chunk_{chunk_size}"
     node = IndexNode(
         text=(
-            "Retrieves relevant context from the Llama 2 paper (chunk size"
+            "Llama 2 makalesinden ilgili bağlamı getirir (parça boyutu"
             f" {chunk_size})"
         ),
         index_id=node_id,
@@ -182,9 +182,9 @@ for chunk_size, vector_index in zip(chunk_sizes, vector_indices):
     retriever_dict[node_id] = vector_index.as_retriever()
 ```
 
-Define recursive retriever.
+Özyinelemeli erişiciyi tanımlayın.
 
-```
+```python
 from llama_index.core.selectors import PydanticMultiSelector
 
 
@@ -193,7 +193,7 @@ from llama_index.core.retrievers import RecursiveRetriever
 from llama_index.core import SummaryIndex
 
 
-# the derived retriever will just retrieve all nodes
+# türetilmiş erişici (derived retriever) sadece tüm düğümleri getirecektir
 summary_index = SummaryIndex(retriever_nodes)
 
 
@@ -203,25 +203,25 @@ retriever = RecursiveRetriever(
 )
 ```
 
-Let’s test the retriever on a sample query.
+Erişiciyi örnek bir sorgu üzerinde test edelim.
 
-```
+```python
 nodes = await retriever.aretrieve(
-    "Tell me about the main aspects of safety fine-tuning"
+    "Bana güvenlik ince ayarının (safety fine-tuning) ana yönlerinden bahset"
 )
 ```
 
-```
-print(f"Number of nodes: {len(nodes)}")
+```python
+print(f"Düğüm sayısı: {len(nodes)}")
 for node in nodes:
     print(node.node.metadata["chunk_size"])
     print(node.node.get_text())
 ```
 
-Define reranker to process the final retrieved set of nodes.
+Nihai getirilen düğüm kümesini işlemek için bir yeniden sıralayıcı (reranker) tanımlayın.
 
-```
-# define reranker
+```python
+# yeniden sıralayıcıyı (reranker) tanımla
 from llama_index.core.postprocessor import LLMRerank, SentenceTransformerRerank
 from llama_index.postprocessor.cohere_rerank import CohereRerank
 
@@ -231,34 +231,34 @@ from llama_index.postprocessor.cohere_rerank import CohereRerank
 reranker = CohereRerank(top_n=10)
 ```
 
-Define retriever query engine to integrate the recursive retriever + reranker together.
+Özyinelemeli erişiciyi + yeniden sıralayıcıyı bir araya getirmek için `retriever sorgu motorunu` (retriever query engine) tanımlayın.
 
-```
-# define RetrieverQueryEngine
+```python
+# RetrieverQueryEngine tanımla
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 
 query_engine = RetrieverQueryEngine(retriever, node_postprocessors=[reranker])
 ```
 
-```
+```python
 response = query_engine.query(
-    "Tell me about the main aspects of safety fine-tuning"
+    "Bana güvenlik ince ayarının (safety fine-tuning) ana yönlerinden bahset"
 )
 ```
 
-```
+```python
 display_response(
     response, show_source=True, source_length=500, show_source_metadata=True
 )
 ```
 
-### Analyzing the Relative Importance of each Chunk
+### Her Parçanın Göreli Öneminin Analiz Edilmesi (Analyzing the Relative Importance of each Chunk)
 
-One interesting property of ensemble-based retrieval is that through reranking, we can actually use the ordering of chunks in the final retrieved set to determine the importance of each chunk size. For instance, if certain chunk sizes are always ranked near the top, then those are probably more relevant to the query.
+Topluluk tabanlı erişimin (ensemble-based retrieval) ilginç bir özelliği, yeniden sıralama yoluyla, nihai getirilen kümedeki parçaların sıralamasını kullanarak her parça boyutunun önemini belirleyebilmemizdir. Örneğin, belirli parça boyutları her zaman en üstte yer alıyorsa, bunlar muhtemelen sorguyla daha ilgilidir.
 
-```
-# compute the average precision for each chunk size based on positioning in combined ranking
+```python
+# birleşik sıralamadaki konumlara göre her parça boyutu için ortalama hassasiyeti (average precision) hesapla
 from collections import defaultdict
 import pandas as pd
 
@@ -266,8 +266,8 @@ import pandas as pd
 
 
 def mrr_all(metadata_values, metadata_key, source_nodes):
-    # source nodes is a ranked list
-    # go through each value, find out positioning in source_nodes
+    # source_nodes sıralı bir listedir
+    # her bir değerin üzerinden geç ve source_nodes içindeki konumunu bul
     value_to_mrr_dict = {}
     for metadata_value in metadata_values:
         mrr = 0
@@ -279,27 +279,27 @@ def mrr_all(metadata_values, metadata_key, source_nodes):
                 continue
 
 
-        # normalize AP, set in dict
+        # AP'yi normalleştir, sözlüğe ekle
         value_to_mrr_dict[metadata_value] = mrr
 
 
     df = pd.DataFrame(value_to_mrr_dict, index=["MRR"])
-    df.style.set_caption("Mean Reciprocal Rank")
+    df.style.set_caption("Ortalama Karşılıklı Sıralama (Mean Reciprocal Rank)")
     return df
 ```
 
-```
-# Compute the Mean Reciprocal Rank for each chunk size (higher is better)
-# we can see that chunk size of 256 has the highest ranked results.
-print("Mean Reciprocal Rank for each Chunk Size")
+```python
+# Her parça boyutu için Ortalama Karşılıklı Sıralamayı hesaplayın (yüksek olan daha iyidir)
+# 256 parça boyutunun en yüksek dereceli sonuçlara sahip olduğunu görebiliriz.
+print("Her Parça Boyutu İçin Ortalama Karşılıklı Sıralama (Mean Reciprocal Rank)")
 mrr_all(chunk_sizes, "chunk_size", response.source_nodes)
 ```
 
-```
-Mean Reciprocal Rank for each Chunk Size
+```text
+Her Parça Boyutu İçin Ortalama Karşılıklı Sıralama
 ```
 
-```
+```css
 .dataframe tbody tr th {
     vertical-align: top;
 }
@@ -314,13 +314,13 @@ Mean Reciprocal Rank for each Chunk Size
 | --- | -------- | --- | --- | ---- |
 | MRR | 0.333333 | 1.0 | 0.5 | 0.25 |
 
-## Evaluation
+## Değerlendirme (Evaluation)
 
-We more rigorously evaluate how well an ensemble retriever works compared to the “baseline” retriever.
+Bir topluluk erişicisinin "temel" (baseline) erişiciye kıyasla ne kadar iyi çalıştığını daha titiz bir şekilde değerlendiriyoruz.
 
-We define/load an eval benchmark dataset and then run different evaluations over it.
+Bir değerlendirme kıyaslama veri seti tanımlıyoruz/yüklüyoruz ve ardından üzerinde farklı değerlendirmeler çalıştırıyoruz.
 
-**WARNING**: This can be *expensive*, especially with GPT-4. Use caution and tune the sample size to fit your budget.
+**UYARI**: Bu işlem, özellikle GPT-4 ile *pahalı* olabilir. Dikkatli olun ve örneklem boyutunu bütçenize göre ayarlayın.
 
 ```
 from llama_index.core.evaluation import DatasetGenerator, QueryResponseDataset

@@ -1,33 +1,33 @@
-# Bedrock (Knowledge Bases)
+# Bedrock (Bilgi Tabanları)
 
 ---
 title: Bedrock (Knowledge Bases)
  | LlamaIndex OSS Documentation
 ---
 
-[Knowledge bases for Amazon Bedrock](https://aws.amazon.com/bedrock/knowledge-bases/) is an Amazon Web Services (AWS) offering which lets you quickly build RAG applications by using your private data to customize FM response.
+[Amazon Bedrock için Bilgi Tabanları (Knowledge bases)](https://aws.amazon.com/bedrock/knowledge-bases/), özel verilerinizi kullanarak Temel Model (FM) yanıtlarını özelleştirmenize ve hızlı bir şekilde RAG uygulamaları oluşturmanıza olanak tanıyan bir Amazon Web Servisleri (AWS) çözümüdür.
 
-Implementing `RAG` requires organizations to perform several cumbersome steps to convert data into embeddings (vectors), store the embeddings in a specialized vector database, and build custom integrations into the database to search and retrieve text relevant to the user’s query. This can be time-consuming and inefficient.
+`RAG` uygulamak, kuruluşların verileri vektörlere (embedding) dönüştürmek, bu vektörleri özel bir vektör veritabanında saklamak ve kullanıcının sorgusuyla ilgili metni arayıp getirmek için veritabanına özel entegrasyonlar oluşturmak gibi birkaç zahmetli adımı gerçekleştirmesini gerektirir. Bu süreç zaman alıcı ve verimsiz olabilir.
 
-With `Knowledge Bases for Amazon Bedrock`, simply point to the location of your data in `Amazon S3`, and `Knowledge Bases for Amazon Bedrock` takes care of the entire ingestion workflow into your vector database. If you do not have an existing vector database, Amazon Bedrock creates an Amazon OpenSearch Serverless vector store for you.
+`Amazon Bedrock için Bilgi Tabanları` ile verilerinizin `Amazon S3` üzerindeki konumunu belirtmeniz yeterlidir; Amazon Bedrock, verilerin vektör veritabanınıza aktarılması (ingestion) iş akışının tamamını üstlenir. Mevcut bir vektör veritabanınız yoksa, Amazon Bedrock sizin yerinize bir Amazon OpenSearch Serverless vektör deposu oluşturur.
 
-Knowledge base can be configured through [AWS Console](https://aws.amazon.com/console/) or by using [AWS SDKs](https://aws.amazon.com/developer/tools/).
+Bilgi tabanı, [AWS Konsolu](https://aws.amazon.com/console/) üzerinden veya [AWS SDK'ları](https://aws.amazon.com/developer/tools/) kullanılarak yapılandırılabilir.
 
-In this notebook, we introduce AmazonKnowledgeBasesRetriever - Amazon Bedrock integration in Llama Index via the Retrieve API to retrieve relevant results for a user query from knowledge bases.
+Bu not defterinde, bir kullanıcı sorgusu için bilgi tabanlarından ilgili sonuçları getirmek amacıyla Retrieve API aracılığıyla Llama Index'teki Amazon Bedrock entegrasyonu olan AmazonKnowledgeBasesRetriever'ı tanıtıyoruz.
 
-## Using the Knowledge Base Retriever
+## Bilgi Tabanı Erişimcisini (Knowledge Base Retriever) Kullanma
 
-```
+```python
 %pip install --upgrade --quiet  boto3 botocore
 %pip install llama-index
 %pip install llama-index-retrievers-bedrock
 ```
 
-For more information about the supported parameters for `retrieval_config`, please check the boto3 documentation: [link](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/retrieve.html)
+`retrieval_config` için desteklenen parametreler hakkında daha fazla bilgi için lütfen boto3 belgelerini inceleyin: [bağlantı](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-agent-runtime/client/retrieve.html)
 
-To use filters in the `retrieval_config` you will need to set up metadata.json file for your data source. For more info, see: [link](https://aws.amazon.com/blogs/machine-learning/knowledge-bases-for-amazon-bedrock-now-supports-metadata-filtering-to-improve-retrieval-accuracy/)
+`retrieval_config` içinde filtre kullanmak için veri kaynağınız için bir metadata.json dosyası oluşturmanız gerekecektir. Daha fazla bilgi için: [bağlantı](https://aws.amazon.com/blogs/machine-learning/knowledge-bases-for-amazon-bedrock-now-supports-metadata-filtering-to-improve-retrieval-accuracy/)
 
-```
+```python
 from llama_index.retrievers.bedrock import AmazonKnowledgeBasesRetriever
 
 
@@ -43,22 +43,22 @@ retriever = AmazonKnowledgeBasesRetriever(
 )
 ```
 
-```
-query = "How big is Milky Way as compared to the entire universe?"
+```python
+query = "Samanyolu, tüm evrenle karşılaştırıldığında ne kadar büyüktür?"
 retrieved_results = retriever.retrieve(query)
 
 
-# Prints the first retrieved result
+# Getirilen ilk sonucu yazdırır
 print(retrieved_results[0].get_content())
 ```
 
-## Use the retriever to query with Bedrock LLMs
+## Erişimciyi Bedrock LLM'leri ile Sorgulama Yapmak İçin Kullanma
 
-```
+```python
 %pip install llama-index-llms-bedrock
 ```
 
-```
+```python
 from llama_index.core import get_response_synthesizer
 from llama_index.llms.bedrock.base import Bedrock
 

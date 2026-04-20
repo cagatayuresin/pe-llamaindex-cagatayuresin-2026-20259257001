@@ -5,49 +5,49 @@ title: SambaNova Systems
  | LlamaIndex OSS Documentation
 ---
 
-In this notebook you will know how to install, setup and use the [SambaNova Cloud](https://cloud.sambanova.ai/) and [SambaStudio](https://docs.sambanova.ai/sambastudio/latest/sambastudio-intro.html) platforms. Take a look and try it yourself!
+Bu not defterinde [SambaNova Cloud](https://cloud.sambanova.ai/) ve [SambaStudio](https://docs.sambanova.ai/sambastudio/latest/sambastudio-intro.html) platformlarını nasıl kuracağınızı, yapılandıracağınızı ve kullanacağınızı öğreneceksiniz. Bir göz atın ve kendiniz deneyin!
 
 # SambaNova Cloud
 
-[SambaNova Cloud](https://cloud.sambanova.ai/) is a high-performance inference service that delivers rapid and precise results. Customers can seamlessly leverage SambaNova technology to enhance their user experience by integrating FastAPI inference APIs with their applications. This service provides an easy-to-use REST interface for streaming the inference results. Users are able to customize the inference parameters and pass the ML model on to the service.
+[SambaNova Cloud](https://cloud.sambanova.ai/), hızlı ve kesin sonuçlar sunan yüksek performanslı bir çıkarım (inference) servisidir. Müşteriler, FastAPI çıkarım API'lerini uygulamalarıyla entegre ederek kullanıcı deneyimlerini geliştirmek için SambaNova teknolojisinden sorunsuz bir şekilde yararlanabilirler. Bu servis, çıkarım sonuçlarını akışla (streaming) iletmek için kullanımı kolay bir REST arayüzü sağlar. Kullanıcılar çıkarım parametrelerini özelleştirebilir ve ML modelini servise aktarabilirler.
 
-## Setup
+## Kurulum
 
-To access SambaNova Cloud model you will need to create a [SambaNovaCloud](https://cloud.sambanova.ai/apis) account, get an API key, install the `llama-index-llms-sambanova` integration package, and install the `SSEClient` Package.
+SambaNova Cloud modeline erişmek için bir [SambaNovaCloud](https://cloud.sambanova.ai/apis) hesabı oluşturmanız, bir API anahtarı almanız, `llama-index-llms-sambanova` entegrasyon paketini kurmanız ve `SSEClient` paketini yüklemeniz gerekir.
 
-```
+```python
 %pip install llama-index-llms-sambanovasystems
 %pip install sseclient-py
 ```
 
-### Credentials
+### Kimlik Bilgileri (Credentials)
 
-Get an API Key from [cloud.sambanova.ai](https://cloud.sambanova.ai/apis) and add it to your environment variables:
+[cloud.sambanova.ai](https://cloud.sambanova.ai/apis) adresinden bir API Anahtarı alın ve bunu ortam değişkenlerinize ekleyin:
 
-Terminal window
+Terminal penceresi
 
+```bash
+export SAMBANOVA_API_KEY="api-anahtarınız-buraya"
 ```
-export SAMBANOVA_API_KEY="your-api-key-here"
-```
 
-If you don’t have it in your env variables, you can also add it in the pop-up input text.
+Eğer ortam değişkenlerinizde yoksa, açılır giriş metni kutusuna da ekleyebilirsiniz.
 
-```
+```python
 import getpass
 import os
 
 
 if not os.getenv("SAMBANOVA_API_KEY"):
     os.environ["SAMBANOVA_API_KEY"] = getpass.getpass(
-        "Enter your SambaNova Cloud API key: "
+        "SambaNova Cloud API anahtarınızı girin: "
     )
 ```
 
-## Instantiation
+## Örneklendirme (Instantiation)
 
-Now we can instantiate our model object and generate chat completions:
+Artık model nesnemizi örneklendirebilir ve sohbet tamamlamaları oluşturabiliriz:
 
-```
+```python
 from llama_index.llms.sambanovasystems import SambaNovaCloud
 
 
@@ -61,11 +61,11 @@ llm = SambaNovaCloud(
 )
 ```
 
-## Invocation
+## Çağırma (Invocation)
 
-Given the following system and user messages, let’s explore different ways of calling a SambaNova Cloud model.
+Aşağıdaki sistem ve kullanıcı mesajlarını göz önüne alarak, bir SambaNova Cloud modelini çağırmanın farklı yollarını inceleyelim.
 
-```
+```python
 from llama_index.core.base.llms.types import (
     ChatMessage,
     MessageRole,
@@ -74,9 +74,9 @@ from llama_index.core.base.llms.types import (
 
 system_msg = ChatMessage(
     role=MessageRole.SYSTEM,
-    content="You are a helpful assistant that translates English to French. Translate the user sentence.",
+    content="İngilizceyi Fransızcaya çeviren yardımsever bir asistansın. Kullanıcının cümlesini çevir.",
 )
-user_msg = ChatMessage(role=MessageRole.USER, content="I love programming.")
+user_msg = ChatMessage(role=MessageRole.USER, content="Programlamayı seviyorum.")
 
 
 messages = [
@@ -85,130 +85,130 @@ messages = [
 ]
 ```
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_msg = llm.chat(messages)
 ai_msg.message
 ```
 
-```
+```python
 print(ai_msg.message.content)
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_msg = llm.complete(user_msg.content)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.text)
 ```
 
-## Streaming
+## Akış (Streaming)
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_stream_msgs = []
 for stream in llm.stream_chat(messages):
     ai_stream_msgs.append(stream)
 ai_stream_msgs
 ```
 
-```
+```python
 print(ai_stream_msgs[-1])
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_stream_msgs = []
 for stream in llm.stream_complete(user_msg.content):
     ai_stream_msgs.append(stream)
 ai_stream_msgs
 ```
 
-```
+```python
 print(ai_stream_msgs[-1])
 ```
 
-## Async
+## Asenkron (Async)
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_msg = await llm.achat(messages)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.message.content)
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_msg = await llm.acomplete(user_msg.content)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.text)
 ```
 
-## Async Streaming
+## Asenkron Akış (Async Streaming)
 
-Not supported yet. Coming soon!
+Henüz desteklenmiyor. Yakında gelecek!
 
 # SambaStudio
 
-[SambaStudio](https://docs.sambanova.ai/sambastudio/latest/sambastudio-intro.html) is a rich, GUI-based platform that provides the functionality to train, deploy, and manage models.
+[SambaStudio](https://docs.sambanova.ai/sambastudio/latest/sambastudio-intro.html), modelleri eğitme, dağıtma ve yönetme işlevselliği sağlayan zengin, GUI tabanlı bir platformdur.
 
-## Setup
+## Kurulum
 
-To access SambaStudio models you will need to be a **SambaNova customer**, deploy an endpoint using the GUI or CLI, and use the URL and API Key to connect to the endpoint, as described in the [SambaStudio endpoint documentation](https://docs.sambanova.ai/sambastudio/latest/endpoints.html#_endpoint_api_keys). Then, install the `llama-index-llms-sambanova` integration package, and install the `SSEClient` Package.
+SambaStudio modellerine erişmek için **SambaNova müşterisi** olmanız, GUI veya CLI kullanarak bir uç nokta (endpoint) dağıtmanız ve [SambaStudio uç nokta dokümantasyonunda](https://docs.sambanova.ai/sambastudio/latest/endpoints.html#_endpoint_api_keys) açıklandığı gibi uç noktaya bağlanmak için URL'yi ve API Anahtarını kullanmanız gerekir. Ardından, `llama-index-llms-sambanova` entegrasyon paketini kurun ve `SSEClient` paketini yükleyin.
 
-```
+```python
 %pip install llama-index-llms-sambanova
 %pip install sseclient-py
 ```
 
-### Credentials
+### Kimlik Bilgileri (Credentials)
 
-An endpoint must be deployed in SambaStudio to get the URL and API Key. Once they’re available, include them to your environment variables:
+URL ve API Anahtarını almak için SambaStudio'da bir uç nokta dağıtılmalıdır. Bunlar kullanılabilir olduğunda, ortam değişkenlerinize ekleyin:
 
-Terminal window
+Terminal penceresi
 
+```bash
+export SAMBASTUDIO_URL="url-adresiniz-buraya"
+export SAMBASTUDIO_API_KEY="api-anahtarınız-buraya"
 ```
-export SAMBASTUDIO_URL="your-url-here"
-export SAMBASTUDIO_API_KEY="your-api-key-here"
-```
 
-```
+```python
 import getpass
 import os
 
 
 if not os.getenv("SAMBASTUDIO_URL"):
     os.environ["SAMBASTUDIO_URL"] = getpass.getpass(
-        "Enter your SambaStudio endpoint's URL: "
+        "SambaStudio uç nokta (endpoint) URL'nizi girin: "
     )
 
 
 if not os.getenv("SAMBASTUDIO_API_KEY"):
     os.environ["SAMBASTUDIO_API_KEY"] = getpass.getpass(
-        "Enter your SambaStudio endpoint's API key: "
+        "SambaStudio uç nokta (endpoint) API anahtarınızı girin: "
     )
 ```
 
-## Instantiation
+## Örneklendirme (Instantiation)
 
-Now we can instantiate our model object and generate chat completions:
+Artık model nesnemizi örneklendirebilir ve sohbet tamamlamaları oluşturabiliriz:
 
-```
+```python
 from llama_index.llms.sambanovasystems import SambaStudio
 
 
@@ -222,11 +222,11 @@ llm = SambaStudio(
 )
 ```
 
-## Invocation
+## Çağırma (Invocation)
 
-Given the following system and user messages, let’s explore different ways of calling a SambaNova Cloud model.
+Aşağıdaki sistem ve kullanıcı mesajlarını göz önüne alarak, bir SambaStudio modelini çağırmanın farklı yollarını inceleyelim.
 
-```
+```python
 from llama_index.core.base.llms.types import (
     ChatMessage,
     MessageRole,
@@ -235,9 +235,9 @@ from llama_index.core.base.llms.types import (
 
 system_msg = ChatMessage(
     role=MessageRole.SYSTEM,
-    content="You are a helpful assistant that translates English to French. Translate the user sentence.",
+    content="İngilizceyi Fransızcaya çeviren yardımsever bir asistansın. Kullanıcının cümlesini çevir.",
 )
-user_msg = ChatMessage(role=MessageRole.USER, content="I love programming.")
+user_msg = ChatMessage(role=MessageRole.USER, content="Programlamayı seviyorum.")
 
 
 messages = [
@@ -246,80 +246,80 @@ messages = [
 ]
 ```
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_msg = llm.chat(messages)
 ai_msg.message
 ```
 
-```
+```python
 print(ai_msg.message.content)
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_msg = llm.complete(user_msg.content)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.text)
 ```
 
-## Streaming
+## Akış (Streaming)
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_stream_msgs = []
 for stream in llm.stream_chat(messages):
     ai_stream_msgs.append(stream)
 ai_stream_msgs
 ```
 
-```
+```python
 print(ai_stream_msgs[-1])
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_stream_msgs = []
 for stream in llm.stream_complete(user_msg.content):
     ai_stream_msgs.append(stream)
 ai_stream_msgs
 ```
 
-```
+```python
 print(ai_stream_msgs[-1])
 ```
 
-## Async
+## Asenkron (Async)
 
-### Chat
+### Sohbet (Chat)
 
-```
+```python
 ai_msg = await llm.achat(messages)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.message.content)
 ```
 
-### Complete
+### Tamamlama (Complete)
 
-```
+```python
 ai_msg = await llm.acomplete(user_msg.content)
 ai_msg
 ```
 
-```
+```python
 print(ai_msg.text)
 ```
 
-## Async Streaming
+## Asenkron Akış (Async Streaming)
 
-Not supported yet. Coming soon!
+Henüz desteklenmiyor. Yakında gelecek!
