@@ -1,23 +1,23 @@
-# Tair Vector Store
-
 ---
-title: Tair Vector Store
- | LlamaIndex OSS Documentation
+title: Tair Vektör Deposu (Tair Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of using the TairVectorStore.
+# Tair Vektör Deposu (Tair Vector Store)
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu not defterimizde (notebook); TairVectorStore/Tair Vektör Deposunun nasıl kullanılacağına ilişkin hızlı ve pratik bir tanıtım / demo örneğini sizlere sunacağız.
 
-```
+Eğer bu Not Defterini (Notebook) Colab ortamında açıyorsanız, muhtemelen LlamaIndex'i 🦙 sisteminize kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-tair
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import sys
 import logging
@@ -30,11 +30,11 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# stop huggingface warnings
+# huggingface uyarılarının/ikazlarının (warnings) önüne geçerek durdurun
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-# Uncomment to see debug logs
+# Hata ayıklama (debug) günlüklerini/verilerini görmek istiyorsanız yorum satırını kaldırarak aktif (uncomment) edebilirsiniz
 # logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
@@ -48,46 +48,46 @@ from llama_index.vector_stores.tair import TairVectorStore
 from IPython.display import Markdown, display
 ```
 
-### Setup OpenAI
+### OpenAI Ayarları (Setup OpenAI)
 
-Lets first begin by adding the openai api key. This will allow us to access openai for embeddings and to use chatgpt.
+İşe ilk öncelikle openai lisans api anahtar atamasını / yapısını deklare edip ekleyerek (adding) başlayalım. Bu aşamadaki evre, openai'ın kendisinin yer aldığı gömme (embeddings) veya "chatgpt" işlevlerinin/işlemlerinin kullanımına yönelik olan erişim olanaklarını (access) bize tahsis edecektir / sağlayacaktır.
 
-```
+```python
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "sk-<your key here>"
+os.environ["OPENAI_API_KEY"] = "sk-<sizin_anahtariniz_buraya_gelecek>"
 ```
 
-### Download Data
+### Veriyi İndirin (Download Data)
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Read in a dataset
+### Bir veri setini/kümesini okuyun/sisteme içeri atın (Read in a dataset)
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 print(
-    "Document ID:",
+    "Belge Kimliği (Document ID):",
     documents[0].doc_id,
-    "Document Hash:",
+    "Belge Özeti / Karma Değeri (Document Hash):",
     documents[0].doc_hash,
 )
 ```
 
-### Build index from documents
+### Belgeleri baz alarak/belgelerden indeks inşa edin/oluşturun (Build index from documents)
 
-Let’s build a vector index with `GPTVectorStoreIndex`, using `TairVectorStore` as its backend. Replace `tair_url` with the actual url of your Tair instance.
+Temel / arka uç sağlayıcısı (backend) bağlamında `TairVectorStore` verisini/mekanizmasını atayarak `GPTVectorStoreIndex` üzerinden vektörel dizilim/indeks inşa edelim. Buradaki `tair_url` kısmını / kod alanını, Tair kullanım nesnesinin/otorumunun kendisindeki mevcudiyeti olan yâni bizzat var eden asıl url bağlantısıyla (actual url) değiştirerek takdim edin (replace).
 
-```
+```python
 from llama_index.core import StorageContext
 
 
-tair_url = "redis://{username}:{password}@r-bp****************.redis.rds.aliyuncs.com:{port}"
+tair_url = "redis://{kullaniciadi}:{sifre}@r-bp****************.redis.rds.aliyuncs.com:{port}"
 
 
 vector_store = TairVectorStore(
@@ -99,52 +99,52 @@ index = GPTVectorStoreIndex.from_documents(
 )
 ```
 
-### Query the data
+### Veriyi sorgulayın (Query the data)
 
-Now we can use the index as knowledge base and ask questions to it.
+Artık tam da şimdi (Now), edindiğimiz ve yığdığımız asıl dizin / indeksleri bizzat bilgi ve donanımımız olan bilgi tabanı (knowledge base) suretinde tatbikata sokup da (kullanıp) kendilerine rahatlıkla birtakım sorgular dahi atarcasına/sormasına meyledebilir (ask questions to it) / sorabiliriz.
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author learn?")
+response = query_engine.query("Yazar neleri öğrenip ne çıkardı? (What did the author learn?)")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-response = query_engine.query("What was a hard moment for the author?")
+```python
+response = query_engine.query("Yazarın zor duruma girdiği/yaşadığı zor bir an, yahut anı tablosu da neydi? (What was a hard moment for the author?)")
 print(textwrap.fill(str(response), 100))
 ```
 
-### Deleting documents
+### Belgelerin silinmesi/kaldırılması (Deleting documents)
 
-To delete a document from the index, use `delete` method.
+İndekste var olan (İndeks tablosundan) evraka/bir belgeye ait izi tümden silebilmek (to delete) veyahut da kaldırmak adına; bilakis (sadece/yegane formda) `delete` yordamını ve yahut fonksiyon evresindeki metodu kullanmalısınız (use `delete` method).
 
-```
+```python
 document_id = documents[0].doc_id
 document_id
 ```
 
-```
+```python
 info = vector_store.client.tvs_get_index("pg_essays")
-print("Number of documents", int(info["data_count"]))
+print("Belge / Evrak Adedi (Number of documents)", int(info["data_count"]))
 ```
 
-```
+```python
 vector_store.delete(document_id)
 ```
 
-```
+```python
 info = vector_store.client.tvs_get_index("pg_essays")
-print("Number of documents", int(info["data_count"]))
+print("Belge / Evrak Adedi (Number of documents)", int(info["data_count"]))
 ```
 
-### Deleting index
+### Dizin/indeks silinmesi/kaldırılması (Deleting index)
 
-Delete the entire index using `delete_index` method.
+Halihazırda var edip bir döküme attığınız indekse ait o tekmil tüm form yapısını (entire index) bir sefere kalmıksızın silmek adına; doğrudan `delete_index` metoduna/evresine müracaat edip onu referans olarak kullanının (use method).
 
-```
+```python
 vector_store.delete_index()
 ```
 
-```
-print("Check index existence:", vector_store.client._index_exists())
+```python
+print("İndeks varlığını / baki kalıp kalmadığını kontrol et / döküme al (Check index existence):", vector_store.client._index_exists())
 ```
