@@ -1,24 +1,24 @@
-# Deep Lake Vector Store Quickstart
-
 ---
-title: Deep Lake Vector Store Quickstart
- | LlamaIndex OSS Documentation
+title: Deep Lake Vektör Deposu Hızlı Başlangıç
+ | LlamaIndex OSS Belgeleri
 ---
 
-Deep Lake can be installed using pip.
+# Deep Lake Vektör Deposu Hızlı Başlangıç
 
-```
+Deep Lake, pip kullanılarak kurulabilir.
+
+```bash
 %pip install llama-index-vector-stores-deeplake
 ```
 
-```
+```bash
 !pip install llama-index
 !pip install deeplake
 ```
 
-Next, let’s import the required modules and set the needed environmental variables:
+Sırada, gerekli modülleri içe aktaralım ve gereken ortam değişkenlerini ayarlayalım:
 
-```
+```python
 import os
 import textwrap
 
@@ -31,9 +31,9 @@ os.environ["OPENAI_API_KEY"] = "sk-********************************"
 os.environ["ACTIVELOOP_TOKEN"] = "********************************"
 ```
 
-We are going to embed and store one of Paul Graham’s essays in a Deep Lake Vector Store stored locally. First, we download the data to a directory called `data/paul_graham`
+Paul Graham'ın makalelerinden birini gömeceğiz ve yerel olarak saklanan bir Deep Lake Vektör Deposu'nda tutacağız. İlk olarak, verileri `data/paul_graham` adlı bir dizine indiriyoruz.
 
-```
+```python
 import urllib.request
 
 
@@ -43,33 +43,33 @@ urllib.request.urlretrieve(
 )
 ```
 
-We can now create documents from the source data file.
+Artık kaynak veri dosyasından belgeler oluşturabiliriz.
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 print(
-    "Document ID:",
+    "Belge Kimliği (Document ID):",
     documents[0].doc_id,
-    "Document Hash:",
+    "Belge Hash'i:",
     documents[0].hash,
 )
 ```
 
-```
-Document ID: a98b6686-e666-41a9-a0bc-b79f0d666bde Document Hash: beaa54b3e9cea641e91e6975d2207af4f4200f4b2d629725d688f272372ce5bb
+```text
+Belge Kimliği (Document ID): a98b6686-e666-41a9-a0bc-b79f0d666bde Belge Hash'i: beaa54b3e9cea641e91e6975d2207af4f4200f4b2d629725d688f272372ce5bb
 ```
 
-Finally, let’s create the Deep Lake Vector Store and populate it with data. We use a default tensor configuration, which creates tensors with `text (str)`, `metadata(json)`, `id (str, auto-populated)`, `embedding (float32)`. [Learn more about tensor customizability here](https://docs.activeloop.ai/example-code/getting-started/vector-store/step-4-customizing-vector-stores).
+Son olarak, Deep Lake Vektör Deposu'nu oluşturalım ve verilerle dolduralım. `text (str)`, `metadata(json)`, `id (str, otomatik doldurulur)`, `embedding (float32)` tensorlarını oluşturan varsayılan bir tensor yapılandırması kullanıyoruz. [Tensor özelleştirilebilirliği hakkında daha fazlasını buradan öğrenin](https://docs.activeloop.ai/example-code/getting-started/vector-store/step-4-customizing-vector-stores).
 
-```
+```python
 from llama_index.core import StorageContext
 
 
 dataset_path = "./dataset/paul_graham"
 
 
-# Create an index over the documents
+# Belgeler üzerinde bir indeks oluşturun
 vector_store = DeepLakeVectorStore(dataset_path=dataset_path, overwrite=True)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
@@ -77,10 +77,8 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-Uploading data to deeplake dataset.
-
-
+```text
+Deep Lake veri kümesine veri yükleniyor.
 
 
 100%|██████████| 22/22 [00:00<00:00, 684.80it/s]
@@ -91,68 +89,44 @@ Dataset(path='./dataset/paul_graham', tensors=['text', 'metadata', 'embedding', 
 
   tensor      htype      shape      dtype  compression
   -------    -------    -------    -------  -------
-   text       text      (22, 1)      str     None
- metadata     json      (22, 1)      str     None
- embedding  embedding  (22, 1536)  float32   None
-    id        text      (22, 1)      str     None
+    text       text      (22, 1)      str     None
+  metadata     json      (22, 1)      str     None
+  embedding  embedding  (22, 1536)  float32   None
+     id        text      (22, 1)      str     None
 ```
 
-## Performing Vector Search
+## Vektör Araması Yapma
 
-Deep Lake offers highly-flexible vector search and hybrid search options [discussed in detail in these tutorials](https://docs.activeloop.ai/example-code/tutorials/vector-store/vector-search-options). In this Quickstart, we show a simple example using default options.
+Deep Lake, [bu öğreticilerde ayrıntılı olarak tartışılan](https://docs.activeloop.ai/example-code/tutorials/vector-store/vector-search-options) son derece esnek vektör araması ve hibrit arama seçenekleri sunar. Bu Hızlı Başlangıç kılavuzunda, varsayılan seçenekleri kullanan basit bir örnek gösteriyoruz.
 
-```
+```python
 query_engine = index.as_query_engine()
 response = query_engine.query(
-    "What did the author learn?",
+    "Yazar ne öğrendi?",
 )
 ```
 
-```
+```python
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-  The author learned that working on things that are not prestigious can be a good thing, as it can
-lead to discovering something real and avoiding the wrong track. The author also learned that
-ignorance can be beneficial, as it can lead to discovering something new and unexpected. The author
-also learned the importance of working hard, even at the parts of the job they don't like, in order
-to set an example for others. The author also learned the value of unsolicited advice, as it can be
-beneficial in unexpected ways, such as when Robert Morris suggested that the author should make sure
-Y Combinator wasn't the last cool thing they did.
+**Yazar, prestijli olmayan şeyler üzerinde çalışmanın iyi bir şey olabileceğini öğrendi; çünkü bu, gerçek bir şeyi keşfetmeye ve yanlış yoldan kaçınmaya yol açabilir. Yazar ayrıca cehaletin faydalı olabileceğini, çünkü bunun yeni ve beklenmedik bir şeyi keşfetmeye yol açabileceğini öğrendi. Ayrıca başkalarına örnek olmak için işin sevmediği kısımlarında bile çok çalışmanın önemini öğrendi. Yazar ayrıca istenmeyen tavsiyelerin değerini de öğrendi; örneğin Robert Morris'in, yazarın Y Combinator'ın yaptıkları son havalı şey olmadığından emin olması gerektiğini önermesi gibi beklenmedik şekillerde faydalı olabileceğini gördü.**
+
+```python
+response = query_engine.query("Yazar için zor bir an neydi?")
 ```
 
-```
-response = query_engine.query("What was a hard moment for the author?")
-```
-
-```
+```python
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author experienced a hard moment when one of his programs on the IBM 1401 computer did not
-terminate. This was a social as well as a technical error, as the data center manager's expression
-made clear.
-```
+**Yazar, IBM 1401 bilgisayarındaki programlarından biri sonlanmadığında zor bir an yaşadı. Veri merkezi yöneticisinin ifadesinin açıkça belirttiği gibi, bu teknik olduğu kadar sosyal bir hataydı.**
 
-```
-query_engine = index.as_query_engine()
-response = query_engine.query("What was a hard moment for the author?")
-print(textwrap.fill(str(response), 100))
-```
+## Veritabanından öğeleri silme
 
-```
-The author experienced a hard moment when one of his programs on the IBM 1401 computer did not
-terminate. This was a social as well as a technical error, as the data center manager's expression
-made clear.
-```
+Silinecek bir belgenin kimliğini bulmak için doğrudan temel Deep Lake veri kümesini sorgulayabilirsiniz.
 
-## Deleting items from the database
-
-To find the id of a document to delete, you can query the underlying deeplake dataset directly
-
-```
+```python
 import deeplake
 
 
@@ -163,25 +137,13 @@ idx = ds.id[0].numpy().tolist()
 idx
 ```
 
-```
-./dataset/paul_graham loaded successfully.
-
-
-
-
-
-
-
-
-
-
-
-
+```text
+./dataset/paul_graham başarıyla yüklendi.
 
 
 ['42f8220e-673d-4c65-884d-5a48a1a15b03']
 ```
 
-```
+```python
 index.delete(idx[0])
 ```

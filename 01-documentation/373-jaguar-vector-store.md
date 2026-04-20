@@ -1,86 +1,79 @@
-# Jaguar Vector Store
-
 ---
-title: Jaguar Vector Store
- | LlamaIndex OSS Documentation
+title: Jaguar Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This document demonstrates llama\_index working with Jaguar vector store.
+# Jaguar Vektör Deposu
 
-- It is a distributed vector database that can store large number of vectors.
-- The ZeroMove feature enables instant horizontal scaling.
-- It supports embeddings, text, images, videos, PDFs, audio, time series, and spatial data.
-- The all-master architecture allows both parallel reads and writes.
-- Its anomaly detection capabilities can distinguish outliers in the dataset.
-- The RAG support can combine LLMs and proprietary and real-time data.
-- Sharing of metadata across multiple vector indexes improves data consistency.
-- Distance metrics include Euclidean, Cosine, InnerProduct, Manhatten, Chebyshev, Hamming, Jeccard, and Minkowski.
-- Similarity search can be performed with time cutoff and time decay effects.
+Bu belge, LlamaIndex'in Jaguar vektör deposu ile nasıl çalıştığını göstermektedir.
 
-## Prerequisites
+- Çok sayıda vektörü saklayabilen dağıtık bir vektör veritabanıdır.
+- ZeroMove özelliği, anlık yatay ölçeklendirmeye olanak tanır.
+- Gömmeleri (embeddings), metinleri, görselleri, videoları, PDF'leri, sesleri, zaman serilerini ve mekansal verileri destekler.
+- Tümü-ana sunucu (all-master) mimarisi, hem paralel okumaya hem de paralel yazmaya izin verir.
+- Anomali tespiti yetenekleri, veri kümesindeki aykırı değerleri ayırt edebilir.
+- RAG desteği, LLM'leri özel ve gerçek zamanlı verilerle birleştirebilir.
+- Meta verilerin birden fazla vektör indeksi arasında paylaşılması veri tutarlılığını artırır.
+- Mesafe metrikleri arasında Euclidean, Cosine, InnerProduct, Manhatten, Chebyshev, Hamming, Jeccard ve Minkowski bulunur.
+- Benzerlik araması, zaman sınırı (time cutoff) ve zamanla aşınma (time decay) etkileriyle gerçekleştirilebilir.
 
-There are two requirements for running the examples in this file.
+## Ön Koşullar
 
-You must install and set up the JaguarDB server and its HTTP gateway server. Please follow the instructions in [Jaguar Setup](http://www.jaguardb.com/docsetup.html) as a reference.
+Bu dosyadaki örnekleri çalıştırmak için iki gereksinim vardır.
 
-You must install packages llama-index and jaguardb-http-client.
+JaguarDB sunucusunu ve HTTP ağ geçidi (gateway) sunucusunu kurmalı ve ayarlamalısınız. Referans olarak [Jaguar Kurulumu](http://www.jaguardb.com/docsetup.html) bölümündeki talimatları izleyin.
 
-**Method One : Docker**
+`llama-index` ve `jaguardb-http-client` paketlerini kurmalısınız.
 
-```
+**Birinci Yöntem: Docker**
+
+```bash
 docker pull jaguardb/jaguardb
 docker run -d -p 8888:8888 -p 8080:8080 --name jaguardb jaguardb/jaguardb
 pip install -U llama-index
 pip install -U jaguardb-http-client
 ```
 
-**Method Two: Quick Setup(Linux)**
+**İkinci Yöntem: Hızlı Kurulum (Linux)**
 
-```
-curl -fsSL http://jaguardb.com/install.sh | sh\n
+```bash
+curl -fsSL http://jaguardb.com/install.sh | sh
 pip install -U llama-index
 pip install -U jaguardb-http-client
 ```
 
-```
+```bash
 %pip install llama-index-vector-stores-jaguar
 ```
 
-```
+```bash
 !pip install -U jaguardb-http-client
 ```
 
-```
-Collecting jaguardb-http-client
-  Using cached jaguardb_http_client-3.4.1-py2.py3-none-any.whl (15 kB)
-Installing collected packages: jaguardb-http-client
-Successfully installed jaguardb-http-client-3.4.1
-```
+## İçe Aktarmalar
 
-## Imports
+Aşağıdaki paketler içe aktarılmalıdır. Örnek olarak `OpenAIEmbedding` kullanıyoruz. Uygulamanızda diğer gömme modellerini seçebilirsiniz.
 
-The following packages should be imported. We use the OpenAIEmbedding as an example. You could choose other embedding models in your application.
-
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core import StorageContext
 from llama_index.vector_stores.jaguar import JaguarVectorStore
 from jaguardb_http_client.JaguarHttpClient import JaguarHttpClient
 ```
 
-## Client Object
+## İstemci Nesnesi (Client Object)
 
-We now instantiate a jaguar vector store client object. The url is the http endpoint of the gateway server. The url should be replaced with your environment settings. The pod is the Pod (or database) name. The store is the name of the vector store. A pod may have multiple stores. The vector\_index is the name of the vector index in the store. A store may have multiple vector indexes. The store client object is, however, bound to one vector index only. The vector\_type specifies the attributes of the vector index. In the string “cosine\_fraction\_short”, cosine means that the distance between two vectors is computed with the cosine distance. Fraction means the vector components are fractional numbers. Short means the storage format of the vector components is a short integer of signed 16-bits integers. Storage format could be float of 32-bit floating point numbers. It can also be a byte of 8-bit signed integers. The vector\_dimension is the dimension of the vector generated by the provided embedding model.
+Şimdi bir jaguar vektör deposu istemci nesnesi oluşturuyoruz. `url`, ağ geçidi sunucusunun http uç noktasıdır. URL, ortam ayarlarınızla değiştirilmelidir. `pod`, Pod (veya veritabanı) adıdır. `store`, vektör deposunun adıdır. Bir pod'un birden fazla deposu olabilir. `vector_index`, depodaki vektör indeksinin adıdır. Bir deponun birden fazla vektör indeksi olabilir. Ancak, depo istemci nesnesi yalnızca bir vektör indeksine bağlıdır. `vector_type`, vektör indeksinin niteliklerini belirtir. "cosine_fraction_short" dizesinde `cosine`, iki vektör arasındaki mesafenin kosinüs mesafesiyle hesaplandığı anlamına gelir. `fraction`, vektör bileşenlerinin kesirli sayılar olduğu anlamına gelir. `short`, vektör bileşenlerinin saklama biçiminin 16 bitlik işaretli tam sayılar olduğu anlamına gelir. Saklama biçimi 32 bitlik kayan noktalı sayılar (`float`) olabilir. Ayrıca 8 bitlik işaretli tam sayılar (`byte`) da olabilir. `vector_dimension`, sağlanan gömme modeli tarafından oluşturulan vektörün boyutudur.
 
-```
+```python
 url = "http://127.0.0.1:8080/fwww/"
 pod = "vdb"
 store = "llamaindex_jaguar_store"
 vector_index = "v"
 vector_type = "cosine_fraction_float"
-# vector_type = "cosine_fraction_short"  # half of memory usage compared to float
-# vector_type = "cosine_fraction_byte" # quarter of memory usage compared to float
-vector_dimension = 1536  # per OpenAIEmbedding model
+# vector_type = "cosine_fraction_short"  # float'a kıyasla bellek kullanımının yarısı
+# vector_type = "cosine_fraction_byte" # float'a kıyasla bellek kullanımının dörtte biri
+vector_dimension = 1536  # OpenAIEmbedding modeline göre
 jaguarstore = JaguarVectorStore(
     pod,
     store,
@@ -91,136 +84,125 @@ jaguarstore = JaguarVectorStore(
 )
 ```
 
-## Authentication
+## Kimlik Doğrulama
 
-The client must login or connect to back-end jaguar server for system security and user authentication. Environment variable JAGUAR\_API\_KEY or file $HOME/.jagrc file must contain the jaguar api ke issued by your system administrator. The login() method returns True or False. If it returns False, then it may mean that your jaguar api key is invalid, or the http gateway server is not running, or the jaguar server is not running properly.
+İstemci, sistem güvenliği ve kullanıcı kimlik doğrulaması için arka uç jaguar sunucusuna giriş yapmalı veya bağlanmalıdır. `JAGUAR_API_KEY` ortam değişkeni veya `$HOME/.jagrc` dosyası, sistem yöneticiniz tarafından verilen jaguar api anahtarını içermelidir. `login()` yöntemi `True` veya `False` döndürür. `False` döndürürse, jaguar api anahtarınız geçersiz olabilir veya http ağ geçidi sunucusu çalışmıyor olabilir veya jaguar sunucusu düzgün çalışmıyor olabilir.
 
-```
+```python
 true_or_false = jaguarstore.login()
-print(f"login result is {true_or_false}")
+print(f"giriş sonucu: {true_or_false}")
 ```
 
-```
-login result is True
+```text
+giriş sonucu: True
 ```
 
-## Create Vector Store
+## Vektör Deposu Oluşturma
 
-We now create a vector store with a field ‘v:text’ of size 1024 bytes to hold text, and two additional metadata fields ‘author’ and ‘category’.
+Metin tutmak için 1024 bayt boyutunda 'v:text' alanı ve iki ek meta veri alanı olan 'author' (yazar) ve 'category' (kategori) içeren bir vektör deposu oluşturuyoruz.
 
-```
+```python
 metadata_str = "author char(32), category char(16)"
 text_size = 1024
 jaguarstore.create(metadata_str, text_size)
 ```
 
-## Load Documents
+## Belgeleri Yükleme
 
-The following code opens the example Paul Gram documents and read them into memory
+Aşağıdaki kod, örnek Paul Graham belgelerini açar ve belleğe okur.
 
-```
+```python
 documents = SimpleDirectoryReader("../data/paul_graham/").load_data()
-print(f"loading {len(documents)} doument(s)")
+print(f"{len(documents)} belge yükleniyor")
 ```
 
-```
-loading 1 doument(s)
-```
+## İndeks Oluşturma
 
-## Make Index
+Depolama bağlamını hazırlayın ve bir indeks nesnesi oluşturun. `from_documents()` çağrısından sonra vektör deposuna kaydedilmiş 22 vektör olacaktır.
 
-Prepare storage context, service context, and make an index object. After the call of from\_documents(), there will be 22 vectors saved in the vector store.
-
-```
-### make a storage context using our vector store
+```python
+### vektör depomuzu kullanarak bir depolama bağlamı oluşturun
 storage_context = StorageContext.from_defaults(vector_store=jaguarstore)
 
 
-### clear all vectors in the vector store
+### vektör deposundaki tüm vektörleri temizleyin
 jaguarstore.clear()
 
 
-### make an index with the documents,storage context
+### belgeler ve depolama bağlamı ile bir indeks oluşturun
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 
 
-### You could add more documents to the vector store:
-# jaguarstore.add_documents(some_docs)
-# jaguarstore.add_documents(more_docs, text_tag="tag to these documents")
+### Vektör deposuna daha fazla belge ekleyebilirsiniz:
+# jaguarstore.add_documents(bazı_belgeler)
+# jaguarstore.add_documents(daha_fazla_belge, text_tag="bu belgelere etiket")
 
 
-### print number of documents in jaguar vector store
+### jaguar vektör deposundaki belge sayısını yazdırın
 num = jaguarstore.count()
-print(f"There are {num} vectors in jaguar vector store")
+print(f"Jaguar vektör deposunda {num} vektör var")
 ```
 
-```
-There are 22 vectors in jaguar vector store
-```
+## Soru Sorun
 
-## Ask Questions
+Bir sorgu motoru alıyoruz ve motora bazı sorular soruyoruz.
 
-We get a query engine and ask some questions to the engine.
-
-```
+```python
 query_engine = index.as_query_engine()
-q = "What did the author do growing up?"
-print(f"Question: {q}")
+q = "Yazar büyürken neler yaptı?"
+print(f"Soru: {q}")
 response = query_engine.query(q)
-print(f"Answer: {str(response)}\n")
+print(f"Cevap: {str(response)}\n")
 
 
-q = "What did the author do after his time at Viaweb?"
-print(f"Question: {q}")
+q = "Yazar Viaweb'deki zamanından sonra neler yaptı?"
+print(f"Soru: {q}")
 response = query_engine.query(q)
-print(f"Answer: {str(response)}")
+print(f"Cevap: {str(response)}")
 ```
 
+```text
+Soru: Yazar büyürken neler yaptı?
+Cevap: Yazar büyürken okul dışında iki ana konu üzerinde çalıştığını belirtti: yazarlık ve programlama. Kısa hikayeler yazdı ve bir IBM 1401 bilgisayarında programlar yazmayı denedi.
+
+
+Soru: Yazar Viaweb'deki zamanından sonra neler yaptı?
+Cevap: Viaweb'deki zamanından sonra yazar, sanat galerilerini çevrimiçi hale getirmek için bir şirket kurdu. Ancak sanat galerileri çevrimiçi olmak istemediği için bu fikir başarılı olmadı.
 ```
-Question: What did the author do growing up?
-Answer: The author mentioned that growing up, they worked on two main things outside of school: writing and programming. They wrote short stories and tried writing programs on an IBM 1401 computer.
 
+## Sorgu Seçeneklerini İletme
 
-Question: What did the author do after his time at Viaweb?
-Answer: After his time at Viaweb, the author started a company to put art galleries online. However, this idea did not turn out to be successful as art galleries did not want to be online.
-```
+Jaguar vektör deposundan yalnızca verilerin bir alt kümesini seçmek için sorgu motoruna ekstra argümanlar iletebiliriz. Bu, `vector_store_kwargs` argümanı kullanılarak gerçekleştirilebilir. `day_cutoff` parametresi, metnin yoksayılacağı gün sayısıdır. `day_decay_rate`, benzerlik puanları için günlük aşınma oranıdır.
 
-## Pass Query Options
-
-We can pass extra arguments to the query engine to select only a subset of data from the jaguar vector store. This can be achieved by using the `vector_store_kwargs` argument. Parameter day\_cutoff is number of days beyond which text will be ignored. day\_decay\_rate is rate of daily decay for similarity scores.
-
-```
+```python
 qkwargs = {
     "args": "day_cutoff=365,day_decay_rate=0.01",
     "where": "category='startup' or category=''",
 }
 query_engine_filter = index.as_query_engine(vector_store_kwargs=qkwargs)
-q = "What was the author's life style?"
-print(f"Question: {q}")
+q = "Yazarın yaşam tarzı nasıldı?"
+print(f"Soru: {q}")
 response = query_engine_filter.query(q)
-print(f"Answer: {str(response)}")
+print(f"Cevap: {str(response)}")
 ```
 
-```
-Question: What was the author's life style?
-Answer: The author's lifestyle involved attending the Accademia as a student and painting still lives in their bedroom at night. They also wrote essays and had a messy life, which they thought would be interesting and encouraging to others.
-```
+**Cevap: Yazarın yaşam tarzı, Accademia'ya bir öğrenci olarak devam etmeyi ve geceleri yatak odasında natürmort resimler yapmayı içeriyordu. Ayrıca denemeler yazdı ve başkaları için ilginç ve cesaret verici olacağını düşündüğü dağınık bir hayatı vardı.**
 
-## Cleanup and Logout
+## Temizlik ve Çıkış Yapma
 
-All vectors and related data in the vector store can be deleted and the vector store can be removed completely to finish the test. Logout call makes sure resources used by the client are released.
+Vektör deposundaki tüm vektörler ve ilgili veriler silinebilir ve testi bitirmek için vektör deposu tamamen kaldırılabilir. `logout` çağrısı, istemci tarafından kullanılan kaynakların serbest bırakılmasını sağlar.
 
-```
-### remove all the data in the vector store if you want
+```python
+### isterseniz vektör deposundaki tüm verileri kaldırın
 jaguarstore.clear()
 
 
-### delete the whole vector in the database if you want
+### isterseniz veritabanındaki tüm vektörü silin
 jaguarstore.drop()
 
 
-### disconnect from jaguar server and cleanup resources
+### jaguar sunucusuyla olan bağlantıyı kesin ve kaynakları temizleyin
 jaguarstore.logout()
 ```

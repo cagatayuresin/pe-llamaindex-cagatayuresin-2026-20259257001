@@ -1,23 +1,23 @@
-# DocArray InMemory Vector Store
-
 ---
-title: DocArray InMemory Vector Store
- | LlamaIndex OSS Documentation
+title: DocArray Bellek İçi (InMemory) Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-[DocArrayInMemoryVectorStore](https://docs.docarray.org/user_guide/storing/index_in_memory/) is a document index provided by [Docarray](https://github.com/docarray/docarray) that stores documents in memory. It is a great starting point for small datasets, where you may not want to launch a database server.
+# DocArray Bellek İçi (InMemory) Vektör Deposu
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+[DocArrayInMemoryVectorStore](https://docs.docarray.org/user_guide/storing/index_in_memory/), [Docarray](https://github.com/docarray/docarray) tarafından sağlanan ve belgeleri bellekte saklayan bir belge indeksidir. Bir veritabanı sunucusu başlatmak istemeyebileceğiniz küçük veri kümeleri için harika bir başlangıç noktasıdır.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-docarray
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import sys
 import logging
@@ -30,11 +30,11 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# stop huggingface warnings
+# huggingface uyarılarını durdur
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-# Uncomment to see debug logs
+# Hata ayıklama günlüklerini görmek için yorum satırını kaldırın
 # logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
@@ -48,41 +48,39 @@ from llama_index.vector_stores.docarray import DocArrayInMemoryVectorStore
 from IPython.display import Markdown, display
 ```
 
-```
+```python
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "<your openai key>"
+os.environ["OPENAI_API_KEY"] = "<openai anahtarınız>"
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 print(
-    "Document ID:",
+    "Belge Kimliği (Document ID):",
     documents[0].doc_id,
-    "Document Hash:",
+    "Belge Hash'i:",
     documents[0].doc_hash,
 )
 ```
 
-```
-Document ID: 1c21062a-50a3-4133-a0b1-75f837a953e5 Document Hash: 77ae91ab542f3abb308c4d7c77c9bc4c9ad0ccd63144802b7cbe7e1bb3a4094e
+```text
+Belge Kimliği (Document ID): 1c21062a-50a3-4133-a0b1-75f837a953e5 Belge Hash'i: 77ae91ab542f3abb308c4d7c77c9bc4c9ad0ccd63144802b7cbe7e1bb3a4094e
 ```
 
-## Initialization and indexing
+## Başlatma ve İndeksleme
 
-```
+```python
 from llama_index.core import StorageContext
-
-
 
 
 vector_store = DocArrayInMemoryVectorStore()
@@ -92,74 +90,56 @@ index = GPTVectorStoreIndex.from_documents(
 )
 ```
 
-## Querying
+## Sorgulama
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-Token indices sequence length is longer than the specified maximum sequence length for this model (1830 > 1024). Running this sequence through the model will result in indexing errors
+**Yazar büyürken kısa hikayeler yazdı, bir IBM 1401 üzerinde programlama yaptı ve babasına kendisine bir TRS-80 mikrobilgisayar alması için ısrar etti. Basit oyunlar, model roketlerinin ne kadar yükseğe uçacağını tahmin eden bir program ve bir kelime işlemci yazdı. Ayrıca üniversitede felsefe okudu ancak bundan sıkıldıktan sonra yapay zekaya (AI) geçti. Daha sonra Harvard'da sanat dersleri aldı ve sanat okullarına başvurdu, sonunda RISD'ye devam etti.**
 
-
-
-
- Growing up, the author wrote short stories, programmed on an IBM 1401, and nagged his father to buy
-him a TRS-80 microcomputer. He wrote simple games, a program to predict how high his model rockets
-would fly, and a word processor. He also studied philosophy in college, but switched to AI after
-becoming bored with it. He then took art classes at Harvard and applied to art schools, eventually
-attending RISD.
-```
-
-```
-response = query_engine.query("What was a hard moment for the author?")
+```python
+response = query_engine.query("Yazar için zor bir an neydi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
- A hard moment for the author was when he realized that the AI programs of the time were a hoax and
-that there was an unbridgeable gap between what they could do and actually understanding natural
-language. He had invested a lot of time and energy into learning about AI and was disappointed to
-find out that it was not going to get him the results he had hoped for.
-```
+**Yazar için zor bir an, o zamanki yapay zeka (AI) programlarının bir aldatmaca olduğunu ve yapabildikleriyle doğal dili gerçekten anlamak arasında aşılamaz bir uçurum olduğunu fark etmesiydi. Yapay zeka hakkında bilgi edinmek için çok fazla zaman ve enerji harcamıştı ve bunun beklediği sonuçları vermeyeceğini öğrenince hayal kırıklığına uğradı.**
 
-## Querying with filters
+## Filtrelerle Sorgulama
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
-        text="The Shawshank Redemption",
+        text="Esaretin Bedeli (The Shawshank Redemption)",
         metadata={
-            "author": "Stephen King",
-            "theme": "Friendship",
+            "yazar": "Stephen King",
+            "tema": "Dostluk",
         },
     ),
     TextNode(
-        text="The Godfather",
+        text="Baba (The Godfather)",
         metadata={
-            "director": "Francis Ford Coppola",
-            "theme": "Mafia",
+            "yönetmen": "Francis Ford Coppola",
+            "tema": "Mafya",
         },
     ),
     TextNode(
-        text="Inception",
+        text="Başlangıç (Inception)",
         metadata={
-            "director": "Christopher Nolan",
+            "yönetmen": "Christopher Nolan",
         },
     ),
 ]
 ```
 
-```
+```python
 from llama_index.core import StorageContext
-
-
 
 
 vector_store = DocArrayInMemoryVectorStore()
@@ -169,21 +149,15 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = GPTVectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-```
+```python
 from llama_index.core.vector_stores import ExactMatchFilter, MetadataFilters
 
 
-
-
 filters = MetadataFilters(
-    filters=[ExactMatchFilter(key="theme", value="Mafia")]
+    filters=[ExactMatchFilter(key="tema", value="Mafya")]
 )
 
 
 retriever = index.as_retriever(filters=filters)
-retriever.retrieve("What is inception about?")
-```
-
-```
-[NodeWithScore(node=Node(text='director: Francis Ford Coppola\ntheme: Mafia\n\nThe Godfather', doc_id='41c99963-b200-4ce6-a9c4-d06ffeabdbc5', embedding=None, doc_hash='b770e43e6a94854a22dc01421d3d9ef6a94931c2b8dbbadf4fdb6eb6fbe41010', extra_info=None, node_info=None, relationships={<DocumentRelationship.SOURCE: '1'>: 'None'}), score=0.7681788983417586)]
+retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 ```

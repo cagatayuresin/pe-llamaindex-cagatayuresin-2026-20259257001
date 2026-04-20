@@ -1,34 +1,34 @@
-# Epsilla Vector Store
-
 ---
-title: Epsilla Vector Store
- | LlamaIndex OSS Documentation
+title: Epsilla Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show how to use [Epsilla](https://www.epsilla.com/) to perform vector searches in LlamaIndex.
+# Epsilla Vektör Deposu
 
-As a prerequisite, you need to have a running Epsilla vector database (for example, through our docker image), and install the `pyepsilla` package. View full docs at [docs](https://epsilla-inc.gitbook.io/epsilladb/quick-start)
+Bu not defterinde, LlamaIndex'te vektör aramaları gerçekleştirmek için [Epsilla](https://www.epsilla.com/)'nın nasıl kullanılacağını göstereceğiz.
 
-```
+Ön koşul olarak, çalışan bir Epsilla vektör veritabanına sahip olmanız (örneğin, docker imajımız aracılığıyla) ve `pyepsilla` paketini kurmanız gerekir. Belgelerin tamamını [buradan](https://epsilla-inc.gitbook.io/epsilladb/quick-start) görüntüleyebilirsiniz.
+
+```bash
 %pip install llama-index-vector-stores-epsilla
 ```
 
-```
+```bash
 !pip/pip3 install pyepsilla
 ```
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import logging
 import sys
 
 
-# Uncomment to see debug logs
+# Hata ayıklama günlüklerini görmek için yorum satırını kaldırın
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
@@ -39,64 +39,64 @@ from llama_index.vector_stores.epsilla import EpsillaVectorStore
 import textwrap
 ```
 
-### Setup OpenAI
+### OpenAI Kurulumu
 
-Lets first begin by adding the openai api key. It will be used to created embeddings for the documents loaded into the index.
+Öncelikle OpenAI API anahtarını ekleyerek başlayalım. Bu anahtar, indekse yüklenen belgeler için gömmeler (embeddings) oluşturmak amacıyla kullanılacaktır.
 
-```
+```python
 import openai
 import getpass
 
 
-OPENAI_API_KEY = getpass.getpass("OpenAI API Key:")
+OPENAI_API_KEY = getpass.getpass("OpenAI API Anahtarı:")
 openai.api_key = OPENAI_API_KEY
 ```
 
-### Download Data
+### Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Loading documents
+### Belgeleri Yükleme
 
-Load documents stored in the `/data/paul_graham` folder using the SimpleDirectoryReader.
+`SimpleDirectoryReader` kullanarak `/data/paul_graham` klasöründe saklanan belgeleri yükleyin.
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge sayısı: {len(documents)}")
+print(f"İlk belge, kimlik (id): {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 ```
 
+```text
+Toplam belge sayısı: 1
+İlk belge, kimlik (id): ac7f23f0-ce15-4d94-a0a2-5020fa87df61
+İlk belge, hash: 4c702b4df575421e1d1af4b1fd50511b226e0c9863dbfffeccb8b689b8448f35
 ```
-Total documents: 1
-First document, id: ac7f23f0-ce15-4d94-a0a2-5020fa87df61
-First document, hash: 4c702b4df575421e1d1af4b1fd50511b226e0c9863dbfffeccb8b689b8448f35
-```
 
-### Create the index
+### İndeksi Oluşturma
 
-Here we create an index backed by Epsilla using the documents loaded previously. EpsillaVectorStore takes a few arguments.
+Burada, önceden yüklenen belgeleri kullanarak Epsilla destekli bir indeks oluşturuyoruz. `EpsillaVectorStore` birkaç parametre alır:
 
-- client (Any): Epsilla client to connect to.
+- `client` (Any): Bağlanılacak Epsilla istemcisi.
 
-- collection\_name (str, optional): Which collection to use. Defaults to “llama\_collection”.
+- `collection_name` (str, isteğe bağlı): Hangi koleksiyonun kullanılacağı. Varsayılan olarak "llama_collection".
 
-- db\_path (str, optional): The path where the database will be persisted. Defaults to “/tmp/langchain-epsilla”.
+- `db_path` (str, isteğe bağlı): Veritabanının kalıcı hale getirileceği yol. Varsayılan olarak "/tmp/langchain-epsilla".
 
-- db\_name (str, optional): Give a name to the loaded database. Defaults to “langchain\_store”.
+- `db_name` (str, isteğe bağlı): Yüklenen veritabanına bir ad verin. Varsayılan olarak "langchain_store".
 
-- dimension (int, optional): The dimension of the embeddings. If not provided, collection creation will be done on first insert. Defaults to None.
+- `dimension` (int, isteğe bağlı): Gömmelerin boyutu. Sağlanmazsa, koleksiyon oluşturma işlemi ilk ekleme (insert) sırasında yapılacaktır. Varsayılan olarak None.
 
-- overwrite (bool, optional): Whether to overwrite existing collection with same name. Defaults to False.
+- `overwrite` (bool, isteğe bağlı): Aynı ada sahip mevcut koleksiyonun üzerine yazılıp yazılmayacağı. Varsayılan olarak False.
 
-Epsilla vectordb is running with default host “localhost” and port “8888”.
+Epsilla vektör veritabanı varsayılan olarak "localhost" ana makinesi ve "8888" portu ile çalışır.
 
-```
-# Create an index over the documnts
+```python
+# Belgeler üzerinde bir indeks oluşturun
 from pyepsilla import vectordb
 
 
@@ -110,43 +110,35 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-[INFO] Connected to localhost:8888 successfully.
+```text
+[INFO] localhost:8888 adresine başarıyla bağlandı.
 ```
 
-### Query the data
+### Veriyi Sorgulama
 
-Now we have our document stored in the index, we can ask questions against the index.
+Artık belgemiz indekste saklandığına göre, indekse karşı sorular sorabiliriz.
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Who is the author?")
+response = query_engine.query("Yazar kimdir?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author of the given context information is Paul Graham.
-```
+**Verilen bağlam bilgilerinin yazarı Paul Graham'dır.**
 
-```
-response = query_engine.query("How did the author learn about AI?")
+```python
+response = query_engine.query("Yazar yapay zekayı (AI) nasıl öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author learned about AI through various sources. One source was a novel called "The Moon is a
-Harsh Mistress" by Heinlein, which featured an intelligent computer called Mike. Another source was
-a PBS documentary that showed Terry Winograd using SHRDLU, a program that could understand natural
-language. These experiences sparked the author's interest in AI and motivated them to start learning
-about it, including teaching themselves Lisp, which was regarded as the language of AI at the time.
-```
+**Yazar, yapay zekayı (AI) çeşitli kaynaklar aracılığıyla öğrendi. Bir kaynak, Heinlein'ın Mike adında zeki bir bilgisayarı konu alan "The Moon is a Harsh Mistress" (Ay Zalim Bir Sevgilidir) adlı romanıydı. Diğer bir kaynak, Terry Winograd'ın doğal dili anlayabilen bir program olan SHRDLU'yu kullandığını gösteren bir PBS belgeseliydi. Bu deneyimler yazarın yapay zekaya olan ilgisini artırdı ve onları o zamanlar yapay zekanın dili olarak kabul edilen Lisp'i kendi kendilerine öğrenmek de dahil olmak üzere bu konuda çalışmaya motive etti.**
 
-Next, let’s try to overwrite the previous data.
+Sırada, önceki verilerin üzerine yazmayı deneyelim.
 
-```
+```python
 vector_store = EpsillaVectorStore(client=client, overwrite=True)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
-single_doc = Document(text="Epsilla is the vector database we are using.")
+single_doc = Document(text="Epsilla, kullandığımız vektör veritabanıdır.")
 index = VectorStoreIndex.from_documents(
     [single_doc],
     storage_context=storage_context,
@@ -154,26 +146,22 @@ index = VectorStoreIndex.from_documents(
 
 
 query_engine = index.as_query_engine()
-response = query_engine.query("Who is the author?")
+response = query_engine.query("Yazar kimdir?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-There is no information provided about the author in the given context.
-```
+**Verilen bağlamda yazar hakkında herhangi bir bilgi sağlanmamıştır.**
 
-```
-response = query_engine.query("What vector database is being used?")
+```python
+response = query_engine.query("Hangi vektör veritabanı kullanılıyor?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-Epsilla is the vector database being used.
-```
+**Kullanılan vektör veritabanı Epsilla'dır.**
 
-Next, let’s add more data to existing collection.
+Daha sonra mevcut koleksiyona daha fazla veri ekleyelim.
 
-```
+```python
 vector_store = EpsillaVectorStore(client=client, overwrite=False)
 index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 for doc in documents:
@@ -181,19 +169,15 @@ for doc in documents:
 
 
 query_engine = index.as_query_engine()
-response = query_engine.query("Who is the author?")
+response = query_engine.query("Yazar kimdir?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author of the given context information is Paul Graham.
-```
+**Verilen bağlam bilgilerinin yazarı Paul Graham'dır.**
 
-```
-response = query_engine.query("What vector database is being used?")
+```python
+response = query_engine.query("Hangi vektör veritabanı kullanılıyor?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-Epsilla is the vector database being used.
-```
+**Kullanılan vektör veritabanı Epsilla'dır.**

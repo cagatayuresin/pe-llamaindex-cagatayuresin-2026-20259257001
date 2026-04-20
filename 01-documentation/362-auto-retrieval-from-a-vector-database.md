@@ -1,33 +1,33 @@
-# Auto-Retrieval from a Vector Database
-
 ---
-title: Auto-Retrieval from a Vector Database
- | LlamaIndex OSS Documentation
+title: Bir Vektör Veritabanından Otomatik Erişme (Auto-Retrieval)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This guide shows how to perform **auto-retrieval** in LlamaIndex.
+# Bir Vektör Veritabanından Otomatik Erişme
 
-Many popular vector dbs support a set of metadata filters in addition to a query string for semantic search. Given a natural language query, we first use the LLM to infer a set of metadata filters as well as the right query string to pass to the vector db (either can also be blank). This overall query bundle is then executed against the vector db.
+Bu kılavuz, LlamaIndex'te **otomatik erişme (auto-retrieval)** işleminin nasıl gerçekleştirileceğini gösterir.
 
-This allows for more dynamic, expressive forms of retrieval beyond top-k semantic search. The relevant context for a given query may only require filtering on a metadata tag, or require a joint combination of filtering + semantic search within the filtered set, or just raw semantic search.
+Birçok popüler vektör veritabanı, semantik arama için bir sorgu dizesine ek olarak bir dizi meta veri filtresini destekler. Doğal dilde bir sorgu verildiğinde, vektör veritabanına iletilecek doğru sorgu dizesinin yanı sıra bir dizi meta veri filtresini de çıkarsamak (infer) için önce LLM'i kullanırız (ikisi de boş olabilir). Bu genel sorgu paketi (bundle) daha sonra vektör veritabanına karşı yürütülür.
 
-We demonstrate an example with Elasticsearch, but auto-retrieval is also implemented with many other vector dbs (e.g. Pinecone, Weaviate, and more).
+bu, top-k semantik aramanın ötesinde daha dinamik ve ifade gücü yüksek erişim biçimlerine olanak tanır. Belirli bir sorgu için ilgili bağlam; yalnızca bir meta veri etiketine göre filtreleme gerektirebilir veya filtrelenmiş set içinde filtreleme + semantik aramanın ortak bir kombinasyonunu gerektirebilir veya yalnızca ham semantik arama gerektirebilir.
 
-## Setup
+Bu örnekte Elasticsearch'ü kullanıyoruz, ancak otomatik erişme diğer birçok vektör veritabanı (örneğin Pinecone, Weaviate ve daha fazlası) ile de uygulanmıştır.
 
-We first define imports.
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Önce içe aktarmaları tanımlıyoruz.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-elasticsearch
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import logging
 import sys
 
@@ -36,44 +36,44 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
-# set up OpenAI
+```python
+# OpenAI kurulumu
 import os
 import getpass
 
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
+os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Anahtarı:")
 import openai
 
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-## Defining Some Sample Data
+## Örnek Veri Tanımlama
 
-We insert some sample nodes containing text chunks into the vector database. Note that each `TextNode` not only contains the text, but also metadata e.g. `category` and `country`. These metadata fields will get converted/stored as such in the underlying vector db.
+Vektör veritabanına metin parçaları içeren bazı örnek düğümler (nodes) ekliyoruz. Her `TextNode`'un yalnızca metni değil, aynı zamanda `category` ve `country` gibi meta verileri de içerdiğine dikkat edin. Bu meta veri alanları, alttaki vektör veritabanında bu şekilde dönüştürülecek/saklanacaktır.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore
 ```
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
         text=(
-            "A bunch of scientists bring back dinosaurs and mayhem breaks"
-            " loose"
+            "Bir grup bilim insanı dinozorları geri getirir ve ortalık "
+            "karışır"
         ),
-        metadata={"year": 1993, "rating": 7.7, "genre": "science fiction"},
+        metadata={"year": 1993, "rating": 7.7, "genre": "bilim kurgu"},
     ),
     TextNode(
         text=(
-            "Leo DiCaprio gets lost in a dream within a dream within a dream"
-            " within a ..."
+            "Leo DiCaprio bir rüya içindeki rüya içindeki rüya içinde "
+            "kaybolur..."
         ),
         metadata={
             "year": 2010,
@@ -83,45 +83,45 @@ nodes = [
     ),
     TextNode(
         text=(
-            "A psychologist / detective gets lost in a series of dreams within"
-            " dreams within dreams and Inception reused the idea"
+            "Bir psikolog / dedektif, rüyalar içindeki rüyalar serisinde "
+            "kaybolur ve Inception bu fikri yeniden kullanır"
         ),
         metadata={"year": 2006, "director": "Satoshi Kon", "rating": 8.6},
     ),
     TextNode(
         text=(
-            "A bunch of normal-sized women are supremely wholesome and some"
-            " men pine after them"
+            "Bir grup normal boyutlardaki kadın son derece sevimlidir ve bazı "
+            "erkekler onların peşinden koşar"
         ),
         metadata={"year": 2019, "director": "Greta Gerwig", "rating": 8.3},
     ),
     TextNode(
-        text="Toys come alive and have a blast doing so",
-        metadata={"year": 1995, "genre": "animated"},
+        text="Oyuncaklar canlanır ve bunu yaparken harika vakit geçirirler",
+        metadata={"year": 1995, "genre": "animasyon"},
     ),
 ]
 ```
 
-## Build Vector Index with Elasticsearch Vector Store
+## Elasticsearch Vektör Deposu ile Vektör İndeksi Oluşturma
 
-Here we load the data into the vector store. As mentioned above, both the text and metadata for each node will get converted into corresponding representation in Elasticsearch. We can now run semantic queries and also metadata filtering on this data from Elasticsearch.
+Burada verileri vektör deposuna yüklüyoruz. Yukarıda belirtildiği gibi, her düğüm için hem metin hem de meta veriler Elasticsearch'teki karşılık gelen gösterime dönüştürülecektir. Artık Elasticsearch'ten bu veriler üzerinde semantik sorgular ve meta veri filtreleme çalıştırabiliriz.
 
-```
+```python
 vector_store = ElasticsearchStore(
     index_name="auto_retriever_movies", es_url="http://localhost:9200"
 )
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 ```
 
-```
+```python
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-## Define `VectorIndexAutoRetriever`
+## `VectorIndexAutoRetriever` Tanımlama
 
-We define our core `VectorIndexAutoRetriever` module. The module takes in `VectorStoreInfo`, which contains a structured description of the vector store collection and the metadata filters it supports. This information will then be used in the auto-retrieval prompt where the LLM infers metadata filters.
+Temel `VectorIndexAutoRetriever` modülümüzü tanımlıyoruz. Modül, vektör deposu koleksiyonunun yapılandırılmış bir açıklamasını ve desteklediği meta veri filtrelerini içeren `VectorStoreInfo`'yu alır. Bu bilgi daha sonra LLM'in meta veri filtrelerini çıkarsadığı otomatik erişme prompt'unda (yönlendirme) kullanılacaktır.
 
-```
+```python
 from llama_index.core.retrievers import VectorIndexAutoRetriever
 from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
@@ -129,26 +129,26 @@ from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
 
 vector_store_info = VectorStoreInfo(
-    content_info="Brief summary of a movie",
+    content_info="Bir filmin kısa özeti",
     metadata_info=[
         MetadataInfo(
             name="genre",
-            description="The genre of the movie",
-            type="string or list[string]",
+            description="Filmin türü",
+            type="string veya list[string]",
         ),
         MetadataInfo(
             name="year",
-            description="The year the movie was released",
+            description="Filmin vizyona girdiği yıl",
             type="integer",
         ),
         MetadataInfo(
             name="director",
-            description="The name of the movie director",
+            description="Film yönetmeninin adı",
             type="string",
         ),
         MetadataInfo(
             name="rating",
-            description="A 1-10 rating for the movie",
+            description="Film için 1-10 arası puan",
             type="float",
         ),
     ],
@@ -158,37 +158,29 @@ retriever = VectorIndexAutoRetriever(
 )
 ```
 
-## Running over some sample data
+## Örnek Veriler Üzerinde Çalıştırma
 
-We try running over some sample data. Note how metadata filters are inferred - this helps with more precise retrieval!
+Bazı örnek veriler üzerinde çalıştırmayı deniyoruz. Meta veri filtrelerinin nasıl çıkarıldığına dikkat edin - bu, daha hassas erişime yardımcı olur!
 
-```
+```python
 retriever.retrieve(
-    "What are 2 movies by Christopher Nolan were made before 2020?"
+    "Christopher Nolan tarafından çekilen ve 2020'den önce yapılan 2 film nedir?"
 )
 ```
 
-```
-retriever.retrieve("Has Andrei Tarkovsky directed any science fiction movies")
+```python
+retriever.retrieve("Andrei Tarkovsky hiç bilim kurgu filmi yönetti mi?")
 ```
 
-```
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using query str: science fiction
-Using query str: science fiction
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using filters: {'director': 'Andrei Tarkovsky'}
-Using filters: {'director': 'Andrei Tarkovsky'}
-INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Using top_k: 2
-Using top_k: 2
+```text
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Sorgu dizesi kullanılıyor: bilim kurgu
+Sorgu dizesi kullanılıyor: bilim kurgu
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:Filtreler kullanılıyor: {'director': 'Andrei Tarkovsky'}
+Filtreler kullanılıyor: {'director': 'Andrei Tarkovsky'}
+INFO:llama_index.indices.vector_store.retrievers.auto_retriever.auto_retriever:top_k kullanılıyor: 2
+top_k kullanılıyor: 2
 INFO:elastic_transport.transport:POST http://localhost:9200/auto_retriever_movies/_search [status:200 duration:0.042s]
 POST http://localhost:9200/auto_retriever_movies/_search [status:200 duration:0.042s]
-
-
-
-
-
-
-
-
 
 
 []

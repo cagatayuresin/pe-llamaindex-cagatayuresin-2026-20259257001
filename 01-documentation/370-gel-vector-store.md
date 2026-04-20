@@ -1,28 +1,28 @@
-# Gel Vector Store
-
 ---
-title: Gel Vector Store
- | LlamaIndex OSS Documentation
+title: Gel Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-[Gel](https://www.geldata.com/) is an open-source PostgreSQL data layer optimized for fast development to production cycle. It comes with a high-level strictly typed graph-like data model, composable hierarchical query language, full SQL support, migrations, Auth and AI modules.
+# Gel Vektör Deposu
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+[Gel](https://www.geldata.com/), geliştirmeden üretime hızlı geçiş döngüsü için optimize edilmiş, açık kaynaklı bir PostgreSQL veri katmanıdır. Üst düzey kesin tipli graf benzeri bir veri modeli, birleştirilebilir hiyerarşik sorgu dili, tam SQL desteği, göçler (migrations), kimlik doğrulama (Auth) ve AI modülleri ile birlikte gelir.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 ! pip install gel llama-index-vector-stores-gel
 ```
 
-```
+```bash
 ! pip install llama-index
 ```
 
-```
+```python
 # import logging
 # import sys
 
 
-# Uncomment to see debug logs
+# Hata ayıklama günlüklerini görmek için yorum satırını kaldırın
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
@@ -34,61 +34,61 @@ import textwrap
 import openai
 ```
 
-### Setup OpenAI
+### OpenAI Kurulumu
 
-The first step is to configure the openai key. It will be used to created embeddings for the documents loaded into the index
+İlk adım OpenAI anahtarını yapılandırmaktır. Bu anahtar, indekse yüklenen belgeler için gömmeler (embeddings) oluşturmak amacıyla kullanılacaktır.
 
-```
+```python
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "<your key>"
+os.environ["OPENAI_API_KEY"] = "<anahtarınız>"
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Loading documents
+### Belgeleri Yükleme
 
-Load the documents stored in the `data/paul_graham/` using the SimpleDirectoryReader
+`SimpleDirectoryReader` kullanarak `data/paul_graham/` dizininde saklanan belgeleri yükleyin
 
-```
+```python
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
 ```
 
-### Create the Database
+### Veritabanını Oluşturma
 
-In order to use Gel as a backend for your vectorstore, you’re going to need a working Gel instance. Fortunately, it doesn’t have to involve Docker containers or anything complicated, unless you want to!
+Gel'i vektör deponuz için bir arka uç (backend) olarak kullanmak için çalışan bir Gel örneğine ihtiyacınız olacaktır. Neyse ki, istemediğiniz sürece Docker konteynerleri veya karmaşık bir şey içermesi gerekmez!
 
-To set up a local instance, run:
+Yerel bir örnek kurmak için şunu çalıştırın:
 
-```
+```bash
 ! gel project init --non-interactive
 ```
 
-If you are using [Gel Cloud](cloud.geldata.com) (and you should!), add one more argument to that command:
+Eğer [Gel Cloud](cloud.geldata.com) kullanıyorsanız (ki kullanmalısınız!), bu komuta bir argüman daha ekleyin:
 
-Terminal window
+Terminal penceresi
 
+```bash
+gel project init --server-instance <kurum-adi>/<ornek-adi>
 ```
-gel project init --server-instance <org-name>/<instance-name>
-```
 
-For a comprehensive list of ways to run Gel, take a look at [Running Gel](https://docs.geldata.com/reference/running) section of the reference docs.
+Gel'i çalıştırmanın tüm yollarını içeren kapsamlı bir liste için başvuru belgelerinin [Gel'i Çalıştırma (Running Gel)](https://docs.geldata.com/reference/running) bölümüne göz atın.
 
-### Set up the schema
+### Şemayı Ayarlama
 
-[Gel schema](https://docs.geldata.com/reference/datamodel) is an explicit high-level description of your application’s data model. Aside from enabling you to define exactly how your data is going to be laid out, it drives Gel’s many powerful features such as links, access policies, functions, triggers, constraints, indexes, and more.
+[Gel şeması](https://docs.geldata.com/reference/datamodel), uygulamanızın veri modelinin açık, üst düzey bir açıklamasıdır. Verilerinizin tam olarak nasıl düzenleneceğini tanımlamanıza olanak tanımasının yanı sıra; bağlantılar, erişim politikaları, fonksiyonlar, tetikleyiciler, kısıtlamalar, indeksler ve daha fazlası gibi Gel'in birçok güçlü özelliğini de yönetir.
 
-The LlamaIndex’s `GelVectorStore` expects the following layout for the schema:
+LlamaIndex'in `GelVectorStore` sınıfı, şema için aşağıdaki düzeni bekler:
 
-```
+```python
 schema_content = """
 using extension pgvector;
 
@@ -118,18 +118,18 @@ with open("dbschema/default.gel", "w") as f:
     f.write(schema_content)
 ```
 
-In order to apply schema changes to the database, run the migration using the Gel’s [migration tool](https://docs.geldata.com/reference/datamodel/migrations):
+Şema değişikliklerini veritabanına uygulamak için Gel'in [göç aracını (migration tool)](https://docs.geldata.com/reference/datamodel/migrations) kullanarak göçü çalıştırın:
 
-```
+```bash
 ! gel migration create --non-interactive
 ! gel migrate
 ```
 
-From this point onward, `GelVectorStore` can be used as a drop-in replacement for any other vectorstore available in LlamaIndex.
+Bu noktadan itibaren `GelVectorStore`, LlamaIndex'te bulunan diğer tüm vektör depolarının doğrudan yerine kullanılabilir.
 
-### Create the index
+### İndeksi Oluşturma
 
-```
+```python
 vector_store = GelVectorStore()
 
 
@@ -140,38 +140,38 @@ index = VectorStoreIndex.from_documents(
 query_engine = index.as_query_engine()
 ```
 
-### Query the index
+### İndeksi Sorgulama
 
-We can now ask questions using our index.
+Artık indeksimizi kullanarak sorular sorabiliriz.
 
-```
-response = query_engine.query("What did the author do?")
+```python
+response = query_engine.query("Yazar neler yaptı?")
 ```
 
-```
+```python
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-response = query_engine.query("What happened in the mid 1980s?")
+```python
+response = query_engine.query("1980'lerin ortalarında neler oldu?")
 ```
 
-```
+```python
 print(textwrap.fill(str(response), 100))
 ```
 
-### Metadata filters
+### Meta Veri Filtreleri
 
-GelVectorStore supports storing metadata in nodes, and filtering based on that metadata during the retrieval step.
+`GelVectorStore`, düğümlerde meta veri saklamayı ve erişim adımı sırasında bu meta verilere göre filtreleme yapmayı destekler.
 
-#### Download git commits dataset
+#### Git commit'leri veri kümesini indir
 
-```
+```bash
 !mkdir -p 'data/git_commits/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/csv/commit_history.csv' -O 'data/git_commits/commit_history.csv'
 ```
 
-```
+```python
 import csv
 
 
@@ -183,10 +183,10 @@ print(commits[0])
 print(len(commits))
 ```
 
-#### Add nodes with custom metadata
+#### Özel meta verili düğümler ekleyin
 
-```
-# Create TextNode for each of the first 100 commits
+```python
+# İlk 100 commit'in her biri için TextNode oluşturun
 from llama_index.core.schema import TextNode
 from datetime import datetime
 import re
@@ -219,11 +219,11 @@ for commit in commits[:100]:
 
 
 print(nodes[0])
-print(min(dates), "to", max(dates))
+print(min(dates), "-", max(dates))
 print(authors)
 ```
 
-```
+```python
 vector_store = GelVectorStore()
 
 
@@ -231,15 +231,15 @@ index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 index.insert_nodes(nodes)
 ```
 
-```
-print(index.as_query_engine().query("How did Lakshmi fix the segfault?"))
+```python
+print(index.as_query_engine().query("Lakshmi segfault hatasını nasıl düzeltti?"))
 ```
 
-#### Apply metadata filters
+#### Meta veri filtrelerini uygula
 
-Now we can filter by commit author or by date when retrieving nodes.
+Düğümleri getirirken artık commit yazarına veya tarihe göre filtreleme yapabiliriz.
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
@@ -261,14 +261,14 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("What is this software project about?")
+retrieved_nodes = retriever.retrieve("Bu yazılım projesi ne hakkındadır?")
 
 
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```
 
-```
+```python
 filters = MetadataFilters(
     filters=[
         MetadataFilter(key="commit_date", value="2023-08-15", operator=">="),
@@ -284,18 +284,18 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("What is this software project about?")
+retrieved_nodes = retriever.retrieve("Bu yazılım projesi ne hakkındadır?")
 
 
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```
 
-#### Apply nested filters
+#### İç içe (nested) filtreleri uygula
 
-In the above examples, we combined multiple filters using AND or OR. We can also combine multiple sets of filters.
+Yukarıdaki örneklerde VE (AND) veya VEYA (OR) kullanarak birden fazla filtreyi birleştirdik. Ayrıca birden fazla filtre setini de birleştirebiliriz.
 
-```
+```python
 filters = MetadataFilters(
     filters=[
         MetadataFilters(
@@ -327,16 +327,16 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("What is this software project about?")
+retrieved_nodes = retriever.retrieve("Bu yazılım projesi ne hakkındadır?")
 
 
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```
 
-The above can be simplified by using the IN operator. `GelVectorStore` supports `in`, `nin`, and `contains` for comparing an element with a list.
+Yukarıdaki işlem `IN` operatörü kullanılarak basitleştirilebilir. `GelVectorStore`, bir öğeyi bir listeyle karşılaştırmak için `in`, `nin` (not in) ve `contains` operatörlerini destekler.
 
-```
+```python
 filters = MetadataFilters(
     filters=[
         MetadataFilter(key="commit_date", value="2023-08-01", operator=">="),
@@ -357,15 +357,15 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("What is this software project about?")
+retrieved_nodes = retriever.retrieve("Bu yazılım projesi ne hakkındadır?")
 
 
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```
 
-```
-# Same thing, with NOT IN
+```python
+# Aynısı, nin (NOT IN) ile
 filters = MetadataFilters(
     filters=[
         MetadataFilter(key="commit_date", value="2023-08-01", operator=">="),
@@ -386,15 +386,15 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("What is this software project about?")
+retrieved_nodes = retriever.retrieve("Bu yazılım projesi ne hakkındadır?")
 
 
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```
 
-```
-# CONTAINS
+```python
+# CONTAINS (İÇERİR)
 filters = MetadataFilters(
     filters=[
         MetadataFilter(key="fixes", value="5680", operator="contains"),
@@ -408,7 +408,7 @@ retriever = index.as_retriever(
 )
 
 
-retrieved_nodes = retriever.retrieve("How did these commits fix the issue?")
+retrieved_nodes = retriever.retrieve("Bu commit'ler sorunu nasıl düzeltti?")
 for node in retrieved_nodes:
     print(node.node.metadata)
 ```

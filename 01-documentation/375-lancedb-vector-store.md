@@ -1,37 +1,35 @@
-# LanceDB Vector Store
-
 ---
-title: LanceDB Vector Store
- | LlamaIndex OSS Documentation
+title: LanceDB Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show how to use [LanceDB](https://www.lancedb.com) to perform vector searches in LlamaIndex
+# LanceDB Vektör Deposu
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu not defterinde, LlamaIndex'te vektör aramaları gerçekleştirmek için [LanceDB](https://www.lancedb.com)'nin nasıl kullanılacağını göstereceğiz.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index llama-index-vector-stores-lancedb
 ```
 
-```
-%pip install lancedb==0.6.13 #Only required if the above cell installs an older version of lancedb (pypi package may not be released yet)
+```bash
+%pip install lancedb==0.6.13 # Sadece yukarıdaki hücre lancedb'nin eski bir sürümünü yüklüyorsa gereklidir
 ```
 
-```
-# Refresh vector store URI if restarting or re-using the same notebook
+```bash
+# Aynı not defterini yeniden başlatıyorsanız veya yeniden kullanıyorsanız vektör deposu URI'sini yenileyin
 ! rm -rf ./lancedb
 ```
 
-```
+```python
 import logging
 import sys
 
 
-# Uncomment to see debug logs
+# Hata ayıklama günlüklerini görmek için yorum satırını kaldırın
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
-
-
 
 
 from llama_index.core import SimpleDirectoryReader, Document, StorageContext
@@ -40,78 +38,57 @@ from llama_index.vector_stores.lancedb import LanceDBVectorStore
 import textwrap
 ```
 
-### Setup OpenAI
+### OpenAI Kurulumu
 
-The first step is to configure the openai key. It will be used to created embeddings for the documents loaded into the index
+İlk adım OpenAI anahtarını yapılandırmaktır. Bu anahtar, indekse yüklenen belgeler için gömmeler (embeddings) oluşturmak amacıyla kullanılacaktır.
 
-```
+```python
 import openai
 
 
 openai.api_key = "sk-"
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
---2024-06-11 16:42:37--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.110.133, 185.199.108.133, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+### Belgeleri Yükleme
 
+`SimpleDirectoryReader` kullanarak `data/paul_graham/` dizininde saklanan belgeleri yükleyin
 
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.02s
-
-
-2024-06-11 16:42:37 (3.97 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
-```
-
-### Loading documents
-
-Load the documents stored in the `data/paul_graham/` using the SimpleDirectoryReader
-
-```
+```python
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
-print("Document ID:", documents[0].doc_id, "Document Hash:", documents[0].hash)
+print("Belge Kimliği:", documents[0].doc_id, "Belge Hash'i:", documents[0].hash)
 ```
 
-```
-Document ID: cac1ba78-5007-4cf8-89ba-280264790115 Document Hash: fe2d4d3ef3a860780f6c2599808caa587c8be6516fe0ba4ca53cf117044ba953
-```
+### İndeksi Oluşturma
 
-### Create the index
+Burada, önceden yüklenen belgeleri kullanarak LanceDB destekli bir indeks oluşturuyoruz. `LanceDBVectorStore` birkaç parametre alır:
 
-Here we create an index backed by LanceDB using the documents loaded previously. LanceDBVectorStore takes a few arguments.
+- `uri` (str, gerekli): LanceDB'nin dosyalarını saklayacağı konum.
 
-- uri (str, required): Location where LanceDB will store its files.
+- `table_name` (str, isteğe bağlı): Gömmelerin saklanacağı tablo adı. Varsayılan olarak "vectors".
 
-- table\_name (str, optional): The table name where the embeddings will be stored. Defaults to “vectors”.
+- `nprobes` (int, isteğe bağlı): Kullanılan prob sayısı. Daha yüksek bir sayı aramayı daha doğru ancak daha yavaş hale getirir. Varsayılan olarak 20.
 
-- nprobes (int, optional): The number of probes used. A higher number makes search more accurate but also slower. Defaults to 20.
+- `refine_factor` (int, isteğe bağlı): Ekstra öğeler okuyarak ve bunları bellekte yeniden sıralayarak sonuçları iyileştirir. Varsayılan olarak None'dır.
 
-- refine\_factor: (int, optional): Refine the results by reading extra elements and re-ranking them in memory. Defaults to None
+- Daha fazla detayı [LanceDB belgelerinde](https://lancedb.github.io/lancedb/ann_indexes) bulabilirsiniz.
 
-- More details can be found at [LanceDB docs](https://lancedb.github.io/lancedb/ann_indexes)
+##### LanceDB Cloud için:
 
-##### For LanceDB cloud :
-
-````
+```python
 vector_store = LanceDBVectorStore(
-    uri="db://db_name", # your remote DB URI
-    api_key="sk_..", # lancedb cloud api key
-    region="your-region" # the region you configured
+    uri="db://veritabani_adi", # uzak DB URI'niz
+    api_key="sk_..", # lancedb cloud api anahtarı
+    region="bolgeniz" # yapılandırdığınız bölge
     ...
 )
-
-
-
+```
 
 ```python
 vector_store = LanceDBVectorStore(
@@ -123,13 +100,13 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
-````
-
-### Query the index
-
-We can now ask questions using our index. We can use filtering via `MetadataFilters` or use native lance `where` clause.
-
 ```
+
+### İndeksi Sorgulama
+
+Artık indeksimizi kullanarak sorular sorabiliriz. `MetadataFilters` aracılığıyla filtreleme yapabilir veya yerel Lance `where` ifadesini kullanabiliriz.
+
+```python
 from llama_index.core.vector_stores import (
     MetadataFilters,
     FilterOperator,
@@ -158,29 +135,29 @@ query_filters = MetadataFilters(
 )
 ```
 
-### Hybrid Search
+### Hibrit Arama (Hybrid Search)
 
-LanceDB offers hybrid search with reranking capabilities. For complete documentation, refer [here](https://lancedb.github.io/lancedb/hybrid_search/hybrid_search/).
+LanceDB, yeniden sıralama (reranking) yetenekleri ile hibrit arama sunar. Tam belgeler için [buraya](https://lancedb.github.io/lancedb/hybrid_search/hybrid_search/) bakın.
 
-This example uses the `colbert` reranker. The following cell installs the necessary dependencies for `colbert`. If you choose a different reranker, make sure to adjust the dependencies accordingly.
+bu örnek `colbert` reranker kullanır. Aşağıdaki hücre `colbert` için gerekli bağımlılıkları kurar. Farklı bir reranker seçerseniz, bağımlılıkları buna göre ayarladığınızdan emin olun.
 
-```
+```bash
 ! pip install -U torch transformers tantivy@git+https://github.com/quickwit-oss/tantivy-py#164adc87e1a033117001cf70e38c82a53014d985
 ```
 
-if you want to add a reranker at vector store initialization, you can pass it in the arguments like below :
+Eğer vektör deposu başlatılırken bir reranker eklemek isterseniz, bunu aşağıdaki gibi parametrelerde iletebilirsiniz:
 
-```
+```python
 from lancedb.rerankers import ColbertReranker
 reranker = ColbertReranker()
 vector_store = LanceDBVectorStore(uri="./lancedb", reranker=reranker, mode="overwrite")
 ```
 
-```
+```python
 import lancedb
 ```
 
-```
+```python
 from lancedb.rerankers import ColbertReranker
 
 
@@ -196,105 +173,99 @@ query_engine = index.as_query_engine(
 )
 
 
-response = query_engine.query("How much did Viaweb charge per month?")
+response = query_engine.query("Viaweb ayda ne kadar ücret alıyordu?")
 ```
 
-```
+```python
 print(response)
-print("metadata -", response.metadata)
+print("meta veriler -", response.metadata)
 ```
 
-```
-Viaweb charged $100 a month for a small store and $300 a month for a big one.
-metadata - {'65ed5f07-5b8a-4143-a939-e8764884828e': {'file_path': '/Users/raghavdixit/Desktop/open_source/llama_index_lance/docs/examples/vector_stores/data/paul_graham/paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75042, 'creation_date': '2024-06-11', 'last_modified_date': '2024-06-11'}, 'be231827-20b8-4988-ac75-94fa79b3c22e': {'file_path': '/Users/raghavdixit/Desktop/open_source/llama_index_lance/docs/examples/vector_stores/data/paul_graham/paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75042, 'creation_date': '2024-06-11', 'last_modified_date': '2024-06-11'}}
-```
+**Viaweb, küçük bir mağaza için ayda 100 dolar ve büyük bir mağaza için ayda 300 dolar ücret alıyordu.**
 
-##### lance filters(SQL like) directly via the `where` clause :
+##### `where` ifadesi aracılığıyla doğrudan Lance filtreleri (SQL benzeri):
 
-```
+```python
 lance_filter = "metadata.file_name = 'paul_graham_essay.txt' "
 retriever = index.as_retriever(vector_store_kwargs={"where": lance_filter})
-response = retriever.retrieve("What did the author do growing up?")
+response = retriever.retrieve("Yazar büyürken neler yaptı?")
 ```
 
-```
+```python
 print(response[0].get_content())
-print("metadata -", response[0].metadata)
+print("meta veriler -", response[0].metadata)
 ```
 
+```text
+Neler Üzerine Çalıştım
+
+
+Şubat 2021
+
+
+Üniversiteden önce, okul dışında çalıştığım iki ana konu yazarlık ve programlamaydı. Makale yazmazdım. O zamanlar başlangıç seviyesindeki yazarların ne yazması gerekiyorsa onları yazardım (hâlâ da muhtemelen öyledir): kısa hikayeler. Hikayelerim berbattı. Neredeyse hiç olay örgüsü yoktu, sadece güçlü hisleri olan karakterler vardı ve bunun onları derin kıldığını hayal ederdim.
+
+
+Yazmayı denediğim ilk programlar, okul bölgemizin o zamanlar "veri işleme" (data processing) dedikleri şey için kullandığı IBM 1401 üzerindeydi. Bu 9. sınıftaydı, yani 13 veya 14 yaşındaydım. Okul bölgesinin 1401'i tesadüfen ortaokulumuzun bodrumundaydı ve arkadaşım Rich Draves ile birlikte onu kullanmak için izin almıştık. Aşağısı küçük bir Bond kötüsünün sığınağı gibiydi; CPU, disk sürücüleri, yazıcı, kart okuyucu gibi tüm bu uzaylı görünümlü makineler, parlak floresan ışıklar altında yükseltilmiş bir zeminde duruyordu.
+
+
+Kullandığımız dil, Fortran'ın erken bir sürümüydü. Programları delikli kartlara yazmanız, sonra onları kart okuyucuya istiflemeniz ve programı belleğe yükleyip çalıştırmak için bir düğmeye basmanız gerekiyordu. Sonuç normalde fevkalade gürültülü yazıcıda bir şeyler yazdırmak olurdu.
+
+
+1401 kafamı karıştırmıştı. Onunla ne yapacağımı tam çözememiştim. Ve geriye dönüp baktığımda, onunla yapabileceğim pek bir şey de yoktu. Programlara tek girdi biçimi delikli kartlarda saklanan verilerdi ve bende delikli kartlarda saklanan hiç veri yoktu. Diğer tek seçenek, pi sayısının yaklaşımlarını hesaplamak gibi herhangi bir girdiye dayanmayan şeyler yapmaktı, ancak bu türden ilginç bir şey yapacak kadar matematik bilmiyordum. Bu yüzden yazdığım hiçbir programı hatırlamamam şaşırtıcı değil, çünkü pek bir şey yapmış olamazlar. En net hatırladığım an, programların sonlanmamasının mümkün olduğunu öğrendiğim andı; benimkilerden biri bitmek bilmemişti. Paylaşımlı zaman (time-sharing) olmayan bir makinede bu, veri merkezi yöneticisinin yüz ifadesinden de anlaşıldığı üzere, teknik olduğu kadar sosyal bir hataydı da.
+
+
+Mikrobilgisayarlarla her şey değişti. Artık tam karşınızda, masanızın üstünde, bir deste delikli kartı işleyip durmak yerine, çalışırken tuş vuruşlarınıza yanıt verebilen bir bilgisayarınız olabilirdi. [1]
+
+
+Mikrobilgisayar alan ilk arkadaşım onu kendi yapmıştı. Heathkit tarafından bir kit olarak satılıyordu. Bilgisayarın önünde oturup programları doğrudan bilgisayara yazdığını izlerken ne kadar etkilendiğimi ve kıskandığımı canlı bir şekilde hatırlıyorum.
+
+
+O günlerde bilgisayarlar pahalıydı ve babamı bir tane (yaklaşık 1980'de bir TRS-80) almaya ikna etmem yıllarca dil dökmemi gerektirmişti. O zamanki altın standart Apple II idi, ancak bir TRS-80 yeterince iyiydi. Gerçekten programlamaya başladığım zaman buydu. Basit oyunlar, model roketlerimin ne kadar yükseğe uçacağını tahmin eden bir program ve babamın en az bir kitap yazmak için kullandığı bir kelime işlemci yazdım. Bellekte sadece yaklaşık 2 sayfalık metin için yer vardı, bu yüzden her seferinde 2 sayfa yazar ve sonra yazdırırdı ama bu bir daktilodan çok daha iyiydi.
+
+
+Programlamayı sevsem de üniversitede okumayı planlamıyordum. Üniversitede, kulağa çok daha güçlü gelen felsefe okuyacaktım. Saf lise benliğim için felsefe, diğer alanlarda çalışılan şeylerin sadece alan bilgisi kalacağı mutlak gerçeklerin incelenmesi gibi görünüyordu. Üniversiteye gittiğimde keşfettiğim şey ise, diğer alanların fikir dünyasında o kadar çok yer kapladığıydı ki, bu sözde mutlak gerçekler için pek bir şey kalmamıştı. Felsefeye kalan tek şey, diğer alanlardaki insanların güvenle görmezden gelinebileceğini düşündüğü uç vakalardı.
+
+
+18 yaşındaydım bunları kelimelere dökemezdim. O sırada tek bildiğim, felsefe dersleri almaya devam ettiğim ve bunların sıkıcı olmaya devam ettiğiydi. Ben de yapay zekaya (AI) geçmeye karar verdim.
+
+
+1980'lerin ortalarında yapay zeka revaçtaydı ama üzerinde çalışmak istememe neden olan özellikle iki şey vardı: Heinlein'ın Mike adında zeki bir bilgisayarı konu alan "The Moon is a Harsh Mistress" (Ay Zalim Bir Sevgilidir) adlı romanı ve Terry Winograd'ın SHRDLU kullandığını gösteren bir PBS belgeseli. "The Moon is a Harsh Mistress"ı yeniden okumayı denemedim, bu yüzden ne kadar iyi eskidiğini bilmiyorum ama okuduğumda beni tamamen dünyasının içine çekmişti.
 ```
-What I Worked On
 
+### Veri Ekleme
 
-February 2021
+Ayrıca mevcut bir indekse veri ekleyebilirsiniz
 
-
-Before college the two main things I worked on, outside of school, were writing and programming. I didn't write essays. I wrote what beginning writers were supposed to write then, and probably still are: short stories. My stories were awful. They had hardly any plot, just characters with strong feelings, which I imagined made them deep.
-
-
-The first programs I tried writing were on the IBM 1401 that our school district used for what was then called "data processing." This was in 9th grade, so I was 13 or 14. The school district's 1401 happened to be in the basement of our junior high school, and my friend Rich Draves and I got permission to use it. It was like a mini Bond villain's lair down there, with all these alien-looking machines — CPU, disk drives, printer, card reader — sitting up on a raised floor under bright fluorescent lights.
-
-
-The language we used was an early version of Fortran. You had to type programs on punch cards, then stack them in the card reader and press a button to load the program into memory and run it. The result would ordinarily be to print something on the spectacularly loud printer.
-
-
-I was puzzled by the 1401. I couldn't figure out what to do with it. And in retrospect there's not much I could have done with it. The only form of input to programs was data stored on punched cards, and I didn't have any data stored on punched cards. The only other option was to do things that didn't rely on any input, like calculate approximations of pi, but I didn't know enough math to do anything interesting of that type. So I'm not surprised I can't remember any programs I wrote, because they can't have done much. My clearest memory is of the moment I learned it was possible for programs not to terminate, when one of mine didn't. On a machine without time-sharing, this was a social as well as a technical error, as the data center manager's expression made clear.
-
-
-With microcomputers, everything changed. Now you could have a computer sitting right in front of you, on a desk, that could respond to your keystrokes as it was running instead of just churning through a stack of punch cards and then stopping. [1]
-
-
-The first of my friends to get a microcomputer built it himself. It was sold as a kit by Heathkit. I remember vividly how impressed and envious I felt watching him sitting in front of it, typing programs right into the computer.
-
-
-Computers were expensive in those days and it took me years of nagging before I convinced my father to buy one, a TRS-80, in about 1980. The gold standard then was the Apple II, but a TRS-80 was good enough. This was when I really started programming. I wrote simple games, a program to predict how high my model rockets would fly, and a word processor that my father used to write at least one book. There was only room in memory for about 2 pages of text, so he'd write 2 pages at a time and then print them out, but it was a lot better than a typewriter.
-
-
-Though I liked programming, I didn't plan to study it in college. In college I was going to study philosophy, which sounded much more powerful. It seemed, to my naive high school self, to be the study of the ultimate truths, compared to which the things studied in other fields would be mere domain knowledge. What I discovered when I got to college was that the other fields took up so much of the space of ideas that there wasn't much left for these supposed ultimate truths. All that seemed left for philosophy were edge cases that people in other fields felt could safely be ignored.
-
-
-I couldn't have put this into words when I was 18. All I knew at the time was that I kept taking philosophy courses and they kept being boring. So I decided to switch to AI.
-
-
-AI was in the air in the mid 1980s, but there were two things especially that made me want to work on it: a novel by Heinlein called The Moon is a Harsh Mistress, which featured an intelligent computer called Mike, and a PBS documentary that showed Terry Winograd using SHRDLU. I haven't tried rereading The Moon is a Harsh Mistress, so I don't know how well it has aged, but when I read it I was drawn entirely into its world.
-metadata - {'file_path': '/Users/raghavdixit/Desktop/open_source/llama_index_lance/docs/examples/vector_stores/data/paul_graham/paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75042, 'creation_date': '2024-06-11', 'last_modified_date': '2024-06-11'}
-```
-
-### Appending data
-
-You can also add data to an existing index
-
-```
+```python
 nodes = [node.node for node in response]
 ```
 
-```
+```python
 del index
 
 
 index = VectorStoreIndex.from_documents(
-    [Document(text="The sky is purple in Portland, Maine")],
-    uri="/tmp/new_dataset",
+    [Document(text="Portland, Maine'de gökyüzü mor renktedir")],
+    uri="/tmp/yeni_veri_kumesi",
 )
 ```
 
-```
+```python
 index.insert_nodes(nodes)
 ```
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Where is the sky purple?")
+response = query_engine.query("Gökyüzü nerede mor?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-Portland, Maine
-```
+**Portland, Maine**
 
-You can also create an index from an existing table
+Ayrıca mevcut bir tablodan da indeks oluşturabilirsiniz
 
-```
+```python
 del index
 
 
@@ -302,12 +273,10 @@ vec_store = LanceDBVectorStore.from_table(vector_store._table)
 index = VectorStoreIndex.from_vector_store(vec_store)
 ```
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What companies did the author start?")
+response = query_engine.query("Yazar hangi şirketleri kurdu?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author started Viaweb and Aspra.
-```
+**Yazar Viaweb ve Aspra şirketlerini kurdu.**

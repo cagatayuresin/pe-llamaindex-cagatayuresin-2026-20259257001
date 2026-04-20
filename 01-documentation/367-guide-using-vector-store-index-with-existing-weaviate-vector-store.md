@@ -1,43 +1,43 @@
-# Guide: Using Vector Store Index with Existing Weaviate Vector Store
-
 ---
-title: Guide: Using Vector Store Index with Existing Weaviate Vector Store
- | LlamaIndex OSS Documentation
+title: Rehber: Mevcut Weaviate Vektör Deposu ile Vector Store Index Kullanımı
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Rehber: Mevcut Weaviate Vektör Deposu ile Vector Store Index Kullanımı
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-weaviate
 %pip install llama-index-embeddings-openai
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import weaviate
 ```
 
-```
+```python
 client = weaviate.Client("https://test-cluster-bbn8vqsn.weaviate.network")
 ```
 
-## Prepare Sample “Existing” Weaviate Vector Store
+## Örnek "Mevcut" Weaviate Vektör Deposunu Hazırlama
 
-### Define schema
+### Şema tanımlama
 
-We create a schema for “Book” class, with 4 properties: title (str), author (str), content (str), and year (int)
+"Book" sınıfı için title (str), author (str), content (str) ve year (int) olmak üzere 4 özellikli bir şema oluşturuyoruz
 
-```
+```python
 try:
     client.schema.delete_class("Book")
 except:
     pass
 ```
 
-```
+```python
 schema = {
     "classes": [
         {
@@ -57,18 +57,18 @@ if not client.schema.contains(schema):
     client.schema.create(schema)
 ```
 
-### Define sample data
+### Örnek veriyi tanımlama
 
-We create 4 sample books
+4 adet örnek kitap oluşturuyoruz
 
-```
+```python
 books = [
     {
-        "title": "To Kill a Mockingbird",
+        "title": "Bülbülü Öldürmek (To Kill a Mockingbird)",
         "author": "Harper Lee",
         "content": (
-            "To Kill a Mockingbird is a novel by Harper Lee published in"
-            " 1960..."
+            "Bülbülü Öldürmek, Harper Lee tarafından yazılan ve 1960'ta "
+            "yayınlanan bir romandır..."
         ),
         "year": 1960,
     },
@@ -76,43 +76,44 @@ books = [
         "title": "1984",
         "author": "George Orwell",
         "content": (
-            "1984 is a dystopian novel by George Orwell published in 1949..."
+            "1984, George Orwell tarafından yazılan ve 1949'da yayınlanan "
+            "bir distopik romandır..."
         ),
         "year": 1949,
     },
     {
-        "title": "The Great Gatsby",
+        "title": "Muhteşem Gatsby (The Great Gatsby)",
         "author": "F. Scott Fitzgerald",
         "content": (
-            "The Great Gatsby is a novel by F. Scott Fitzgerald published in"
-            " 1925..."
+            "Muhteşem Gatsby, F. Scott Fitzgerald tarafından yazılan ve "
+            "1925'te yayınlanan bir romandır..."
         ),
         "year": 1925,
     },
     {
-        "title": "Pride and Prejudice",
+        "title": "Aşk ve Gurur (Pride and Prejudice)",
         "author": "Jane Austen",
         "content": (
-            "Pride and Prejudice is a novel by Jane Austen published in"
-            " 1813..."
+            "Aşk ve Gurur, Jane Austen tarafından yazılan ve 1813'te "
+            "yayınlanan bir romandır..."
         ),
         "year": 1813,
     },
 ]
 ```
 
-### Add data
+### Veri ekleme
 
-We add the sample books to our Weaviate “Book” class (with embedding of content field
+Örnek kitapları Weaviate "Book" sınıfımıza ekliyoruz (içerik alanı için gömmeler oluşturarak)
 
-```
+```python
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 
 embed_model = OpenAIEmbedding()
 ```
 
-```
+```python
 with client.batch as batch:
     for book in books:
         vector = embed_model.get_text_embedding(book["content"])
@@ -121,51 +122,51 @@ with client.batch as batch:
         )
 ```
 
-## Query Against “Existing” Weaviate Vector Store
+## "Mevcut" Weaviate Vektör Deposuna Karşı Sorgulama
 
-```
+```python
 from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from llama_index.core import VectorStoreIndex
 from llama_index.core.response.pprint_utils import pprint_source_node
 ```
 
-You must properly specify a “index\_name” that matches the desired Weaviate class and select a class property as the “text” field.
+İstenen Weaviate sınıfıyla eşleşen bir "index_name" düzgün bir şekilde belirtmeli ve "text" alanı olarak bir sınıf özelliğini seçmelisiniz.
 
-```
+```python
 vector_store = WeaviateVectorStore(
     weaviate_client=client, index_name="Book", text_key="content"
 )
 ```
 
-```
+```python
 retriever = VectorStoreIndex.from_vector_store(vector_store).as_retriever(
     similarity_top_k=1
 )
 ```
 
-```
-nodes = retriever.retrieve("What is that book about a bird again?")
+```python
+nodes = retriever.retrieve("Kuşla ilgili olan o kitap hangisiydi?")
 ```
 
-Let’s inspect the retrieved node. We can see that the book data is loaded as LlamaIndex `Node` objects, with the “content” field as the main text.
+Erişilen düğümü inceleyelim. Kitap verilerinin, ana metin olarak "content" alanıyla birlikte LlamaIndex `Node` nesneleri olarak yüklendiğini görebiliriz.
 
-```
+```python
 pprint_source_node(nodes[0])
 ```
 
-```
-Document ID: cf927ce7-0672-4696-8aae-7e77b33b9659
-Similarity: None
-Text: author: Harper Lee title: To Kill a Mockingbird year: 1960  To
-Kill a Mockingbird is a novel by Harper Lee published in 1960......
+```text
+Belge Kimliği (Document ID): cf927ce7-0672-4696-8aae-7e77b33b9659
+Benzerlik (Similarity): None
+Metin (Text): yazar: Harper Lee başlık: Bülbülü Öldürmek yıl: 1960  Bülbülü 
+Öldürmek, Harper Lee tarafından yayınlanan bir romandır......
 ```
 
-The remaining fields should be loaded as metadata (in `metadata`)
+Kalan alanlar meta veri olarak yüklenmelidir (`metadata` içinde)
 
-```
+```python
 nodes[0].node.metadata
 ```
 
-```
-{'author': 'Harper Lee', 'title': 'To Kill a Mockingbird', 'year': 1960}
+```text
+{'author': 'Harper Lee', 'title': 'Bülbülü Öldürmek (To Kill a Mockingbird)', 'year': 1960}
 ```

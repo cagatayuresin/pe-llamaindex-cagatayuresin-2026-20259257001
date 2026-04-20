@@ -1,76 +1,76 @@
-# Guide: Using Vector Store Index with Existing Pinecone Vector Store
-
 ---
-title: Guide: Using Vector Store Index with Existing Pinecone Vector Store
- | LlamaIndex OSS Documentation
+title: Rehber: Mevcut Pinecone Vektör Deposu ile Vector Store Index Kullanımı
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Rehber: Mevcut Pinecone Vektör Deposu ile Vector Store Index Kullanımı
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-embeddings-openai
 %pip install llama-index-vector-stores-pinecone
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import pinecone
 ```
 
-```
+```python
 api_key = os.environ["PINECONE_API_KEY"]
 pinecone.init(api_key=api_key, environment="eu-west1-gcp")
 ```
 
-## Prepare Sample “Existing” Pinecone Vector Store
+## Örnek "Mevcut" Pinecone Vektör Deposunu Hazırlama
 
-### Create index
+### İndeks oluşturma
 
-```
+```python
 indexes = pinecone.list_indexes()
 print(indexes)
 ```
 
-```
+```text
 ['quickstart-index']
 ```
 
-```
+```python
 if "quickstart-index" not in indexes:
-    # dimensions are for text-embedding-ada-002
+    # boyutlar text-embedding-ada-002 içindir
     pinecone.create_index(
         "quickstart-index", dimension=1536, metric="euclidean", pod_type="p1"
     )
 ```
 
-```
+```python
 pinecone_index = pinecone.Index("quickstart-index")
 ```
 
-```
+```python
 pinecone_index.delete(deleteAll="true")
 ```
 
-```
+```text
 {}
 ```
 
-### Define sample data
+### Örnek veriyi tanımlama
 
-We create 4 sample books
+4 adet örnek kitap oluşturuyoruz
 
-```
+```python
 books = [
     {
-        "title": "To Kill a Mockingbird",
+        "title": "Bülbülü Öldürmek (To Kill a Mockingbird)",
         "author": "Harper Lee",
         "content": (
-            "To Kill a Mockingbird is a novel by Harper Lee published in"
-            " 1960..."
+            "Bülbülü Öldürmek, Harper Lee tarafından yazılan ve 1960'ta "
+            "yayınlanan bir romandır..."
         ),
         "year": 1960,
     },
@@ -78,36 +78,37 @@ books = [
         "title": "1984",
         "author": "George Orwell",
         "content": (
-            "1984 is a dystopian novel by George Orwell published in 1949..."
+            "1984, George Orwell tarafından yazılan ve 1949'da yayınlanan "
+            "bir distopik romandır..."
         ),
         "year": 1949,
     },
     {
-        "title": "The Great Gatsby",
+        "title": "Muhteşem Gatsby (The Great Gatsby)",
         "author": "F. Scott Fitzgerald",
         "content": (
-            "The Great Gatsby is a novel by F. Scott Fitzgerald published in"
-            " 1925..."
+            "Muhteşem Gatsby, F. Scott Fitzgerald tarafından yazılan ve "
+            "1925'te yayınlanan bir romandır..."
         ),
         "year": 1925,
     },
     {
-        "title": "Pride and Prejudice",
+        "title": "Aşk ve Gurur (Pride and Prejudice)",
         "author": "Jane Austen",
         "content": (
-            "Pride and Prejudice is a novel by Jane Austen published in"
-            " 1813..."
+            "Aşk ve Gurur, Jane Austen tarafından yazılan ve 1813'te "
+            "yayınlanan bir romandır..."
         ),
         "year": 1813,
     },
 ]
 ```
 
-### Add data
+### Veri ekleme
 
-We add the sample books to our Weaviate “Book” class (with embedding of content field
+Örnek kitapları Pinecone indeksimize ekliyoruz (içerik alanı için gömmeler oluşturarak)
 
-```
+```python
 import uuid
 from llama_index.embeddings.openai import OpenAIEmbedding
 
@@ -115,7 +116,7 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 embed_model = OpenAIEmbedding()
 ```
 
-```
+```python
 entries = []
 for book in books:
     vector = embed_model.get_text_embedding(book["content"])
@@ -125,55 +126,55 @@ for book in books:
 pinecone_index.upsert(entries)
 ```
 
-```
+```text
 {'upserted_count': 4}
 ```
 
-## Query Against “Existing” Pinecone Vector Store
+## "Mevcut" Pinecone Vektör Deposuna Karşı Sorgulama
 
-```
+```python
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.core import VectorStoreIndex
 from llama_index.core.response.pprint_utils import pprint_source_node
 ```
 
-You must properly select a class property as the “text” field.
+Bir sınıf özelliğini "text" alanı olarak düzgün bir şekilde seçmelisiniz.
 
-```
+```python
 vector_store = PineconeVectorStore(
     pinecone_index=pinecone_index, text_key="content"
 )
 ```
 
-```
+```python
 retriever = VectorStoreIndex.from_vector_store(vector_store).as_retriever(
     similarity_top_k=1
 )
 ```
 
-```
-nodes = retriever.retrieve("What is that book about a bird again?")
+```python
+nodes = retriever.retrieve("Kuşla ilgili olan o kitap hangisiydi?")
 ```
 
-Let’s inspect the retrieved node. We can see that the book data is loaded as LlamaIndex `Node` objects, with the “content” field as the main text.
+Erişilen düğümü inceleyelim. Kitap verilerinin, ana metin olarak "content" alanıyla birlikte LlamaIndex `Node` nesneleri olarak yüklendiğini görebiliriz.
 
-```
+```python
 pprint_source_node(nodes[0])
 ```
 
-```
-Document ID: 07e47f1d-cb90-431b-89c7-35462afcda28
-Similarity: 0.797243237
-Text: author: Harper Lee title: To Kill a Mockingbird year: 1960.0  To
-Kill a Mockingbird is a novel by Harper Lee published in 1960......
+```text
+Belge Kimliği (Document ID): 07e47f1d-cb90-431b-89c7-35462afcda28
+Benzerlik (Similarity): 0.797243237
+Metin (Text): yazar: Harper Lee başlık: Bülbülü Öldürmek yıl: 1960.0  Bülbülü 
+Öldürmek, Harper Lee tarafından yayınlanan bir romandır......
 ```
 
-The remaining fields should be loaded as metadata (in `metadata`)
+Kalan alanlar meta veri olarak yüklenmelidir (`metadata` içinde)
 
-```
+```python
 nodes[0].node.metadata
 ```
 
-```
-{'author': 'Harper Lee', 'title': 'To Kill a Mockingbird', 'year': 1960.0}
+```text
+{'author': 'Harper Lee', 'title': 'Bülbülü Öldürmek (To Kill a Mockingbird)', 'year': 1960.0}
 ```

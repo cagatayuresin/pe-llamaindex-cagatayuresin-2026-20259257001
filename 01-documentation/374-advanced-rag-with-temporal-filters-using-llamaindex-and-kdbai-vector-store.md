@@ -1,38 +1,38 @@
-# Advanced RAG with temporal filters using LlamaIndex and KDB.AI vector store
-
 ---
-title: Advanced RAG with temporal filters using LlamaIndex and KDB.AI vector store
- | LlamaIndex OSS Documentation
+title: LlamaIndex ve KDB.AI Vektör Deposu Kullanarak Zamansal Filtrelerle Gelişmiş RAG
+ | LlamaIndex OSS Belgeleri
 ---
 
-##### Note: This example requires a KDB.AI endpoint and API key. Sign up for a free [KDB.AI account](https://kdb.ai/get-started).
+# LlamaIndex ve KDB.AI Vektör Deposu Kullanarak Zamansal Filtrelerle Gelişmiş RAG
 
-> [KDB.AI](https://kdb.ai/) is a powerful knowledge-based vector database and search engine that allows you to build scalable, reliable AI applications, using real-time data, by providing advanced search, recommendation and personalization.
+##### Not: Bu örnek bir KDB.AI uç noktası ve API anahtarı gerektirir. Ücretsiz bir [KDB.AI hesabı](https://kdb.ai/get-started) için kaydolun.
 
-This example demonstrates how to use KDB.AI to run semantic search, summarization and analysis of financial regulations around some specific moment in time.
+> [KDB.AI](https://kdb.ai/), gelişmiş arama, tavsiye ve kişiselleştirme sağlayarak gerçek zamanlı verileri kullanarak ölçeklenebilir, güvenilir yapay zeka uygulamaları oluşturmanıza olanak tanıyan güçlü, bilgi tabanlı bir vektör veritabanı ve arama motorudur.
 
-To access your end point and API keys, sign up to KDB.AI here.
+Bu örnek, KDB.AI'nın finansal düzenlemelerin belirli bir zaman dilimi etrafında semantik aramasını, özetlenmesini ve analizini yapmak için nasıl kullanılacağını göstermektedir.
 
-To set up your development environment, follow the instructions on the KDB.AI pre-requisites page.
+Uç noktanıza (endpoint) ve API anahtarlarınıza erişmek için [buradan](https://kdb.ai/get-started) KDB.AI'ya kaydolun.
 
-The following examples demonstrate some of the ways you can interact with KDB.AI through LlamaIndex.
+Geliştirme ortamınızı kurmak için KDB.AI'nın ön koşullar sayfasındaki talimatları izleyin.
 
-## Install dependencies with Pip
+Aşağıdaki örnekler, LlamaIndex aracılığıyla KDB.AI ile etkileşim kurmanın bazı yollarını göstermektedir.
 
-In order to successfully run this sample, note the following steps depending on where you are running this notebook:
+## Pip ile bağımlılıkları kurun
 
--***Run Locally / Private Environment:*** The [Setup](https://github.com/KxSystems/kdbai-samples/blob/main/README.md#setup) steps in the repository’s `README.md` will guide you on prerequisites and how to run this with Jupyter.
+Bu örneği başarıyla çalıştırmak için, bu not defterini nerede çalıştırdığınıza bağlı olarak aşağıdaki adımları dikkate alın:
 
--***Colab / Hosted Environment:*** Open this notebook in Colab and run through the cells.
+- **Yerel Olarak / Özel Ortamda Çalıştırma:** Deponun `README.md` dosyasındaki [Kurulum (Setup)](https://github.com/KxSystems/kdbai-samples/blob/main/README.md#setup) adımları, ön koşullar ve bunun Jupyter ile nasıl çalıştırılacağı konusunda size yol gösterecektir.
 
-```
+- **Colab / Barındırılan Ortamda Çalıştırma:** Bu not defterini Colab'de açın ve hücreleri sırayla çalıştırın.
+
+```bash
 !pip install llama-index llama-index-llms-openai llama-index-embeddings-openai llama-index-readers-file llama-index-vector-stores-kdbai
 !pip install kdbai_client pandas
 ```
 
-## Import dependencies
+## Bağımlılıkları içe aktarın
 
-```
+```python
 from getpass import getpass
 import re
 import os
@@ -65,33 +65,33 @@ OUTDIR = "pdf"
 RESET = True
 ```
 
-#### Set OpenAI API key and choose the LLM and Embedding model to use:
+#### OpenAI API anahtarını ayarlayın ve kullanılacak LLM ve Gömme (Embedding) modelini seçin:
 
-```
-# os.environ["OPENAI_API_KEY"] = getpass("OpenAI API key: ")
+```python
+# os.environ["OPENAI_API_KEY"] = getpass("OpenAI API anahtarı: ")
 os.environ["OPENAI_API_KEY"] = (
     os.environ["OPENAI_API_KEY"]
     if "OPENAI_API_KEY" in os.environ
-    else getpass("OpenAI API Key: ")
+    else getpass("OpenAI API Anahtarı: ")
 )
 ```
 
-```
+```python
 import os
 from getpass import getpass
 
 
-# Set OpenAI API
+# OpenAI API'yi Ayarla
 if "OPENAI_API_KEY" in os.environ:
     KDBAI_API_KEY = os.environ["OPENAI_API_KEY"]
 else:
-    # Prompt the user to enter the API key
-    OPENAI_API_KEY = getpass("OPENAI API KEY: ")
-    # Save the API key as an environment variable for the current session
+    # Kullanıcıdan API anahtarını girmesini iste
+    OPENAI_API_KEY = getpass("OPENAI API ANAHTARI: ")
+    # API anahtarını geçerli oturum için bir ortam değişkeni olarak kaydet
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 ```
 
-```
+```python
 EMBEDDING_MODEL = "text-embedding-3-small"
 GENERATION_MODEL = "gpt-4o-mini"
 
@@ -104,60 +104,60 @@ Settings.llm = llm
 Settings.embed_model = embed_model
 ```
 
-## Create KDB.AI session and table
+## KDB.AI oturumu ve tablosu oluşturun
 
-```
-# vector DB imports
+```python
+# vektör DB içe aktarmaları
 import os
 from getpass import getpass
 import kdbai_client as kdbai
 import time
 ```
 
-##### Option 1. KDB.AI Cloud
+##### Seçenek 1. KDB.AI Cloud
 
-To use KDB.AI Cloud, you will need two session details - a URL endpoint and an API key. To get these you can sign up for free [here](https://trykdb.kx.com/kdbai/signup).
+KDB.AI Cloud'u kullanmak için iki oturum detayına ihtiyacınız olacaktır: bir URL uç noktası ve bir API anahtarı. Bunları almak için [buradan](https://trykdb.kx.com/kdbai/signup) ücretsiz kayıt olabilirsiniz.
 
-You can connect to a KDB.AI Cloud session using `kdbai.Session` and passing the session URL endpoint and API key details from your KDB.AI Cloud portal.
+`kdbai.Session` kullanarak ve KDB.AI Cloud portalınızdaki oturum URL uç noktası ve API anahtarı bilgilerini ileterek bir KDB.AI Cloud oturumuna bağlanabilirsiniz.
 
-If the environment variables `KDBAI_ENDPOINTS` and `KDBAI_API_KEY` exist on your system containing your KDB.AI Cloud portal details, these variables will automatically be used to connect. If these do not exist, it will prompt you to enter your KDB.AI Cloud portal session URL endpoint and API key details.
+Sisteminizde KDB.AI Cloud portal bilgilerinizi içeren `KDBAI_ENDPOINTS` ve `KDBAI_API_KEY` ortam değişkenleri varsa, bu değişkenler otomatik olarak bağlanmak için kullanılacaktır. Mevcut değillerse, KDB.AI Cloud portal oturum URL uç noktanızı ve API anahtarı bilgilerinizi girmeniz istenecektir.
 
-```
-# Set up KDB.AI endpoint and API key
+```python
+# KDB.AI uç noktasını ve API anahtarını ayarla
 KDBAI_ENDPOINT = (
     os.environ["KDBAI_ENDPOINT"]
     if "KDBAI_ENDPOINT" in os.environ
-    else input("KDB.AI endpoint: ")
+    else input("KDB.AI uç noktası (endpoint): ")
 )
 KDBAI_API_KEY = (
     os.environ["KDBAI_API_KEY"]
     if "KDBAI_API_KEY" in os.environ
-    else getpass("KDB.AI API key: ")
+    else getpass("KDB.AI API anahtarı: ")
 )
 
 
 session = kdbai.Session(endpoint=KDBAI_ENDPOINT, api_key=KDBAI_API_KEY)
 ```
 
-##### Option 2. KDB.AI Server
+##### Seçenek 2. KDB.AI Server
 
-To use KDB.AI Server, you will need download and run your own container. To do this, you will first need to sign up for free [here](https://trykdb.kx.com/kdbaiserver/signup/).
+KDB.AI Server'ı kullanmak için kendi konteynerinizi indirip çalıştırmanız gerekecektir. Bunu yapmak için önce [buradan](https://trykdb.kx.com/kdbaiserver/signup/) ücretsiz kaydolmanız gerekir.
 
-You will receive an email with the required license file and bearer token needed to download your instance. Follow instructions in the signup email to get your session up and running.
+Örneğinizi (instance) indirmek için gereken lisans dosyasını ve taşıyıcı belirteci (bearer token) içeren bir e-posta alacaksınız. Oturumunuzu çalışır hale getirmek için kayıt e-postasındaki talimatları izleyin.
 
-Once the [setup steps](https://code.kx.com/kdbai/gettingStarted/kdb-ai-server-setup.html) are complete you can then connect to your KDB.AI Server session using `kdbai.Session` and passing your local endpoint.
+[Kurulum adımları](https://code.kx.com/kdbai/gettingStarted/kdb-ai-server-setup.html) tamamlandıktan sonra, `kdbai.Session` kullanarak ve yerel uç noktanızı ileterek KDB.AI Server oturumunuza bağlanabilirsiniz.
 
-```
+```python
 # session = kdbai.Session()
 ```
 
-### Create the schema for your KDB.AI table
+### KDB.AI tablonuz için şema oluşturun
 
-***!!! Note:*** The ‘dims’ parameter in the embedding column must reflect the output dimensions of the embedding model you choose.
+***!!! Not:*** Gömme sütunundaki 'dims' parametresi, seçtiğiniz gömme modelinin çıktı boyutlarını yansıtmalıdır.
 
-- OpenAI ‘text-embedding-3-small’ outputs 1536 dimensions.
+- OpenAI 'text-embedding-3-small' 1536 boyut çıktı verir.
 
-```
+```python
 schema = [
     {"name": "document_id", "type": "bytes"},
     {"name": "text", "type": "bytes"},
@@ -177,27 +177,27 @@ indexFlat = {
 }
 ```
 
-```
+```python
 KDBAI_TABLE_NAME = "reports"
 database = session.database("default")
 
 
-# First ensure the table does not already exist
+# Önce tablonun zaten var olmadığından emin ol
 for table in database.tables:
     if table.name == KDBAI_TABLE_NAME:
         table.drop()
         break
 
 
-# Create the table
+# Tabloyu oluştur
 table = database.create_table(
     KDBAI_TABLE_NAME, schema=schema, indexes=[indexFlat]
 )
 ```
 
-## Financial reports urls and metadata
+## Finansal rapor URL'leri ve meta veriler
 
-```
+```python
 INPUT_URLS = [
     "https://www.govinfo.gov/content/pkg/PLAW-106publ102/pdf/PLAW-106publ102.pdf",
     "https://www.govinfo.gov/content/pkg/PLAW-111publ203/pdf/PLAW-111publ203.pdf",
@@ -206,19 +206,19 @@ INPUT_URLS = [
 
 METADATA = {
     "pdf/PLAW-106publ102.pdf": {
-        "title": "GRAMM–LEACH–BLILEY ACT, 1999",
+        "title": "GRAMM–LEACH–BLILEY YASASI, 1999",
         "publication_date": pd.to_datetime("1999-11-12"),
     },
     "pdf/PLAW-111publ203.pdf": {
-        "title": "DODD-FRANK WALL STREET REFORM AND CONSUMER PROTECTION ACT, 2010",
+        "title": "DODD-FRANK WALL STREET REFORMU VE TÜKETİCİ KORUMA YASASI, 2010",
         "publication_date": pd.to_datetime("2010-07-21"),
     },
 }
 ```
 
-## Download PDF files locally
+## PDF dosyalarını yerel olarak indir
 
-```
+```python
 %%time
 
 
@@ -228,12 +228,12 @@ CHUNK_SIZE = 512 * 1024
 
 
 def download_file(url):
-    print("Downloading %s..." % url)
+    print("İndiriliyor: %s..." % url)
     out = os.path.join(OUTDIR, os.path.basename(url))
     try:
         response = urllib.request.urlopen(url)
     except urllib.error.URLError as e:
-        logging.exception("Failed to download %s !" % url)
+        logging.exception("%s indirilemedi!" % url)
     else:
         with open(out, "wb") as f:
             while True:
@@ -257,20 +257,20 @@ if RESET:
     local_files[:10]
 ```
 
-```
-Downloading https://www.govinfo.gov/content/pkg/PLAW-106publ102/pdf/PLAW-106publ102.pdf...
+```text
+İndiriliyor: https://www.govinfo.gov/content/pkg/PLAW-106publ102/pdf/PLAW-106publ102.pdf...
 
 
 
 
-Downloading https://www.govinfo.gov/content/pkg/PLAW-111publ203/pdf/PLAW-111publ203.pdf...
+İndiriliyor: https://www.govinfo.gov/content/pkg/PLAW-111publ203/pdf/PLAW-111publ203.pdf...
 CPU times: user 52.6 ms, sys: 1.2 ms, total: 53.8 ms
 Wall time: 7.86 s
 ```
 
-## Load local PDF files with LlamaIndex
+## Yerel PDF dosyalarını LlamaIndex ile yükle
 
-```
+```python
 %%time
 
 
@@ -292,25 +292,17 @@ docs = documents.load_data()
 len(docs)
 ```
 
-```
+```text
 CPU times: user 8.22 s, sys: 9.04 ms, total: 8.23 s
 Wall time: 8.23 s
-
-
-
-
-
-
-
-
 
 
 994
 ```
 
-## Setup LlamaIndex RAG pipeline using KDB.AI vector store
+## KDB.AI vektör deposunu kullanarak LlamaIndex RAG hattını kurun
 
-```
+```python
 %%time
 
 
@@ -326,49 +318,27 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
+```text
 CPU times: user 3.67 s, sys: 31.9 ms, total: 3.7 s
 Wall time: 22.3 s
 ```
 
-```
+```python
 table.query()
 ```
 
-```
-.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-
-.dataframe thead th {
-    text-align: right;
-}
-```
-
-|     | document\_id                            | text                                              | embeddings                                         | title                                             | publication\_date |
+|     | document_id                            | text                                              | embeddings                                         | title                                             | publication_date |
 | --- | --------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------- | ----------------- |
 | 0   | b'272d7d24-c232-41b6-823e-27aa6203c100' | b'PUBLIC LAW 106\xc2\xb1102\xc3\x90NOV. 12, 19... | \[0.034452137, 0.03166917, -0.011892043, 0.0184... | GRAMM–LEACH–BLILEY ACT, 1999                      | 1999-11-12        |
-| 1   | b'89e3f2ee-f5a6-4e40-bb81-0632f08341f0' | b"113 STAT. 1338 PUBLIC LAW 106\xc2\xb1102\xc3... | \[0.02164333, 1.0030156e-05, 0.0028665832, 0.02... | GRAMM–LEACH–BLILEY ACT, 1999                      | 1999-11-12        |
-| 2   | b'56fbe82a-5458-4a4a-a5ed-026d9399151d' | b'113 STAT. 1339 PUBLIC LAW 106\xc2\xb1102\xc3... | \[0.01380091, 0.026945233, 0.02838467, 0.043132... | GRAMM–LEACH–BLILEY ACT, 1999                      | 1999-11-12        |
-| 3   | b'b6bf9e48-51b6-45d9-9259-b6346f93831f' | b'113 STAT. 1340 PUBLIC LAW 106\xc2\xb1102\xc3... | \[0.0070182937, 0.014063503, 0.026525516, 0.040... | GRAMM–LEACH–BLILEY ACT, 1999                      | 1999-11-12        |
-| 4   | b'f398b133-b4f5-4a34-94d1-9a97fdb658e5' | b"113 STAT. 1341 PUBLIC LAW 106\xc2\xb1102\xc3... | \[0.025041763, 0.01968024, 0.030940715, 0.02899... | GRAMM–LEACH–BLILEY ACT, 1999                      | 1999-11-12        |
 | ... | ...                                     | ...                                               | ...                                                | ...                                               | ...               |
-| 989 | b'8e84d1d5-d87d-4351-b7eb-5d569fdb8d9c' | b'124 STAT. 2219 PUBLIC LAW 111\xe2\x80\x93203... | \[0.024505286, 0.015549232, 0.0536601, 0.028532... | DODD-FRANK WALL STREET REFORM AND CONSUMER PRO... | 2010-07-21        |
-| 990 | b'0c47f590-050c-4374-bf8c-2a4502dc980f' | b'124 STAT. 2220 PUBLIC LAW 111\xe2\x80\x93203... | \[0.014071382, -0.0044553108, 0.03662071, 0.035... | DODD-FRANK WALL STREET REFORM AND CONSUMER PRO... | 2010-07-21        |
-| 991 | b'63a2235f-d368-43b8-a1a9-a5a11d497245' | b'124 STAT. 2221 PUBLIC LAW 111\xe2\x80\x93203... | \[0.0005448305, 0.013075933, 0.044821188, 0.031... | DODD-FRANK WALL STREET REFORM AND CONSUMER PRO... | 2010-07-21        |
-| 992 | b'bac4d75e-4867-4d89-a71e-09a6762bf3c4' | b'124 STAT. 2222 PUBLIC LAW 111\xe2\x80\x93203... | \[0.032077603, 0.016817383, 0.04507993, 0.03376... | DODD-FRANK WALL STREET REFORM AND CONSUMER PRO... | 2010-07-21        |
-| 993 | b'e262e4da-f6e1-4b9d-9232-77fc3f0c81a7' | b'124 STAT. 2223 PUBLIC LAW 111\xe2\x80\x93203... | \[0.0387719, -0.025150038, 0.030345473, 0.04303... | DODD-FRANK WALL STREET REFORM AND CONSUMER PRO... | 2010-07-21        |
 
-994 rows × 5 columns
+## LlamaIndex Sorgu Motorunu (Query Engine) Kurun
 
-## Setup the LlamaIndex Query Engine
-
-```
+```python
 %%time
 
 
-# Using gpt-4o-mini, the 128k tokens context size can take 100 pages.
+# gpt-4o-mini kullanıldığında, 128k token bağlam boyutu 100 sayfa alabilir.
 K = 15
 
 
@@ -382,62 +352,47 @@ query_engine = index.as_query_engine(
 )
 ```
 
-```
-CPU times: user 512 μs, sys: 23 μs, total: 535 μs
-Wall time: 550 μs
-```
+## 2008 krizi öncesi
 
-## Before the 2008 crisis
-
-```
+```python
 %%time
 
 
 result = query_engine.query(
     """
-    What was the main financial regulation in the US before the 2008 financial crisis ?
+    2008 finansal krizinden önce ABD'deki ana finansal düzenleme neydi?
     """
 )
 print(result.response)
 ```
 
-```
-The main financial regulation in the US before the 2008 financial crisis was the Gramm-Leach-Bliley Act, enacted in 1999. This act facilitated the affiliation among banks, securities firms, and insurance companies, effectively repealing parts of the Glass-Steagall Act, which had previously separated these financial services. The Gramm-Leach-Bliley Act aimed to enhance competition in the financial services industry by providing a framework for the integration of various financial institutions.
-CPU times: user 61.8 ms, sys: 0 ns, total: 61.8 ms
-Wall time: 4.24 s
-```
+**2008 finansal krizinden önce ABD'deki ana finansal düzenleme, 1999 yılında yürürlüğe giren Gramm-Leach-Bliley Yasası idi. Bu yasa, bankalar, menkul kıymetler firmaları ve sigorta şirketleri arasındaki birleşmeleri kolaylaştırarak; daha önce bu finansal hizmetleri birbirinden ayıran Glass-Steagall Yasası'nın bazı bölümlerini fiilen iptal etti. Gramm-Leach-Bliley Yasası, çeşitli finansal kuruluşların entegrasyonu için bir çerçeve sağlayarak finansal hizmetler sektöründeki rekabeti artırmayı amaçlıyordu.**
 
-```
+```python
 %%time
 
 
 result = query_engine.query(
     """
-    Is the Gramm-Leach-Bliley Act of 1999 enough to prevent the 2008 crisis. Search the document and explain its strenghts and weaknesses to regulate the US stock market.
+    1999 tarihli Gramm-Leach-Bliley Yasası, 2008 krizini önlemek için yeterli miydi? Belgeyi araştırın ve ABD borsasını düzenlemedeki güçlü ve zayıf yönlerini açıklayın.
     """
 )
 print(result.response)
 ```
 
-```
-The Gramm-Leach-Bliley Act of 1999 aimed to enhance competition in the financial services industry by allowing affiliations among banks, securities firms, and insurance companies. Its strengths include the repeal of the Glass-Steagall Act, which had previously separated commercial banking from investment banking, thereby enabling financial institutions to diversify their services and potentially increase competition. This diversification could lead to more innovative financial products and services.
+**1999 tarihli Gramm-Leach-Bliley Yasası, bankalar, menkul kıymetler firmaları ve sigorta şirketleri arasında ortaklıklara izin vererek finansal hizmetler sektöründeki rekabeti artırmayı amaçlıyordu. Güçlü yönleri arasında, daha önce ticari bankacılığı yatırım bankacılığından ayıran Glass-Steagall Yasası'nın iptal edilmesi yer alır; bu, finansal kurumların hizmetlerini çeşitlendirmesine ve potansiyel olarak rekabeti artırmasına olanak tanımıştır. Bu çeşitlendirme, daha yenilikçi finansal ürün ve hizmetlerin ortaya çıkmasına yol açabilirdi.**
 
+**Ancak, Yasa'nın kayda değer zayıf yönleri de vardır. Daha büyük ortaklıklara izin vererek ve düzenleyici engelleri azaltarak, finansal sistem için sistemik riskler oluşturan "batamayacak kadar büyük" (too big to fail) kurumların oluşmasına katkıda bulunmuş olabilir. Sıkı denetim eksikliği ve finansal holding şirketlerinin yeterli düzenleme olmaksızın geniş bir yelpazede faaliyet gösterme yeteneği, aşırı risk alımına yol açmış olabilir. Ayrıca Yasa, 2008 finansal krizinde önemli rol oynayan türev araçlar gibi modern finansal ürünlerin karmaşıklığını yeterince ele almamıştır.**
 
-However, the Act also has notable weaknesses. By allowing greater affiliations and reducing regulatory barriers, it may have contributed to the creation of "too big to fail" institutions, which posed systemic risks to the financial system. The lack of stringent oversight and the ability for financial holding companies to engage in a wide range of activities without adequate regulation may have led to excessive risk-taking. Additionally, the Act did not sufficiently address the complexities of modern financial products, such as derivatives, which played a significant role in the 2008 financial crisis.
+**Özetle, Gramm-Leach-Bliley Yasası finans sektöründe rekabeti ve yenilikçiliği teşvik etmeyi amaçlasa da; düzenleme çerçevesi istemeden de olsa finansal krize yol açan koşulları kolaylaştırmış olabilir ve bu da finansal sistem içindeki bağlantıları ve riskleri denetlemek için daha sağlam bir düzenleme yaklaşımına duyulan ihtiyacı vurgulamaktadır.**
 
+## 2008 krizi sonrası
 
-In summary, while the Gramm-Leach-Bliley Act aimed to foster competition and innovation in the financial sector, its regulatory framework may have inadvertently facilitated the conditions that led to the financial crisis, highlighting the need for a more robust regulatory approach to oversee the interconnectedness and risks within the financial system.
-CPU times: user 45.7 ms, sys: 255 μs, total: 46 ms
-Wall time: 21.9 s
-```
-
-## After the 2008 crisis
-
-```
+```python
 %%time
 
 
-# Using gpt-4o-mini, the 128k tokens context size can take 100 pages.
+# gpt-4o-mini kullanıldığında, 128k token bağlam boyutu 100 sayfa alabilir.
 K = 15
 
 
@@ -451,54 +406,41 @@ query_engine = index.as_query_engine(
 )
 ```
 
-```
-CPU times: user 171 μs, sys: 0 ns, total: 171 μs
-Wall time: 175 μs
-```
-
-```
+```python
 %%time
 
 
 result = query_engine.query(
     """
-    What happened on the 15th of September 2008 ?
+    15 Eylül 2008'de ne oldu?
     """
 )
 print(result.response)
 ```
 
-```
-On the 15th of September 2008, Lehman Brothers, a major global financial services firm, filed for bankruptcy. This event marked one of the largest bankruptcies in U.S. history and was a significant moment in the financial crisis of 2007-2008, leading to widespread panic in financial markets and contributing to the global economic downturn.
-CPU times: user 51.4 ms, sys: 0 ns, total: 51.4 ms
-Wall time: 3.6 s
-```
+**15 Eylül 2008'de, küresel bir finansal hizmetler devi olan Lehman Brothers iflas başvurusunda bulundu. Bu olay, ABD tarihindeki en büyük iflaslardan biriydi ve 2007-2008 finansal krizinin dönüm noktalarından biri oldu; finans piyasalarında yaygın paniğe yol açtı ve küresel ekonomik krize damgasını vurdu.**
 
-```
+```python
 %%time
 
 
 result = query_engine.query(
     """
-    What was the new US financial regulation enacted after the 2008 crisis to increase the market regulation and to improve consumer sentiment ?
+    Piyasa düzenlemesini artırmak ve tüketici güvenini iyileştirmek için 2008 krizinden sonra yürürlüğe giren yeni ABD finansal düzenlemesi neydi?
     """
 )
 print(result.response)
 ```
 
-```
-The new US financial regulation enacted after the 2008 crisis to increase market regulation and improve consumer sentiment is the Dodd-Frank Wall Street Reform and Consumer Protection Act, which was signed into law on July 21, 2010. This legislation aimed to promote financial stability, enhance accountability and transparency in the financial system, and protect consumers from abusive financial practices.
-CPU times: user 43.7 ms, sys: 0 ns, total: 43.7 ms
-Wall time: 4.55 s
-```
+**Piyasa düzenlemesini artırmak ve tüketici güvenini iyileştirmek için 2008 krizinden sonra yürürlüğe giren yeni ABD finansal düzenlemesi, 21 Temmuz 2010 tarihinde yasalaşan Dodd-Frank Wall Street Reformu ve Tüketici Koruma Yasası'dır. Bu mevzuat, finansal istikrarı teşvik etmeyi, finansal sistemde hesap verebilirliği ve şeffaflığı artırmayı ve tüketicileri suistimalci finansal uygulamalardan korumayı amaçlamıştır.**
 
-## In depth analysis
+## Derinlemesine analiz
 
-```
+```python
 %%time
 
 
-# Using gpt-4o-mini, the 128k tokens context size can take 100 pages.
+# gpt-4o-mini kullanıldığında, 128k token bağlam boyutu 100 sayfa alabilir.
 K = 20
 
 
@@ -511,67 +453,45 @@ query_engine = index.as_query_engine(
 )
 ```
 
-```
-CPU times: user 227 μs, sys: 10 μs, total: 237 μs
-Wall time: 243 μs
-```
-
-```
+```python
 %%time
 
 
 result = query_engine.query(
     """
-    Analyse the US financial regulations before and after the 2008 crisis and produce a report of all related arguments to explain what happened, and to ensure that does not happen again.
-    Use both the provided context and your own knowledge but do mention explicitely which one you use.
+    2008 krizi öncesi ve sonrası ABD finansal düzenlemelerini analiz edin ve nelerin yaşandığını açıklamak ve bunun tekrar yaşanmamasını sağlamak için tüm ilgili argümanları içeren bir rapor oluşturun.
+    Hem sağlanan bağlamı hem de kendi bilgilerinizi kullanın, ancak hangisini kullandığınızı açıkça belirtin.
     """
 )
 print(result.response)
 ```
 
-```
-The analysis of U.S. financial regulations before and after the 2008 financial crisis reveals significant changes aimed at preventing a recurrence of such a crisis.
+**2008 finansal krizi öncesi ve sonrası ABD finansal düzenlemelerinin analizi, böyle bir krizin tekrarlanmasını önlemeyi amaçlayan önemli değişiklikleri ortaya koymaktadır.**
 
+**Krizden önce, düzenleyici çerçeve, özellikle banka dışı finansal kuruluşlar için kapsamlı denetim eksikliği ile karakterize ediliyordu. Düzenleyici ortam; aşırı risk alımına, yetersiz sermaye gereksinimlerine ve finansal işlemlerde yetersiz şeffaflığa izin veriyordu. Bu ortam, konut balonuna ve ardından büyük finansal kurumların çöküşüne katkıda bulunarak yaygın ekonomik kargaşaya yol açtı.**
 
-Before the crisis, the regulatory framework was characterized by a lack of comprehensive oversight, particularly for nonbank financial institutions. The regulatory environment allowed for excessive risk-taking, inadequate capital requirements, and insufficient transparency in financial transactions. This environment contributed to the housing bubble and the subsequent collapse of major financial institutions, leading to widespread economic turmoil.
+**Krize yanıt olarak, 2010 yılında Dodd-Frank Wall Street Reformu ve Tüketici Koruma Yasası yürürlüğe girdi. Bu mevzuat birkaç temel reform getirdi:**
 
+1.  **Finansal İstikrar Gözetim Konseyi'nin (FSOC) Kurulması:** Bu kurum, sistemik riskleri izlemek ve farklı finans sektörleri arasındaki düzenleme çabalarını koordine etmek amacıyla kurulmuştur. Finansal istikrar için risk oluşturabilecek finansal faaliyetler için yükseltilmiş standartlar ve korumalar önerme yetkisine sahiptir.
+2.  **Gelişmiş Düzenleyici Denetim:** Dodd-Frank, özellikle önemli varlıklara sahip olan banka holding şirketleri ve banka dışı finansal şirketler üzerinde daha sıkı düzenlemeler getirdi. Buna stres testleri, sermaye planlaması ve başarısızlık durumunda düzenli tasfiye (wind-down) süreçlerini sağlamak için çözüm planlarının sunulması şartları dahildir.
+3.  **Tüketici Koruma Önlemleri:** Tüketici Finansal Koruma Bürosu'nun (CFPB) kurulması, tüketicileri suistimalci borç verme uygulamalarından korumayı ve finansal ürünlerde şeffaflığı sağlamayı amaçlamıştır.
+4.  **Volcker Kuralı:** Bu hüküm, bankaların kendi nam ve hesabına (proprietary) ticaret yapmalarını kısıtlar; serbest yatırım fonlarına (hedge funds) ve özel sermaye fonlarına (private equity funds) yaptıkları yatırımları sınırlayarak çıkar çatışmalarını ve aşırı risk alımını azaltır.
+5.  **Artan Şeffaflık ve Raporlama Gereksinimleri:** Finansal kurumların artık risk maruziyetleri ve finansal sağlıkları hakkında daha fazla bilgi açıklamaları gerekmektedir, bu da piyasa disiplinini ve yatırımcı güvenini artırır.
 
-In response to the crisis, the Dodd-Frank Wall Street Reform and Consumer Protection Act of 2010 was enacted. This legislation introduced several key reforms:
+**Bu reformların temelindeki argümanlar, ekonomik şoklara dayanabilecek daha dirençli bir finansal sisteme duyulan ihtiyaç etrafında toplanmaktadır. Reformlar, kriz öncesinde yaygın olan sistemik riskleri ele almayı, finansal kurumların yeterli sermaye tamponlarını korumalarını ve ihtiyatlı risk yönetimi uygulamalarında bulunmalarını sağlamayı amaçlamaktadır.**
 
+**Sonuç olarak, 2008 krizinden bu yana düzenleme ortamı; aşırı risk alımını önlemeye, şeffaflığı artırmaya ve tüketicileri korumaya odaklanarak önemli ölçüde değişmiştir. Bu önlemler, daha istikrarlı bir finansal ortam yaratmak ve gelecekteki krizlerin olasılığını azaltmak için tasarlanmıştır.**
 
-1. **Creation of the Financial Stability Oversight Council (FSOC)**: This body was established to monitor systemic risks and coordinate regulatory efforts across different financial sectors. It has the authority to recommend heightened standards and safeguards for financial activities that could pose risks to financial stability.
+## KDB.AI Tablosunu Silme
 
+Tablo ile işiniz bittiğinde, tabloyu silmek en iyi uygulamadır.
 
-2. **Enhanced Regulatory Oversight**: Dodd-Frank imposed stricter regulations on bank holding companies and nonbank financial companies, particularly those with significant assets. This includes requirements for stress testing, capital planning, and the submission of resolution plans to ensure orderly wind-downs in case of failure.
-
-
-3. **Consumer Protection Measures**: The establishment of the Consumer Financial Protection Bureau (CFPB) aimed to protect consumers from predatory lending practices and ensure transparency in financial products.
-
-
-4. **Volcker Rule**: This provision restricts proprietary trading by banks and limits their investments in hedge funds and private equity funds, thereby reducing conflicts of interest and excessive risk-taking.
-
-
-5. **Increased Transparency and Reporting Requirements**: Financial institutions are now required to disclose more information regarding their risk exposures and financial health, which enhances market discipline and investor confidence.
-
-
-The arguments for these reforms center around the need for a more resilient financial system that can withstand economic shocks. The reforms aim to address the systemic risks that were prevalent before the crisis, ensuring that financial institutions maintain adequate capital buffers and engage in prudent risk management practices.
-
-
-In conclusion, the regulatory landscape has shifted significantly since the 2008 crisis, with a focus on preventing excessive risk-taking, enhancing transparency, and protecting consumers. These measures are designed to create a more stable financial environment and mitigate the likelihood of future crises.
-CPU times: user 180 ms, sys: 437 μs, total: 180 ms
-Wall time: 10.5 s
-```
-
-## Delete the KDB.AI Table
-
-Once finished with the table, it is best practice to drop it.
-
-```
+```python
 table.drop()
 ```
 
-#### Take Our Survey
+#### Ankete Katılın
 
-We hope you found this sample helpful! Your feedback is important to us, and we would appreciate it if you could take a moment to fill out our brief survey. Your input helps us improve our content.
+Bu örneği faydalı bulduğunuzu umuyoruz! Geri bildiriminiz bizim için önemlidir ve kısa anketimizi doldurmak için bir dakikanızı ayırırsanız memnun oluruz. Girdiğiniz bilgiler içeriğimizi geliştirmemize yardımcı olur.
 
-Take the [Survey](https://delighted.com/t/kWYXv316)
+[Ankete Katılın](https://delighted.com/t/kWYXv316)

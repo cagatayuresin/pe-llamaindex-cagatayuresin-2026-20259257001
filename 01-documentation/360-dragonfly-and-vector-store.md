@@ -1,17 +1,17 @@
 ---
-title: Dragonfly and Vector Store
- | LlamaIndex OSS Documentation
+title: Dragonfly ve Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of using the Dragonfly with Vector Store.
+Bu not defterinde, Dragonfly'ın Vektör Deposu ile kullanımına dair hızlı bir demo göstereceğiz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install -U llama-index llama-index-vector-stores-redis llama-index-embeddings-cohere llama-index-embeddings-openai
 ```
 
-```
+```python
 import os
 import getpass
 import sys
@@ -30,258 +30,160 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.redis import RedisVectorStore
 ```
 
-### Start Dragonfly
+### Dragonfly'ı Başlatın
 
-The easiest way to start Dragonfly is using the Dragonfly docker image or quickly signing up for a [Dragonfly Cloud](https://www.dragonflydb.io/cloud) demo instance.
+Dragonfly'ı başlatmanın en kolay yolu Dragonfly docker imajını kullanmak veya bir [Dragonfly Cloud](https://www.dragonflydb.io/cloud) demo örneğine hızlıca kaydolmaktır.
 
-To follow every step of this tutorial, launch the image as follows:
+Bu öğreticinin her adımını takip etmek için imajı aşağıdaki gibi başlatın:
 
-Terminal window
+Terminal penceresi
 
-```
+```bash
 docker run -d -p 6379:6379 --name dragonfly docker.dragonflydb.io/dragonflydb/dragonfly
 ```
 
-### Setup OpenAI
+### OpenAI Kurulumu
 
-Lets first begin by adding the openai api key. This will allow us to access openai for embeddings and to use chatgpt.
+Öncelikle openai api anahtarını ekleyerek başlayalım. Bu, gömmeler (embeddings) için openai'ye erişmemize ve chatgpt'yi kullanmamıza olanak tanıyacaktır.
 
-```
-oai_api_key = getpass.getpass("OpenAI API Key:")
+```python
+oai_api_key = getpass.getpass("OpenAI API Anahtarı:")
 os.environ["OPENAI_API_KEY"] = oai_api_key
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
---2025-06-30 14:41:20--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.110.133, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+### Bir Veri Kümesini Okuyun
 
+Burada, gömme haline getirilecek metni sağlamak, vektör deposunda saklamak ve LLM Soru-Cevap (QnA) döngümüz için bağlam bulmak amacıyla bir dizi Paul Graham makalesini kullanacağız.
 
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.04s
-
-
-2025-06-30 14:41:20 (2.00 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
-```
-
-### Read in a dataset
-
-Here we will use a set of Paul Graham essays to provide the text to turn into embeddings, store in a vector store and query to find context for our LLM QnA loop.
-
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 print(
-    "Document ID:",
+    "Belge Kimliği (Document ID):",
     documents[0].id_,
-    "Document Filename:",
+    "Belge Dosya Adı:",
     documents[0].metadata["file_name"],
 )
 ```
 
-```
-Document ID: a5cae17c-27eb-411e-8967-fb6ef98bcdcf Document Filename: paul_graham_essay.txt
-```
+### Varsayılan Vektör Deposunu Başlatın
 
-### Initialize the default vector store
+Artık belgelerimiz hazır olduğuna göre, vektör deposunu **varsayılan** ayarlarla başlatabiliriz. Bu, vektörlerimizi Dragonfly'da saklamamıza ve gerçek zamanlı arama için bir indeks oluşturmamıza olanak tanıyacaktır.
 
-Now we have our documents prepared, we can initialize the vector store with **default** settings. This will allow us to store our vectors in Dragonfly and create an index for real-time search.
-
-```
+```python
 from llama_index.core import StorageContext
 from redis import Redis
 
 
-# create a client connection
+# istemci bağlantısı oluştur
 redis_client = Redis.from_url("redis://localhost:6379")
 
 
-# create the vector store wrapper
+# vektör deposu sarmalayıcısını (wrapper) oluştur
 vector_store = RedisVectorStore(redis_client=redis_client, overwrite=True)
 
 
-# load storage context
+# depolama bağlamını (storage context) yükle
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-# build and load index from documents and storage context
+# belgelerden ve depolama bağlamından indeksi oluştur ve yükle
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-```
-14:41:29 llama_index.vector_stores.redis.base INFO   Using default RedisVectorStore schema.
-14:41:31 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-14:41:31 llama_index.vector_stores.redis.base INFO   Added 22 documents to index llama_index
-```
+### Varsayılan Vektör Deposunu Sorgulayın
 
-### Query the default vector store
+Artık verilerimiz indekste saklandığına göre, indekse yönelik sorular sorabiliriz.
 
-Now that we have our data stored in the index, we can ask questions against the index.
+İndeks, verileri bir LLM için bilgi tabanı (knowledge base) olarak kullanacaktır. `as_query_engine()` için varsayılan ayar, OpenAI gömmelerini ve dil modeli olarak GPT'yi kullanır. Bu nedenle, özelleştirilmiş veya yerel bir dil modeli seçmediğiniz sürece bir OpenAI anahtarı gereklidir.
 
-The index will use the data as the knowledge base for an LLM. The default setting for as\_query\_engine() utilizes OpenAI embeddings and GPT as the language model. Therefore, an OpenAI key is required unless you opt for a customized or local language model.
+Aşağıda, indeksimize karşı aramaları ve ardından bir LLM ile tam RAG akışını test edeceğiz.
 
-Below we will test searches against out index and then full RAG with an LLM.
-
-```
+```python
 query_engine = index.as_query_engine()
 retriever = index.as_retriever()
 ```
 
-```
-result_nodes = retriever.retrieve("What did the author learn?")
+```python
+result_nodes = retriever.retrieve("Yazar ne öğrendi?")
 for node in result_nodes:
     print(node)
 ```
 
-```
-14:41:40 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-14:41:40 llama_index.vector_stores.redis.base INFO   Querying index llama_index with query *=>[KNN 2 @vector $vector AS vector_distance] RETURN 5 id doc_id text _node_content vector_distance SORTBY vector_distance ASC DIALECT 2 LIMIT 0 2
-14:41:40 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_f12d31cc-d154-4ae2-9511-81a1e0b2c185', 'llama_index/vector_a67c3af9-14cc-45fd-a2dd-142753a61d79']
-Node ID: f12d31cc-d154-4ae2-9511-81a1e0b2c185
-Text: What I Worked On  February 2021  Before college the two main
-things I worked on, outside of school, were writing and programming. I
-didn't write essays. I wrote what beginning writers were supposed to
-write then, and probably still are: short stories. My stories were
-awful. They had hardly any plot, just characters with strong feelings,
-which I ...
-Score:  0.819
-
-
-Node ID: a67c3af9-14cc-45fd-a2dd-142753a61d79
-Text: In the summer of 2016 we moved to England. We wanted our kids to
-see what it was like living in another country, and since I was a
-British citizen by birth, that seemed the obvious choice. We only
-meant to stay for a year, but we liked it so much that we still live
-there. So most of Bel was written in England.  In the fall of 2019,
-Bel was final...
-Score:  0.815
-```
-
-```
-response = query_engine.query("What did the author learn?")
+```python
+response = query_engine.query("Yazar ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-14:41:44 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-14:41:44 llama_index.vector_stores.redis.base INFO   Querying index llama_index with query *=>[KNN 2 @vector $vector AS vector_distance] RETURN 5 id doc_id text _node_content vector_distance SORTBY vector_distance ASC DIALECT 2 LIMIT 0 2
-14:41:44 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_f12d31cc-d154-4ae2-9511-81a1e0b2c185', 'llama_index/vector_a67c3af9-14cc-45fd-a2dd-142753a61d79']
-14:41:45 httpx INFO   HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-The author learned that philosophy courses in college were boring to him, leading him to switch his
-focus to studying AI.
-```
+**Yazar, üniversitedeki felsefe derslerinin kendisi için sıkıcı olduğunu öğrendi ve bu da onu odağını yapay zeka (AI) çalışmalarına kaydırmaya yöneltti.**
 
-```
-result_nodes = retriever.retrieve("What was a hard moment for the author?")
+```python
+result_nodes = retriever.retrieve("Yazar için zor bir an neydi?")
 for node in result_nodes:
     print(node)
 ```
 
-```
-14:41:47 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-14:41:47 llama_index.vector_stores.redis.base INFO   Querying index llama_index with query *=>[KNN 2 @vector $vector AS vector_distance] RETURN 5 id doc_id text _node_content vector_distance SORTBY vector_distance ASC DIALECT 2 LIMIT 0 2
-14:41:47 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_8c02f420-3cfc-4da6-859b-97469872ef46', 'llama_index/vector_f12d31cc-d154-4ae2-9511-81a1e0b2c185']
-Node ID: 8c02f420-3cfc-4da6-859b-97469872ef46
-Text: HN was no doubt good for YC, but it was also by far the biggest
-source of stress for me. If all I'd had to do was select and help
-founders, life would have been so easy. And that implies that HN was a
-mistake. Surely the biggest source of stress in one's work should at
-least be something close to the core of the work. Whereas I was like
-someone ...
-Score:  0.804
+**Hacker News (HN) ile ilgili acil sorunlarla ilgilenmek yazar için önemli bir stres kaynağıydı.**
 
-
-Node ID: f12d31cc-d154-4ae2-9511-81a1e0b2c185
-Text: What I Worked On  February 2021  Before college the two main
-things I worked on, outside of school, were writing and programming. I
-didn't write essays. I wrote what beginning writers were supposed to
-write then, and probably still are: short stories. My stories were
-awful. They had hardly any plot, just characters with strong feelings,
-which I ...
-Score:  0.802
-```
-
-```
-response = query_engine.query("What was a hard moment for the author?")
-print(textwrap.fill(str(response), 100))
-```
-
-```
-14:41:51 httpx INFO   HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-14:41:51 llama_index.vector_stores.redis.base INFO   Querying index llama_index with query *=>[KNN 2 @vector $vector AS vector_distance] RETURN 5 id doc_id text _node_content vector_distance SORTBY vector_distance ASC DIALECT 2 LIMIT 0 2
-14:41:51 llama_index.vector_stores.redis.base INFO   Found 2 results for query with id ['llama_index/vector_8c02f420-3cfc-4da6-859b-97469872ef46', 'llama_index/vector_f12d31cc-d154-4ae2-9511-81a1e0b2c185']
-14:41:52 httpx INFO   HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-Dealing with urgent problems related to Hacker News (HN) was a significant source of stress for the
-author.
-```
-
-```
+```python
 index.vector_store.delete_index()
 ```
 
-```
-14:41:55 llama_index.vector_stores.redis.base INFO   Deleting index llama_index
-```
+### Özel bir İndeks Şeması Kullanın
 
-### Use a custom index schema
+Çoğu kullanım durumunda, temel indeks yapılandırmasını ve spesifikasyonunu özelleştirme yeteneğine ihtiyacınız vardır. Örneğin bu, etkinleştirmek istediğiniz belirli meta veri filtrelerini tanımlamak için kullanışlıdır.
 
-In most use cases, you need the ability to customize the underling index configuration and specification. For example, this is handy in order to define specific metadata filters you wish to enable.
+Dragonfly ile bu, bir indeks şeması nesnesi (dosyadan veya sözlükten) tanımlamak ve bunu vektör deposu istemci sarmalayıcısına iletmek kadar basittir.
 
-With Dragonfly, this is as simple as defining an index schema object (from file or dict) and passing it through to the vector store client wrapper.
+Bu örnek için şunları yapacağız:
 
-For this example, we will:
+1. Gömme modelini [Cohere](https://cohere.com/) olarak değiştireceğiz.
+2. Belgenin `updated_at` zaman damgası (timestamp) için ek bir meta veri alanı ekleyeceğiz.
+3. Mevcut `file_name` meta veri alanını indeksleyeceğiz.
 
-1. switch the embedding model to [Cohere](https://cohere.com/)
-2. add an additional metadata field for the document `updated_at` timestamp
-3. index the existing `file_name` metadata field
-
-```
+```python
 from llama_index.core.settings import Settings
 from llama_index.embeddings.cohere import CohereEmbedding
 
 
-# set up Cohere Key
-co_api_key = getpass.getpass("Cohere API Key:")
+# Cohere Anahtarını ayarla
+co_api_key = getpass.getpass("Cohere API Anahtarı:")
 
 
 Settings.embed_model = CohereEmbedding(api_key=co_api_key)
 ```
 
-```
+```python
 from redisvl.schema import IndexSchema
-
-
 
 
 custom_schema = IndexSchema.from_dict(
     {
-        # customize basic index specs
+        # temel indeks özelliklerini özelleştir
         "index": {
             "name": "paul_graham",
             "prefix": "essay",
             "key_separator": ":",
         },
-        # customize fields that are indexed
+        # indekslenen alanları özelleştir
         "fields": [
-            # required fields for llamaindex
+            # llamaindex için gerekli alanlar
             {"type": "tag", "name": "id"},
             {"type": "tag", "name": "doc_id"},
             {"type": "text", "name": "text"},
-            # custom metadata fields
+            # özel meta veri alanları
             {"type": "numeric", "name": "updated_at"},
             {"type": "tag", "name": "file_name"},
-            # custom vector field definition for cohere embeddings
+            # cohere gömmeleri için özel vektör alanı tanımı
             {
                 "type": "vector",
                 "name": "vector",
@@ -296,31 +198,8 @@ custom_schema = IndexSchema.from_dict(
 )
 ```
 
-```
-custom_schema.index
-```
-
-```
-IndexInfo(name='paul_graham', prefix='essay', key_separator=':', storage_type=<StorageType.HASH: 'hash'>)
-```
-
-```
-custom_schema.fields
-```
-
-```
-{'id': TagField(name='id', type=<FieldTypes.TAG: 'tag'>, path=None, attrs=TagFieldAttributes(sortable=False, separator=',', case_sensitive=False, withsuffixtrie=False)),
- 'doc_id': TagField(name='doc_id', type=<FieldTypes.TAG: 'tag'>, path=None, attrs=TagFieldAttributes(sortable=False, separator=',', case_sensitive=False, withsuffixtrie=False)),
- 'text': TextField(name='text', type=<FieldTypes.TEXT: 'text'>, path=None, attrs=TextFieldAttributes(sortable=False, weight=1, no_stem=False, withsuffixtrie=False, phonetic_matcher=None)),
- 'updated_at': NumericField(name='updated_at', type=<FieldTypes.NUMERIC: 'numeric'>, path=None, attrs=NumericFieldAttributes(sortable=False)),
- 'file_name': TagField(name='file_name', type=<FieldTypes.TAG: 'tag'>, path=None, attrs=TagFieldAttributes(sortable=False, separator=',', case_sensitive=False, withsuffixtrie=False)),
- 'vector': HNSWVectorField(name='vector', type='vector', path=None, attrs=HNSWVectorFieldAttributes(dims=1024, algorithm=<VectorIndexAlgorithm.HNSW: 'HNSW'>, datatype=<VectorDataType.FLOAT32: 'FLOAT32'>, distance_metric=<VectorDistanceMetric.COSINE: 'COSINE'>, initial_cap=None, m=16, ef_construction=200, ef_runtime=10, epsilon=0.01))}
-```
-
-```
+```python
 from datetime import datetime
-
-
 
 
 def date_to_timestamp(date_string: str) -> int:
@@ -328,18 +207,16 @@ def date_to_timestamp(date_string: str) -> int:
     return int(datetime.strptime(date_string, date_format).timestamp())
 
 
-
-
-# iterate through documents and add new field
+# belgeler arasında gezin ve yeni alanı ekle
 for document in documents:
     document.metadata["updated_at"] = date_to_timestamp(
         document.metadata["last_modified_date"]
     )
 ```
 
-```
+```python
 vector_store = RedisVectorStore(
-    schema=custom_schema,  # provide customized schema
+    schema=custom_schema,  # özelleştirilmiş şemayı sağla
     redis_client=redis_client,
     overwrite=True,
 )
@@ -348,24 +225,17 @@ vector_store = RedisVectorStore(
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-# build and load index from documents and storage context
+# belgelerden ve depolama bağlamından indeksi oluştur ve yükle
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-```
-14:42:26 httpx INFO   HTTP Request: POST https://api.cohere.com/v2/embed "HTTP/1.1 200 OK"
-14:42:26 httpx INFO   HTTP Request: POST https://api.cohere.com/v2/embed "HTTP/1.1 200 OK"
-14:42:27 httpx INFO   HTTP Request: POST https://api.cohere.com/v2/embed "HTTP/1.1 200 OK"
-14:42:27 llama_index.vector_stores.redis.base INFO   Added 22 documents to index paul_graham
-```
+### Vektör Deposunu Sorgulama ve Meta Veriye Göre Filtreleme
 
-### Query the vector store and filter on metadata
+Artık Dragonfly'da indekslenen ek meta verilerimiz olduğuna göre, filtreli bazı sorgular deneyelim.
 
-Now that we have additional metadata indexed in Dragonfly, let’s try some queries with filters.
-
-```
+```python
 from llama_index.core.vector_stores import (
     MetadataFilters,
     MetadataFilter,
@@ -385,7 +255,7 @@ retriever = index.as_retriever(
             ),
             MetadataFilter(
                 key="text",
-                value="learn",
+                value="öğrenmek (learn)",
                 operator="text_match",
             ),
         ],
@@ -394,75 +264,39 @@ retriever = index.as_retriever(
 )
 ```
 
-```
-result_nodes = retriever.retrieve("What did the author learn?")
+```python
+result_nodes = retriever.retrieve("Yazar ne öğrendi?")
 
 
 for node in result_nodes:
     print(node)
 ```
 
-```
-14:42:37 httpx INFO   HTTP Request: POST https://api.cohere.com/v2/embed "HTTP/1.1 200 OK"
-14:42:37 llama_index.vector_stores.redis.base INFO   Querying index paul_graham with query ((@file_name:{paul_graham_essay\.txt} @updated_at:[1672524000 +inf]) @text:(learn))=>[KNN 3 @vector $vector AS vector_distance] RETURN 5 id doc_id text _node_content vector_distance SORTBY vector_distance ASC DIALECT 2 LIMIT 0 3
-14:42:37 llama_index.vector_stores.redis.base INFO   Found 3 results for query with id ['essay:30148f62-13c6-4edb-b09f-1cf3054c5c98', 'essay:054f9488-83c7-4bf6-a408-9ef17eea0446', 'essay:608adb71-a995-489d-81dc-0deab7bbe656']
-Node ID: 30148f62-13c6-4edb-b09f-1cf3054c5c98
-Text: If he even knew about the strange classes I was taking, he never
-said anything.  So now I was in a PhD program in computer science, yet
-planning to be an artist, yet also genuinely in love with Lisp hacking
-and working away at On Lisp. In other words, like many a grad student,
-I was working energetically on multiple projects that were not my
-the...
-Score:  0.404
+### Belgeleri veya İndeksi Tamamen Silme
 
+Bazen belgeleri veya tüm indeksi silmek faydalı olabilir. Bu, `delete` ve `delete_index` yöntemleri kullanılarak yapılabilir.
 
-Node ID: 054f9488-83c7-4bf6-a408-9ef17eea0446
-Text: I wanted to go back to RISD, but I was now broke and RISD was
-very expensive, so I decided to get a job for a year and then return
-to RISD the next fall. I got one at a company called Interleaf, which
-made software for creating documents. You mean like Microsoft Word?
-Exactly. That was how I learned that low end software tends to eat
-high end so...
-Score:  0.396
-
-
-Node ID: 608adb71-a995-489d-81dc-0deab7bbe656
-Text: All that seemed left for philosophy were edge cases that people
-in other fields felt could safely be ignored.  I couldn't have put
-this into words when I was 18. All I knew at the time was that I kept
-taking philosophy courses and they kept being boring. So I decided to
-switch to AI.  AI was in the air in the mid 1980s, but there were two
-things...
-Score:  0.394
-```
-
-### Deleting documents or index completely
-
-Sometimes it may be useful to delete documents or the entire index. This can be done using the `delete` and `delete_index` methods.
-
-```
+```python
 document_id = documents[0].doc_id
-document_id
-```
 
-```
-print("Number of documents before deleting", redis_client.dbsize())
+
+print("Silmeden önceki belge sayısı", redis_client.dbsize())
 vector_store.delete(document_id)
-print("Number of documents after deleting", redis_client.dbsize())
+print("Sildikten sonraki belge sayısı", redis_client.dbsize())
 ```
 
-However, the index still exists (with no associated documents).
+Ancak indeks hala mevcuttur (ilişkili belgesi olmasa bile).
 
-```
+```python
 vector_store.index_exists()
 ```
 
-```
-# now lets delete the index entirely
-# this will delete all the documents and the index
+```python
+# şimdi indeksi tamamen silelim
+# bu, tüm belgeleri ve indeksi silecektir
 vector_store.delete_index()
 ```
 
-```
-print("Number of documents after deleting", redis_client.dbsize())
+```python
+print("Sildikten sonraki belge sayısı", redis_client.dbsize())
 ```

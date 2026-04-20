@@ -1,101 +1,99 @@
-# Firestore Vector Store
-
 ---
-title: Firestore Vector Store
- | LlamaIndex OSS Documentation
+title: Firestore Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-# Google Firestore (Native Mode)
+# Google Firestore (Yerel Mod - Native Mode)
 
-> [Firestore](https://cloud.google.com/firestore) is a serverless document-oriented database that scales to meet any demand. Extend your database application to build AI-powered experiences leveraging Firestore’s Langchain integrations.
+> [Firestore](https://cloud.google.com/firestore), her türlü talebi karşılayacak şekilde ölçeklenen, sunucusuz (serverless), doküman yönelimli bir veritabanıdır. Firestore'un LlamaIndex entegrasyonlarından yararlanarak yapay zeka destekli deneyimler oluşturmak için veritabanı uygulamanızı geliştirin.
 
-This notebook goes over how to use [Firestore](https://cloud.google.com/firestore) to store vectors and query them using the `FirestoreVectorStore` class.
+Bu not defteri, vektörleri saklamak ve `FirestoreVectorStore` sınıfını kullanarak bunları sorgulamak için [Firestore](https://cloud.google.com/firestore) veritabanının nasıl kullanılacağını ele almaktadır.
 
-## Before You Begin
+## Başlamadan Önce
 
-To run this notebook, you will need to do the following:
+Bu not defterini çalıştırmak için aşağıdakileri yapmanız gerekecektir:
 
-- [Create a Google Cloud Project](https://developers.google.com/workspace/guides/create-project)
-- [Enable the Firestore API](https://console.cloud.google.com/flows/enableapi?apiid=firestore.googleapis.com)
-- [Create a Firestore database](https://cloud.google.com/firestore/docs/manage-databases)
+- [Bir Google Cloud Projesi Oluşturun](https://developers.google.com/workspace/guides/create-project)
+- [Firestore API'yi Etkinleştirin](https://console.cloud.google.com/flows/enableapi?apiid=firestore.googleapis.com)
+- [Bir Firestore veritabanı oluşturun](https://cloud.google.com/firestore/docs/manage-databases)
 
-After confirmed access to database in the runtime environment of this notebook, filling the following values and run the cell before running example scripts.
+Bu not defterinin çalışma ortamında veritabanına erişimi onayladıktan sonra, örnek betikleri çalıştırmadan önce aşağıdaki değerleri doldurun ve hücreyi çalıştırın.
 
-## Library Installation
+## Kütüphane Kurulumu
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙. For this notebook, we will also install `langchain-google-genai` to use Google Generative AI embeddings.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir. Bu not defteri için, Google Generative AI gömmelerini (embeddings) kullanmak amacıyla `llama-index-vector-stores-firestore` ve `llama-index-embeddings-huggingface` paketlerini de kuracağız.
 
-```
+```bash
 %pip install --quiet llama-index
 %pip install --quiet llama-index-vector-stores-firestore llama-index-embeddings-huggingface
 ```
 
-### ☁ Set Your Google Cloud Project
+### ☁ Google Cloud Projenizi Ayarlayın
 
-Set your Google Cloud project so that you can leverage Google Cloud resources within this notebook.
+Bu not defterindeki Google Cloud kaynaklarından yararlanabilmek için Google Cloud projenizi ayarlayın.
 
-If you don’t know your project ID, try the following:
+Proje kimliğinizi (project ID) bilmiyorsanız, şunları deneyebilirsiniz:
 
-- Run `gcloud config list`.
-- Run `gcloud projects list`.
-- See the support page: [Locate the project ID](https://support.google.com/googleapi/answer/7014113).
+- `gcloud config list` komutunu çalıştırın.
+- `gcloud projects list` komutunu çalıştırın.
+- Destek sayfasını inceleyin: [Proje kimliğini bulma](https://support.google.com/googleapi/answer/7014113).
 
-```
-# @markdown Please fill in the value below with your Google Cloud project ID and then run the cell.
-
-
-PROJECT_ID = "YOUR_PROJECT_ID"  # @param {type:"string"}
+```python
+# @markdown Lütfen aşağıdaki değeri Google Cloud proje kimliğinizle doldurun ve ardından hücreyi çalıştırın.
 
 
-# Set the project id
+PROJECT_ID = "PROJE_KIMLIGINIZ"  # @param {type:"string"}
+
+
+# Proje kimliğini ayarla
 !gcloud config set project {PROJECT_ID}
 ```
 
-### 🔐 Authentication
+### 🔐 Kimlik Doğrulama
 
-Authenticate to Google Cloud as the IAM user logged into this notebook in order to access your Google Cloud Project.
+Google Cloud Projenize erişmek için bu not defterinde oturum açmış IAM kullanıcısı olarak Google Cloud'da kimlik doğrulaması yapın.
 
-- If you are using Colab to run this notebook, use the cell below and continue.
-- If you are using Vertex AI Workbench, check out the setup instructions [here](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env).
+- Bu not defterini çalıştırmak için Colab kullanıyorsanız, aşağıdaki hücreyi kullanın ve devam edin.
+- Vertex AI Workbench kullanıyorsanız, kurulum talimatlarını [buradan](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env) inceleyin.
 
-```
+```python
 from google.colab import auth
 
 
 auth.authenticate_user()
 ```
 
-# Basic Usage
+# Temel Kullanım
 
-### Initialize FirestoreVectorStore
+### FirestoreVectorStore'u Başlatma
 
-`FirestoreVectroStore` allows you to load data into Firestore and query it.
+`FirestoreVectorStore`, verileri Firestore'a yüklemenize ve sorgulamanıza olanak tanır.
 
+```python
+# @markdown Lütfen demo amacıyla bir kaynak belirtin.
+COLLECTION_NAME = "test_koleksiyonu"
 ```
-# @markdown Please specify a source for demo purpose.
-COLLECTION_NAME = "test_collection"
-```
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
-# Load documents and build index
+# Belgeleri yükle ve indeksi oluştur
 documents = SimpleDirectoryReader(
     "../../examples/data/paul_graham"
 ).load_data()
 ```
 
-```
+```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 
 
-# Set the embedding model, this is a local model
+# Gömme modelini ayarlayın, bu yerel bir modeldir
 embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext, ServiceContext
 
@@ -103,7 +101,7 @@ from llama_index.core import StorageContext, ServiceContext
 from llama_index.vector_stores.firestore import FirestoreVectorStore
 
 
-# Create a Firestore vector store
+# Bir Firestore vektör deposu oluşturun
 store = FirestoreVectorStore(collection_name=COLLECTION_NAME)
 
 
@@ -118,67 +116,65 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-/var/folders/mh/cqn7wzgs3j79rbg243_gfcx80000gn/T/ipykernel_29666/1668628626.py:10: DeprecationWarning: Call to deprecated class method from_defaults. (ServiceContext is deprecated, please use `llama_index.settings.Settings` instead.) -- Deprecated since version 0.10.0.
+```text
+/var/folders/mh/cqn7wzgs3j79rbg243_gfcx80000gn/T/ipykernel_29666/1668628626.py:10: DeprecationWarning: Call to deprecated class method from_defaults. (ServiceContext kullanım dışıdır, lütfen bunun yerine `llama_index.settings.Settings` kullanın.) -- 0.10.0 sürümünden beri kullanım dışıdır.
   service_context = ServiceContext.from_defaults(llm=None, embed_model=embed_model)
 
 
-
-
-LLM is explicitly disabled. Using MockLLM.
+LLM açıkça devre dışı bırakıldı. MockLLM kullanılıyor.
 ```
 
-### Perform search
+### Arama gerçekleştirme
 
-You can use the `FirestoreVectorStore` to perform similarity searches on the vectors you have stored. This is useful for finding similar documents or text.
+Sakladığınız vektörler üzerinde benzerlik aramaları yapmak için `FirestoreVectorStore` kullanabilirsiniz. Bu, benzer belgeleri veya metinleri bulmak için kullanışlıdır.
 
-```
+```python
 query_engine = index.as_query_engine()
-res = query_engine.query("What did the author do growing up?")
+res = query_engine.query("Yazar büyürken neler yaptı?")
 print(str(res.source_nodes[0].text))
 ```
 
-```
+```text
 None
-What I Worked On
+Neler Üzerine Çalıştım
 
 
-February 2021
+Şubat 2021
 
 
-Before college the two main things I worked on, outside of school, were writing and programming. I didn't write essays. I wrote what beginning writers were supposed to write then, and probably still are: short stories. My stories were awful. They had hardly any plot, just characters with strong feelings, which I imagined made them deep.
+Üniversiteden önce, okul dışında çalıştığım iki ana konu yazarlık ve programlamaydı. Makale yazmazdım. O zamanlar başlangıç seviyesindeki yazarların ne yazması gerekiyorsa onları yazardım (hâlâ da muhtemelen öyledir): kısa hikayeler. Hikayelerim berbattı. Neredeyse hiç olay örgüsü yoktu, sadece güçlü hisleri olan karakterler vardı ve bunun onları derin kıldığını hayal ederdim.
 
 
-The first programs I tried writing were on the IBM 1401 that our school district used for what was then called "data processing." This was in 9th grade, so I was 13 or 14. The school district's 1401 happened to be in the basement of our junior high school, and my friend Rich Draves and I got permission to use it. It was like a mini Bond villain's lair down there, with all these alien-looking machines — CPU, disk drives, printer, card reader — sitting up on a raised floor under bright fluorescent lights.
+Yazmayı denediğim ilk programlar, okul bölgemizin o zamanlar "veri işleme" (data processing) dedikleri şey için kullandığı IBM 1401 üzerindeydi. Bu 9. sınıftaydı, yani 13 veya 14 yaşındaydım. Okul bölgesinin 1401'i tesadüfen ortaokulumuzun bodrumundaydı ve arkadaşım Rich Draves ile birlikte onu kullanmak için izin almıştık. Aşağısı küçük bir Bond kötüsünün sığınağı gibiydi; CPU, disk sürücüleri, yazıcı, kart okuyucu gibi tüm bu uzaylı görünümlü makineler, parlak floresan ışıklar altında yükseltilmiş bir zeminde duruyordu.
 
 
-The language we used was an early version of Fortran. You had to type programs on punch cards, then stack them in the card reader and press a button to load the program into memory and run it. The result would ordinarily be to print something on the spectacularly loud printer.
+Kullandığımız dil, Fortran'ın erken bir sürümüydü. Programları delikli kartlara yazmanız, sonra onları kart okuyucuya istiflemeniz ve programı belleğe yükleyip çalıştırmak için bir düğmeye basmanız gerekiyordu. Sonuç normalde fevkalade gürültülü yazıcıda bir şeyler yazdırmak olurdu.
 
 
-I was puzzled by the 1401. I couldn't figure out what to do with it. And in retrospect there's not much I could have done with it. The only form of input to programs was data stored on punched cards, and I didn't have any data stored on punched cards. The only other option was to do things that didn't rely on any input, like calculate approximations of pi, but I didn't know enough math to do anything interesting of that type. So I'm not surprised I can't remember any programs I wrote, because they can't have done much. My clearest memory is of the moment I learned it was possible for programs not to terminate, when one of mine didn't. On a machine without time-sharing, this was a social as well as a technical error, as the data center manager's expression made clear.
+1401 kafamı karıştırmıştı. Onunla ne yapacağımı tam çözememiştim. Ve geriye dönüp baktığımda, onunla yapabileceğim pek bir şey de yoktu. Programlara tek girdi biçimi delikli kartlarda saklanan verilerdi ve bende delikli kartlarda saklanan hiç veri yoktu. Diğer tek seçenek, pi sayısının yaklaşımlarını hesaplamak gibi herhangi bir girdiye dayanmayan şeyler yapmaktı, ancak bu türden ilginç bir şey yapacak kadar matematik bilmiyordum. Bu yüzden yazdığım hiçbir programı hatırlamamam şaşırtıcı değil, çünkü pek bir şey yapmış olamazlar. En net hatırladığım an, programların sonlanmamasının mümkün olduğunu öğrendiğim andı; benimkilerden biri bitmek bilmemişti. Paylaşımlı zaman (time-sharing) olmayan bir makinede bu, veri merkezi yöneticisinin yüz ifadesinden de anlaşıldığı üzere, teknik olduğu kadar sosyal bir hataydı da.
 
 
-With microcomputers, everything changed. Now you could have a computer sitting right in front of you, on a desk, that could respond to your keystrokes as it was running instead of just churning through a stack of punch cards and then stopping. [1]
+Mikrobilgisayarlarla her şey değişti. Artık tam karşınızda, masanızın üstünde, bir deste delikli kartı işleyip durmak yerine, çalışırken tuş vuruşlarınıza yanıt verebilen bir bilgisayarınız olabilirdi. [1]
 
 
-The first of my friends to get a microcomputer built it himself. It was sold as a kit by Heathkit. I remember vividly how impressed and envious I felt watching him sitting in front of it, typing programs right into the computer.
+Mikrobilgisayar alan ilk arkadaşım onu kendi yapmıştı. Heathkit tarafından bir kit olarak satılıyordu. Bilgisayarın önünde oturup programları doğrudan bilgisayara yazdığını izlerken ne kadar etkilendiğimi ve kıskandığımı canlı bir şekilde hatırlıyorum.
 
 
-Computers were expensive in those days and it took me years of nagging before I convinced my father to buy one, a TRS-80, in about 1980. The gold standard then was the Apple II, but a TRS-80 was good enough. This was when I really started programming. I wrote simple games, a program to predict how high my model rockets would fly, and a word processor that my father used to write at least one book. There was only room in memory for about 2 pages of text, so he'd write 2 pages at a time and then print them out, but it was a lot better than a typewriter.
+O günlerde bilgisayarlar pahalıydı ve babamı bir tane (yaklaşık 1980'de bir TRS-80) almaya ikna etmem yıllarca dil dökmemi gerektirmişti. O zamanki altın standart Apple II idi, ancak bir TRS-80 yeterince iyiydi. Gerçekten programlamaya başladığım zaman buydu. Basit oyunlar, model roketlerimin ne kadar yükseğe uçacağını tahmin eden bir program ve babamın en az bir kitap yazmak için kullandığı bir kelime işlemci yazdım. Bellekte sadece yaklaşık 2 sayfalık metin için yer vardı, bu yüzden her seferinde 2 sayfa yazar ve sonra yazdırırdı ama bu bir daktilodan çok daha iyiydi.
 
 
-Though I liked programming, I didn't plan to study it in college. In college I was going to study philosophy, which sounded much more powerful. It seemed, to my naive high school self, to be the study of the ultimate truths, compared to which the things studied in other fields would be mere domain knowledge. What I discovered when I got to college was that the other fields took up so much of the space of ideas that there wasn't much left for these supposed ultimate truths. All that seemed left for philosophy were edge cases that people in other fields felt could safely be ignored.
+Programlamayı sevsem de üniversitede okumayı planlamıyordum. Üniversitede, kulağa çok daha güçlü gelen felsefe okuyacaktım. Saf lise benliğim için felsefe, diğer alanlarda çalışılan şeylerin sadece alan bilgisi kalacağı mutlak gerçeklerin incelenmesi gibi görünüyordu. Üniversiteye gittiğimde keşfettiğim şey ise, diğer alanların fikir dünyasında o kadar çok yer kapladığıydı ki, bu sözde mutlak gerçekler için pek bir şey kalmamıştı. Felsefeye kalan tek şey, diğer alanlardaki insanların güvenle görmezden gelinebileceğini düşündüğü uç vakalardı.
 
 
-I couldn't have put this into words when I was 18. All I knew at the time was that I kept taking philosophy courses and they kept being boring. So I decided to switch to AI.
+18 yaşındayken bunu kelimelere dökemezdim. O sırada tek bildiğim, felsefe dersleri almaya devam ettiğim ve bunların sıkıcı olmaya devam ettiğiydi. Ben de yapay zekaya (AI) geçmeye karar verdim.
 
 
-AI was in the air in the mid 1980s, but there were two things especially that made me want to work on it: a novel by Heinlein called The Moon is a Harsh Mistress, which featured an intelligent computer called Mike, and a PBS documentary that showed Terry Winograd using SHRDLU. I haven't tried rereading The Moon is a Harsh Mistress, so I don't know how well it has aged, but when I read it I was drawn entirely into its world.
+1980'lerin ortalarında yapay zeka revaçtaydı ama üzerinde çalışmak istememe neden olan özellikle iki şey vardı: Heinlein'ın Mike adında zeki bir bilgisayarı konu alan "The Moon is a Harsh Mistress" (Ay Zalim Bir Sevgilidir) adlı romanı ve Terry Winograd'ın SHRDLU kullandığını gösteren bir PBS belgeseli. "The Moon is a Harsh Mistress"ı yeniden okumayı denemedim, bu yüzden ne kadar iyi eskidiğini bilmiyorum ama okuduğumda beni tamamen dünyasının içine çekmişti.
 ```
 
-You can apply pre-filtering to the search results by specifying a `filters` argument.
+Arama sonuçlarına `filters` argümanı belirterek ön filtreleme uygulayabilirsiniz.
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilters,
     ExactMatchFilter,
@@ -190,6 +186,6 @@ filters = MetadataFilters(
     filters=[MetadataFilter(key="author", value="Paul Graham")]
 )
 query_engine = index.as_query_engine(filters=filters)
-res = query_engine.query("What did the author do growing up?")
+res = query_engine.query("Yazar büyürken neler yaptı?")
 print(str(res.source_nodes[0].text))
 ```

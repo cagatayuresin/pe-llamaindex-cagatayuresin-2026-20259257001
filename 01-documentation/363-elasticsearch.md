@@ -1,68 +1,64 @@
-# Elasticsearch
-
 ---
 title: Elasticsearch
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Elasticsearch](http://www.github.com/elastic/elasticsearch) is a search database, that supports full text and vector searches.
+# Elasticsearch
 
-## Basic Example
+> [Elasticsearch](http://www.github.com/elastic/elasticsearch), hem tam metin (full-text) hem de vektör aramalarını destekleyen bir arama veritabanıdır.
 
-In this basic example, we take the a Paul Graham essay, split it into chunks, embed it using an open-source embedding model, load it into Elasticsearch, and then query it. For an example using different retrieval strategies see [Elasticsearch Vector Store](https://docs.llamaindex.ai/en/stable/examples/vector_stores/elasticsearchindexdemo/).
+## Temel Örnek
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu temel örnekte, bir Paul Graham makalesini alıyoruz, parçalara ayırıyoruz, açık kaynaklı bir gömme (embedding) modeli kullanarak gömüyoruz, Elasticsearch'e yüklüyoruz ve ardından sorguluyoruz. Farklı erişme stratejilerini kullanan bir örnek için [Elasticsearch Vektör Deposu](https://docs.llamaindex.ai/en/stable/examples/vector_stores/elasticsearchindexdemo/) sayfasına bakabilirsiniz.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install -qU llama-index-vector-stores-elasticsearch llama-index-embeddings-huggingface llama-index
 ```
 
-```
-# import
+```python
+# içe aktarma
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore
 from llama_index.core import StorageContext
 ```
 
-```
-# set up OpenAI
+```python
+# OpenAI kurulumu
 import os
 import getpass
 
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
+os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Anahtarı:")
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget -nv 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-2024-05-13 15:10:43 URL:https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt [75042/75042] -> "data/paul_graham/paul_graham_essay.txt" [1]
-```
-
-```
+```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 
 
-# define embedding function
+# gömme fonksiyonunu tanımla
 Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
 )
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 
 
-# define index
+# indeksi tanımla
 vector_store = ElasticsearchStore(
-    es_url="http://localhost:9200",  # see Elasticsearch Vector Store for more authentication options
+    es_url="http://localhost:9200",  # diğer kimlik doğrulama seçenekleri için Elasticsearch Vektör Deposu'na bakın
     index_name="paul_graham_essay",
 )
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
@@ -71,13 +67,11 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-# Query Data
+```python
+# Veriyi Sorgula
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 print(response)
 ```
 
-```
-The author worked on writing and programming outside of school. They wrote short stories and tried writing programs on an IBM 1401 computer. They also built a microcomputer kit and started programming on it, writing simple games and a word processor.
-```
+**Yazar, okul dışında yazarlık ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve bir IBM 1401 bilgisayarında programlar yazmayı denedi. Ayrıca bir mikrobilgisayar kiti oluşturdu ve onun üzerinde basit oyunlar ve bir kelime işlemci yazarak programlama yapmaya başladı.**

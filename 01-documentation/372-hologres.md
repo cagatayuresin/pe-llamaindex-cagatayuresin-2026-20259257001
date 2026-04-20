@@ -1,40 +1,40 @@
-# Hologres
-
 ---
 title: Hologres
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Hologres](https://www.alibabacloud.com/help/en/hologres/) is a one-stop real-time data warehouse, which can support high performance OLAP analysis and high QPS online services.
+# Hologres
 
-To run this notebook you need a Hologres instance running in the cloud. You can get one following [this link](https://www.alibabacloud.com/help/en/hologres/getting-started/purchase-a-hologres-instance#task-1918224).
+> [Hologres](https://www.alibabacloud.com/help/en/hologres/), yüksek performanslı OLAP analizini ve yüksek QPS'li çevrimiçi hizmetleri destekleyebilen uçtan uca gerçek zamanlı bir veri ambarıdır.
 
-After creating the instance, you should be able to figure out following configurations with [Hologres console](https://www.alibabacloud.com/help/en/hologres/user-guide/instance-list?spm=a2c63.p38356.0.0.79b34766nhwskN)
+Bu not defterini çalıştırmak için bulutta çalışan bir Hologres örneğine (instance) ihtiyacınız vardır. [Bu bağlantıyı](https://www.alibabacloud.com/help/en/hologres/getting-started/purchase-a-hologres-instance#task-1918224) takip ederek bir tane edinebilirsiniz.
 
-```
+Örneği oluşturduktan sonra, [Hologres konsolu](https://www.alibabacloud.com/help/en/hologres/user-guide/instance-list?spm=a2c63.p38356.0.0.79b34766nhwskN) üzerinden aşağıdaki yapılandırmaları belirleyebilmelisiniz:
+
+```python
 test_hologres_config = {
-    "host": "<host>",
+    "host": "<sunucu_adresi>",
     "port": 80,
-    "user": "<user>",
-    "password": "<password>",
-    "database": "<database>",
-    "table_name": "<table_name>",
+    "user": "<kullanici_adi>",
+    "password": "<parola>",
+    "database": "<veritabani_adi>",
+    "table_name": "<tablo_adi>",
 }
 ```
 
-By the way, you need to ensure you have `llama-index` installed:
+Bu arada, `llama-index`'in kurulu olduğundan emin olmanız gerekir:
 
-```
+```bash
 %pip install llama-index-vector-stores-hologres
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-### Import needed package dependencies:
+### Gerekli paket bağımlılıklarını içe aktarın:
 
-```
+```python
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -43,55 +43,49 @@ from llama_index.core import (
 from llama_index.vector_stores.hologres import HologresVectorStore
 ```
 
-### Load some example data:
+### Bazı örnek verileri yükleyin:
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !curl 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -o 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 75042  100 75042    0     0  31985      0  0:00:02  0:00:02 --:--:-- 31987
-```
+### Veriyi okuyun:
 
-### Read the data:
-
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge sayısı: {len(documents)}")
+print(f"İlk belge, kimlik (id): {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    "İlk belge metni"
+    f" ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 ```
 
-```
-Total documents: 1
-First document, id: 824dafc0-0aa1-4c80-b99c-33895cfc606a
-First document, hash: 8430b3bdb65ee0a7853463b71e7e1e20beee3a3ce15ef3ec714919f8653b2eb9
-First document, text (75014 characters):
+```text
+Toplam belge sayısı: 1
+İlk belge, kimlik (id): 824dafc0-0aa1-4c80-b99c-33895cfc606a
+İlk belge, hash: 8430b3bdb65ee0a7853463b71e7e1e20beee3a3ce15ef3ec714919f8653b2eb9
+İlk belge metni (75014 karakter):
 ====================
 
 
 
 
-What I Worked On
+Neler Üzerine Çalıştım
 
 
-February 2021
+Şubat 2021
 
 
-Before college the two main things I worked on, outside of school, were writing and programming. I didn't write essays. I wrote what beginning writers were supposed to write then, and probably still are: short stories. My stories were awful. They had hardly any plot, just characters with strong feelings, which I imagined ma ...
+Üniversiteden önce, okul dışında çalıştığım iki ana konu yazarlık ve programlamaydı. Makale yazmazdım. O zamanlar başlangıç seviyesindeki yazarların ne yazması gerekiyorsa onları yazardım (hâlâ da muhtemelen öyledir): kısa hikayeler. Hikayelerim berbattı. Neredeyse hiç olay örgüsü yoktu, sadece güçlü hisleri olan karakterler vardı ve bunun onları derin kıldığını hayal ederdim ...
 ```
 
-### Create the AnalyticDB Vector Store object:
+### AnalyticDB Vektör Deposu nesnesini oluşturun:
 
-```
+```python
 hologres_store = HologresVectorStore.from_param(
     host=test_hologres_config["host"],
     port=test_hologres_config["port"],
@@ -104,9 +98,9 @@ hologres_store = HologresVectorStore.from_param(
 )
 ```
 
-### Build the Index from the Documents:
+### Belgelerden İndeksi Oluşturun:
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=hologres_store)
 
 
@@ -115,16 +109,14 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query using the index:
+### İndeksi kullanarak sorgulama yapın:
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Why did the author choose to work on AI?")
+response = query_engine.query("Yazar neden yapay zeka (AI) üzerine çalışmayı seçti?")
 
 
 print(response.response)
 ```
 
-```
-The author was inspired to work on AI due to the influence of a science fiction novel, "The Moon is a Harsh Mistress," which featured an intelligent computer named Mike, and a PBS documentary showcasing Terry Winograd's use of the SHRDLU program. These experiences led the author to believe that creating intelligent machines was an imminent reality and sparked their interest in the field of AI.
-```
+**Yazar, Mike adlı zeki bir bilgisayarı konu alan "The Moon is a Harsh Mistress" (Ay Zalim Bir Sevgilidir) adlı bilim kurgu romanının ve Terry Winograd'ın SHRDLU programını kullanımını sergileyen bir PBS belgeselinin etkisinden dolayı yapay zeka üzerine çalışmaya ilham almıştır. Bu deneyimler, yazarı zeki makineler yaratmanın yakın bir gerçeklik olduğuna inandırmış ve yapay zeka alanına olan ilgisini artırmıştır.**

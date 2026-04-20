@@ -1,29 +1,29 @@
-# Lantern Vector Store (auto-retriever)
-
 ---
-title: Lantern Vector Store (auto-retriever)
- | LlamaIndex OSS Documentation
+title: Lantern Vektör Deposu (Otomatik Erişici - Auto-Retriever)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This guide shows how to perform **auto-retrieval** in LlamaIndex.
+# Lantern Vektör Deposu (Otomatik Erişici - Auto-Retriever)
 
-Many popular vector DBs support a set of metadata filters in addition to a query string for semantic search. Given a natural language query, we first use the LLM to infer a set of metadata filters as well as the right query string to pass to the vector DB (either can also be blank). This overall query bundle is then executed against the vector DB.
+Bu kılavuz, LlamaIndex'te **otomatik erişme (auto-retrieval)** işleminin nasıl gerçekleştirileceğini göstermektedir.
 
-This allows for more dynamic, expressive forms of retrieval beyond top-k semantic search. The relevant context for a given query may only require filtering on a metadata tag, or require a joint combination of filtering + semantic search within the filtered set, or just raw semantic search.
+Birçok popüler vektör veritabanı, semantik arama için kullanılan sorgu dizesine (query string) ek olarak bir dizi meta veri filtresini destekler. Doğal dildeki bir sorgu verildiğinde, önce LLM'yi kullanarak vektör veritabanına iletilecek doğru sorgu dizesinin yanı sıra bir dizi meta veri filtresini (her ikisi de boş olabilir) tahmin ederiz. Bu genel sorgu demeti (query bundle) daha sonra vektör veritabanına karşı yürütülür.
 
-We demonstrate an example with Lantern, but auto-retrieval is also implemented with many other vector DBs (e.g. Pinecone, Chroma, Weaviate, and more).
+bu, top-k semantik aramanın ötesinde daha dinamik ve ifade gücü yüksek erişim biçimlerine olanak tanır. Belirli bir sorgu için ilgili bağlam; yalnızca bir meta veri etiketi üzerinden filtreleme yapmayı, filtrelenmiş set içinde filtreleme + semantik aramanın birleşik bir kombinasyonunu veya yalnızca doğrudan semantik aramayı gerektirebilir.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu örnekte Lantern ile bir demo gösteriyoruz, ancak otomatik erişme diğer birçok vektör veritabanıyla da (örneğin Pinecone, Chroma, Weaviate ve daha fazlası) uygulanmıştır.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-lantern
 ```
 
-```
+```bash
 !pip install llama-index psycopg2-binary asyncpg
 ```
 
-```
+```python
 import logging
 import sys
 
@@ -32,12 +32,12 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
-# set up OpenAI
+```python
+# OpenAI kurulumu
 import os
 
 
-os.environ["OPENAI_API_KEY"] = "<your-api-key>"
+os.environ["OPENAI_API_KEY"] = "<api-anahtarınız>"
 
 
 import openai
@@ -46,7 +46,7 @@ import openai
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-```
+```python
 import psycopg2
 from sqlalchemy import make_url
 
@@ -62,80 +62,78 @@ conn = psycopg2.connect(connection_string)
 conn.autocommit = True
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.vector_stores.lantern import LanternVectorStore
 ```
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
         text=(
-            "Michael Jordan is a retired professional basketball player,"
-            " widely regarded as one of the greatest basketball players of all"
-            " time."
+            "Michael Jordan, tüm zamanların en iyi basketbolcularından biri "
+            "olarak kabul edilen emekli bir profesyonel basketbolcudur."
         ),
         metadata={
-            "category": "Sports",
-            "country": "United States",
+            "category": "Spor",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Angelina Jolie is an American actress, filmmaker, and"
-            " humanitarian. She has received numerous awards for her acting"
-            " and is known for her philanthropic work."
+            "Angelina Jolie, Amerikalı bir aktris, film yapımcısı ve "
+            "insani yardım görevlisidir. Oyunculuğuyla çok sayıda ödül almış "
+            "ve hayırsever çalışmalarıyla tanınmıştır."
         ),
         metadata={
-            "category": "Entertainment",
-            "country": "United States",
+            "category": "Eğlence",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Elon Musk is a business magnate, industrial designer, and"
-            " engineer. He is the founder, CEO, and lead designer of SpaceX,"
-            " Tesla, Inc., Neuralink, and The Boring Company."
+            "Elon Musk bir iş insanı, endüstriyel tasarımcı ve mühendistir. "
+            "SpaceX, Tesla, Inc., Neuralink ve The Boring Company'nin kurucusu, "
+            "CEO'su ve baş tasarımcısıdır."
         ),
         metadata={
-            "category": "Business",
-            "country": "United States",
+            "category": "İş Dünyası",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Rihanna is a Barbadian singer, actress, and businesswoman. She"
-            " has achieved significant success in the music industry and is"
-            " known for her versatile musical style."
+            "Rihanna, Barbadoslu bir şarkıcı, oyuncu ve iş kadınıdır. Müzik "
+            "endüstrisinde önemli bir başarı elde etmiştir ve çok yönlü müzik "
+            "tarzıyla tanınır."
         ),
         metadata={
-            "category": "Music",
+            "category": "Müzik",
             "country": "Barbados",
         },
     ),
     TextNode(
         text=(
-            "Cristiano Ronaldo is a Portuguese professional footballer who is"
-            " considered one of the greatest football players of all time. He"
-            " has won numerous awards and set multiple records during his"
-            " career."
+            "Cristiano Ronaldo, tüm zamanların en iyi futbolcularından biri "
+            "olarak kabul edilen Portekizli profesyonel bir futbolcudur. "
+            "Kariyeri boyunca çok sayıda ödül kazanmış ve birçok rekor kırmıştır."
         ),
         metadata={
-            "category": "Sports",
-            "country": "Portugal",
+            "category": "Spor",
+            "country": "Portekiz",
         },
     ),
 ]
 ```
 
-## Build Vector Index with Lantern Vector Store
+## Lantern Vektör Deposu ile Vektör İndeksi Oluşturma
 
-Here we load the data into the vector store. As mentioned above, both the text and metadata for each node will get converted into corresponding representations in Lantern. We can now run semantic queries and also metadata filtering on this data from Lantern.
+Burada verileri vektör deposuna yüklüyoruz. Yukarıda belirtildiği gibi, her bir düğüm (node) için hem metin hem de meta veriler Lantern'deki karşılık gelen temsillere dönüştürülecektir. Artık Lantern'deki bu veriler üzerinde semantik sorgular ve meta veri filtreleme çalıştırabiliriz.
 
-```
+```python
 vector_store = LanternVectorStore.from_params(
     database=db_name,
     host=url.host,
@@ -143,25 +141,25 @@ vector_store = LanternVectorStore.from_params(
     port=url.port,
     user=url.username,
     table_name="famous_people",
-    embed_dim=1536,  # openai embedding dimension
-    m=16,  # HNSW M parameter
-    ef_construction=128,  # HNSW ef construction parameter
-    ef=64,  # HNSW ef search parameter
+    embed_dim=1536,  # openai gömme boyutu
+    m=16,  # HNSW M parametresi
+    ef_construction=128,  # HNSW ef construction parametresi
+    ef=64,  # HNSW ef search parametresi
 )
 
 
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 ```
 
-```
+```python
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-## Define `VectorIndexAutoRetriever`
+## `VectorIndexAutoRetriever` Tanımlama
 
-We define our core `VectorIndexAutoRetriever` module. The module takes in `VectorStoreInfo`, which contains a structured description of the vector store collection and the metadata filters it supports. This information will then be used in the auto-retrieval prompt where the LLM infers metadata filters.
+Çekirdek `VectorIndexAutoRetriever` modülümüzü tanımlıyoruz. Modül, vektör deposu koleksiyonunun yapılandırılmış bir açıklamasını ve desteklediği meta veri filtrelerini içeren `VectorStoreInfo` nesnesini alır. Bu bilgi daha sonra LLM'nin meta veri filtrelerini tahmin ettiği otomatik erişme isteminde (prompt) kullanılacaktır.
 
-```
+```python
 from llama_index.core.retrievers import VectorIndexAutoRetriever
 from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
@@ -169,22 +167,20 @@ from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
 
 vector_store_info = VectorStoreInfo(
-    content_info="brief biography of celebrities",
+    content_info="ünlülerin kısa biyografileri",
     metadata_info=[
         MetadataInfo(
             name="category",
             type="str",
             description=(
-                "Category of the celebrity, one of [Sports, Entertainment,"
-                " Business, Music]"
+                "Ünlünün kategorisi, şunlardan biri: [Spor, Eğlence, İş Dünyası, Müzik]"
             ),
         ),
         MetadataInfo(
             name="country",
             type="str",
             description=(
-                "Country of the celebrity, one of [United States, Barbados,"
-                " Portugal]"
+                "Ünlünün ülkesi, şunlardan biri: [Amerika Birleşik Devletleri, Barbados, Portekiz]"
             ),
         ),
     ],
@@ -194,10 +190,10 @@ retriever = VectorIndexAutoRetriever(
 )
 ```
 
-## Running over some sample data
+## Bazı Örnek Veriler Üzerinde Çalıştırma
 
-We try running over some sample data. Note how metadata filters are inferred - this helps with more precise retrieval!
+Bazı örnek veriler üzerinde çalıştırmayı deniyoruz. Meta veri filtrelerinin nasıl tahmin edildiğine dikkat edin; bu, daha hassas bir erişime (retrieval) yardımcı olur!
 
-```
-retriever.retrieve("Tell me about two celebrities from United States")
+```python
+retriever.retrieve("Bana Amerika Birleşik Devletleri'nden iki ünlüden bahset")
 ```

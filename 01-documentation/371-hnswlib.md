@@ -1,22 +1,22 @@
-# Hnswlib
-
 ---
 title: Hnswlib
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-Hnswlib is a fast approximate nearest neighbor search index. It’s a lightweight, header-only C++ HNSW implementation that has no dependencies other than C++11. Hnswlib provides python bindings.
+# Hnswlib
 
-```
+Hnswlib, hızlı bir yaklaşık en yakın komşu (approximate nearest neighbor) arama indeksidir. C++11 dışında hiçbir bağımlılığı olmayan, hafif, yalnızca başlıktan oluşan (header-only) bir C++ HNSW uygulamasıdır. Hnswlib, Python bağlamaları sağlar.
+
+```bash
 %pip install llama-index
 %pip install llama-index-vector-stores-hnswlib
 %pip install llama-index-embeddings-huggingface
 %pip install hnswlib
 ```
 
-### Import package dependencies
+### Paket bağımlılıklarını içe aktarın
 
-```
+```python
 from llama_index.vector_stores.hnswlib import HnswlibVectorStore
 from llama_index.core import (
     VectorStoreIndex,
@@ -26,38 +26,38 @@ from llama_index.core import (
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 ```
 
-### Load example data
+### Örnek veriyi yükleyin
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Read the data
+### Veriyi okuyun
 
-```
+```python
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge sayısı: {len(documents)}")
+print(f"İlk belge, kimlik (id): {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    "İlk belge metni"
+    f" ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 ```
 
-### Load the embedding model
+### Gömme (embedding) modelini yükleyin
 
-```
+```python
 embed_model = HuggingFaceEmbedding(
     model_name="sentence-transformers/all-MiniLM-L6-v2",
     normalize=True,
 )
 ```
 
-### Create Hnswlib Vector Store object from Hnswlib.Index parameters
+### Hnswlib.Index parametrelerinden HnswlibVectorStore nesnesi oluşturun
 
-```
+```python
 hnswlib_vector_store = HnswlibVectorStore.from_params(
     space="ip",
     dimension=embed_model._model.get_sentence_embedding_dimension(),
@@ -65,9 +65,9 @@ hnswlib_vector_store = HnswlibVectorStore.from_params(
 )
 ```
 
-Alternatively, You can create a Hnswlib.Index object Yourself.
+Alternatif olarak, kendiniz bir `Hnswlib.Index` nesnesi oluşturabilirsiniz.
 
-```
+```python
 import hnswlib
 
 
@@ -80,9 +80,9 @@ index.init_index(max_elements=1000)
 hnswlib_vector_store = HnswlibVectorStore(index)
 ```
 
-### Build index from documents
+### Belgelerden indeks oluşturun
 
-```
+```python
 hnswlib_storage_context = StorageContext.from_defaults(
     vector_store=hnswlib_vector_store
 )
@@ -94,15 +94,15 @@ hnswlib_index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query index
+### İndeksi sorgulayın
 
-```
+```python
 k = 5
-query = "Before college I wrote what begginers should write."
+query = "Üniversiteden önce yeni başlayanların yazması gerekenleri yazdım."
 hnswlib_vector_retriever = hnswlib_index.as_retriever(similarity_top_k=k)
-nodes_with_scores = nodes_with_scores = hnswlib_vector_retriever.retrieve(
+nodes_with_scores = hnswlib_vector_retriever.retrieve(
     query
 )
 for node in nodes_with_scores:
-    print(f"Node {node.id_} | Score: {node.score:.3f} - {node.text[:120]}...")
+    print(f"Düğüm (Node) {node.id_} | Puan (Score): {node.score:.3f} - {node.text[:120]}...")
 ```
