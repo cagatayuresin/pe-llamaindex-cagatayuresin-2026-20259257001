@@ -1,21 +1,21 @@
-# DashVector Vector Store
-
 ---
-title: DashVector Vector Store
- | LlamaIndex OSS Documentation
+title: DashVector Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# DashVector Vektör Deposu
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-dashvector
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import logging
 import sys
 import os
@@ -25,59 +25,52 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Creating a DashVector Collection
+#### Bir DashVector Koleksiyonu Oluşturma
 
-```
+```python
 import dashvector
 ```
 
-```
+```python
 api_key = os.environ["DASHVECTOR_API_KEY"]
 client = dashvector.Client(api_key=api_key)
 ```
 
-```
-# dimensions are for text-embedding-ada-002
+```python
+# boyutlar text-embedding-ada-002 içindir
 client.create("llama-demo", dimension=1536)
 ```
 
-```
+```json
 {"code": 0, "message": "", "requests_id": "82b969d2-2568-4e18-b0dc-aa159b503c84"}
 ```
 
-```
+```python
 dashvector_collection = client.get("quickstart")
 ```
 
-#### Download Data
+#### Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-#### Load documents, build the DashVectorStore and VectorStoreIndex
+#### Belgeleri yükleme, DashVectorStore ve VectorStoreIndex oluşturma
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.dashvector import DashVectorStore
 from IPython.display import Markdown, display
 ```
 
-```
-INFO:numexpr.utils:Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-INFO:numexpr.utils:NumExpr defaulting to 8 threads.
-NumExpr defaulting to 8 threads.
-```
-
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 ```
 
-```
-# initialize without metadata filter
+```python
+# meta veri filtresi olmadan başlat
 from llama_index.core import StorageContext
 
 
@@ -88,16 +81,16 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author worked on writing and programming outside of school. They wrote short stories and tried writing programs on the IBM 1401 computer. They also built a microcomputer and started programming on it, writing simple games and a word processor.**
+**Yazar, okul dışında yazma ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve IBM 1401 bilgisayarında programlar yazmayı denedi. Ayrıca bir mikrobilgisayar yaptı ve üzerinde programlama yapmaya başlayarak basit oyunlar ve bir kelime işlemci yazdı.**

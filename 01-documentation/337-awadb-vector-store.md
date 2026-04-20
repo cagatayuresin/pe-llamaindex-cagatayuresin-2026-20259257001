@@ -1,24 +1,24 @@
-# Awadb Vector Store
+# AwaDB Vektör Deposu (Vector Store)
 
 ---
-title: Awadb Vector Store
- | LlamaIndex OSS Documentation
+title: AwaDB Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab üzerinde açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-embeddings-huggingface
 %pip install llama-index-vector-stores-awadb
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-## Creating an Awadb index
+## Bir AwaDB İndeksi Oluşturma
 
-```
+```python
 import logging
 import sys
 
@@ -27,9 +27,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükle, VectorStoreIndex'i oluştur
 
-```
+```python
 from llama_index.core import (
     SimpleDirectoryReader,
     VectorStoreIndex,
@@ -42,28 +42,21 @@ import openai
 openai.api_key = ""
 ```
 
-```
-INFO:numexpr.utils:Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-INFO:numexpr.utils:NumExpr defaulting to 8 threads.
-NumExpr defaulting to 8 threads.
-```
+#### Veriyi İndir
 
-#### Download Data
-
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-#### Load Data
+#### Veriyi Yükle
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
+```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.awadb import AwaDBVectorStore
 
@@ -80,30 +73,30 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgula
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha ayrıntılı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**Growing up, the author wrote short stories, experimented with programming on an IBM 1401, nagged his father to buy a TRS-80 computer, wrote simple games, a program to predict how high his model rockets would fly, and a word processor. He also studied philosophy in college, switched to AI, and worked on building the infrastructure of the web. He wrote essays and published them online, had dinners for a group of friends every Thursday night, painted, and bought a building in Cambridge.**
+**Yazar büyürken kısa hikayeler yazdı, bir IBM 1401 üzerinde programlama denemeleri yaptı, babasını bir TRS-80 bilgisayar alması için ikna etti, basit oyunlar, model roketlerinin ne kadar yükseğe uçacağını tahmin eden bir program ve bir kelime işlemci yazdı. Ayrıca üniversitede felsefe okudu, yapay zekaya yöneldi ve web altyapısı oluşturma üzerinde çalıştı. Makaleler yazıp çevrimiçi yayınladı, her Perşembe akşamı bir grup arkadaşına akşam yemeği verdi, resim yaptı ve Cambridge'de bir bina satın aldı.**
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha ayrıntılı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
 response = query_engine.query(
-    "What did the author do after his time at Y Combinator?"
+    "Yazar Y Combinator'daki zamanından sonra ne yaptı?"
 )
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**After his time at Y Combinator, the author wrote essays, worked on Lisp, and painted. He also visited his mother in Oregon and helped her get out of a nursing home.**
+**Y Combinator'daki zamanından sonra yazar makaleler yazdı, Lisp üzerinde çalıştı ve resim yaptı. Ayrıca Oregon'daki annesini ziyaret etti ve onun bir huzurevinden çıkmasına yardımcı oldu.**

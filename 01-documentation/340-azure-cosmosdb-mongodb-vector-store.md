@@ -1,25 +1,25 @@
-# Azure CosmosDB MongoDB Vector Store
+# Azure Cosmos DB MongoDB Vektör Deposu
 
 ---
-title: Azure CosmosDB MongoDB Vector Store
- | LlamaIndex OSS Documentation
+title: Azure Cosmos DB MongoDB Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show how to use Azure Cosmosdb Mongodb vCore to perform vector searches in LlamaIndex. We will create the embedding using Azure Open AI.
+Bu not defterinde, LlamaIndex'te vektör aramaları gerçekleştirmek için Azure Cosmos DB MongoDB vCore'un nasıl kullanılacağını göstereceğiz. Gömmeleri (embeddings) oluşturmak için Azure OpenAI kullanacağız.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-embeddings-openai
 %pip install llama-index-vector-stores-azurecosmosmongo
 %pip install llama-index-llms-azure-openai
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import json
 import openai
@@ -28,15 +28,15 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 ```
 
-### Setup Azure OpenAI
+### Azure OpenAI Kurulumu
 
-The first step is to configure the models. They will be used to create embeddings for the documents loaded into the db and for llm completions.
+İlk adım modelleri yapılandırmaktır. Bunlar, veritabanına yüklenen belgeler için gömmeler oluşturmak ve LLM tamamlamaları için kullanılacaktır.
 
-```
+```python
 import os
 
 
-# Set up the AzureOpenAI instance
+# AzureOpenAI örneğini kurun
 llm = AzureOpenAI(
     model_name=os.getenv("OPENAI_MODEL_COMPLETION"),
     deployment_name=os.getenv("OPENAI_MODEL_COMPLETION"),
@@ -48,7 +48,7 @@ llm = AzureOpenAI(
 )
 
 
-# Set up the OpenAIEmbedding instance
+# OpenAIEmbedding örneğini kurun
 embed_model = OpenAIEmbedding(
     model=os.getenv("OPENAI_MODEL_EMBEDDING"),
     deployment_name=os.getenv("OPENAI_DEPLOYMENT_EMBEDDING"),
@@ -59,7 +59,7 @@ embed_model = OpenAIEmbedding(
 )
 ```
 
-```
+```python
 from llama_index.core import Settings
 
 
@@ -67,33 +67,33 @@ Settings.llm = llm
 Settings.embed_model = embed_model
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Loading documents
+### Belgeleri yükleme
 
-Load the documents stored in the `data/paul_graham/` using the SimpleDirectoryReader
+SimpleDirectoryReader kullanarak `data/paul_graham/` dizininde saklanan belgeleri yükleyin.
 
-```
+```python
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 
 
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
 ```
 
-```
-Document ID: c432ff1c-61ea-4c91-bd89-62be29078e79
+```text
+Belge Kimliği (Document ID): c432ff1c-61ea-4c91-bd89-62be29078e79
 ```
 
-### Create the index
+### İndeksi oluşturma
 
-Here we establish the connection to an Azure Cosmosdb mongodb vCore cluster and create an vector search index.
+Burada bir Azure Cosmos DB MongoDB vCore kümesine bağlantı kuruyoruz ve bir vektör arama indeksi oluşturuyoruz.
 
-```
+```python
 import pymongo
 from llama_index.vector_stores.azurecosmosmongo import (
     AzureCosmosDBMongoDBVectorSearch,
@@ -116,37 +116,37 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query the index
+### İndeksi sorgulama
 
-We can now ask questions using our index.
+Artık indeksimizi kullanarak sorular sorabiliriz.
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author love working on?")
+response = query_engine.query("Yazar ne üzerinde çalışmayı seviyordu?")
 ```
 
-```
+```python
 import textwrap
 
 
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author loved working on multiple projects that were not their thesis while in grad school,
-including Lisp hacking and writing On Lisp. They eventually wrote a dissertation on applications of
-continuations in just 5 weeks to graduate. Afterward, they applied to art schools and were accepted
-into the BFA program at RISD.
-```
-
-```
-response = query_engine.query("What did he/she do in summer of 2016?")
+```text
+Yazar, lisanüstü eğitimindeyken tezi dışındaki birden fazla proje üzerinde çalışmayı seviyordu;
+bunlar arasında Lisp hackleme ve On Lisp yazma vardı. Sonunda, mezun olmak için sadece 5 hafta içinde
+continuations uygulamaları üzerine bir doktora tezi yazdı. Daha sonra sanat okullarına başvurdu ve
+RISD'deki BFA programına kabul edildi.
 ```
 
+```python
+response = query_engine.query("Yazar 2016 yazında ne yaptı?")
 ```
+
+```python
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The person moved to England with their family in the summer of 2016.
+```text
+Yazar, 2016 yazında ailesiyle birlikte İngiltere'ye taşındı.
 ```

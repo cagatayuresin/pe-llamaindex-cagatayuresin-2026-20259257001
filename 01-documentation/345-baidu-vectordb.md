@@ -2,34 +2,34 @@
 
 ---
 title: Baidu VectorDB
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Baidu VectorDB](https://cloud.baidu.com/product/vdb.html) is a robust, enterprise-level distributed database service, meticulously developed and fully managed by Baidu Intelligent Cloud. It stands out for its exceptional ability to store, retrieve, and analyze multi-dimensional vector data. At its core, VectorDB operates on Baidu’s proprietary “Mochow” vector database kernel, which ensures high performance, availability, and security, alongside remarkable scalability and user-friendliness.
+> [Baidu VectorDB](https://cloud.baidu.com/product/vdb.html), Baidu Intelligent Cloud tarafından titizlikle geliştirilen ve tamamen yönetilen, sağlam, kurumsal düzeyde dağıtık bir veritabanı hizmetidir. Çok boyutlu vektör verilerini depolama, geri çağırma ve analiz etme konusundaki olağanüstü yeteneğiyle öne çıkar. Temelinde, yüksek performans, kullanılabilirlik ve güvenliğin yanı sıra dikkat çekici ölçeklenebilirlik ve kullanıcı dostu olma sağlayan Baidu'nun tescilli "Mochow" vektör veritabanı çekirdeği üzerinde çalışır.
 
-> This database service supports a diverse range of index types and similarity calculation methods, catering to various use cases. A standout feature of VectorDB is its capacity to manage an immense vector scale of up to 10 billion, while maintaining impressive query performance, supporting millions of queries per second (QPS) with millisecond-level query latency.
+> Bu veritabanı hizmeti, çeşitli kullanım durumlarına hitap eden geniş bir indeks türü ve benzerlik hesaplama yöntemleri yelpazesini destekler. VectorDB'nin öne çıkan bir özelliği, etkileyici sorgu performansını korurken 10 milyar seviyesine kadar devasa bir vektör ölçeğini yönetebilmesi ve milisaniye düzeyinde sorgu gecikmesiyle saniyede milyonlarca sorguyu (QPS) destekleyebilmesidir.
 
-**This notebook shows the basic usage of BaiduVectorDB as a Vector Store in LlamaIndex.**
+**Bu not defteri, BaiduVectorDB'nin LlamaIndex'te bir Vektör Deposu olarak temel kullanımını göstermektedir.**
 
-To run, you should have a [Database instance.](https://cloud.baidu.com/doc/VDB/s/hlrsoazuf)
+Çalıştırmak için bir [veritabanı örneğine (instance)](https://cloud.baidu.com/doc/VDB/s/hlrsoazuf) sahip olmalısınız.
 
-## Setup
+## Kurulum (Setup)
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-vector-stores-baiduvectordb
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```bash
 !pip install pymochow
 ```
 
-```
+```python
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -43,45 +43,46 @@ from llama_index.vector_stores.baiduvectordb import (
 import pymochow
 ```
 
-### Please provide OpenAI access key
+### Lütfen OpenAI erişim anahtarını sağlayın
 
-In order use embeddings by OpenAI you need to supply an OpenAI API Key:
+OpenAI tarafından sunulan gömmeleri (embeddings) kullanmak için bir OpenAI API Anahtarı sağlamanız gerekir:
 
-```
+```python
 import openai
+import getpass
 
 
-OPENAI_API_KEY = getpass.getpass("OpenAI API Key:")
+OPENAI_API_KEY = getpass.getpass("OpenAI API Anahtarı:")
 openai.api_key = OPENAI_API_KEY
 ```
 
-## Download Data
+## Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-## Creating and populating the Vector Store
+## Vektör Deposunu Oluşturma ve Doldurma
 
-You will now load some essays by Paul Graham from a local file and store them into the Baidu VectorDB.
+Şimdi Paul Graham'a ait bazı makaleleri yerel bir dosyadan yükleyecek ve bunları Baidu VectorDB'de saklayacaksınız.
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge: {len(documents)}")
+print(f"İlk belge, kimlik (id): {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    f"First document, text ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    f"İlk belge, metin ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 ```
 
-### Initialize the Baidu VectorDB
+### Baidu VectorDB'yi Başlatma
 
-Creation of the vector store entails creation of the underlying database collection if it does not exist yet:
+Vektör deposunun oluşturulması, henüz mevcut değilse alt plandaki veritabanı koleksiyonunun (koleksiyon yapısının) oluşturulmasını içerir:
 
-```
+```python
 vector_store = BaiduVectorDB(
     endpoint="http://192.168.X.X",
     api_key="*******",
@@ -89,9 +90,9 @@ vector_store = BaiduVectorDB(
 )
 ```
 
-Now wrap this store into an `index` LlamaIndex abstraction for later querying:
+Şimdi bu depoyu, daha sonra sorgulama yapmak üzere bir LlamaIndex soyutlaması olan `index` içine sarın:
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
@@ -100,33 +101,33 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-Note that the above `from_documents` call does several things at once: it splits the input documents into chunks of manageable size (“nodes”), computes embedding vectors for each node, and stores them all in the Baidu VectorDB.
+Yukarıdaki `from_documents` çağrısının aynı anda birkaç şey yaptığına dikkat edin: giriş belgelerini yönetilebilir boyuttaki parçalara ("düğümler") ayırır, her düğüm için gömme vektörlerini hesaplar ve bunların hepsini Baidu VectorDB'de saklar.
 
-## Querying the store
+## Depoyu Sorgulama
 
-### Basic querying
+### Temel sorgulama
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Why did the author choose to work on AI?")
+response = query_engine.query("Yazar neden AI üzerinde çalışmayı seçti?")
 print(response)
 ```
 
-### MMR-based queries
+### MMR tabanlı sorgular
 
-The MMR (maximal marginal relevance) method is designed to fetch text chunks from the store that are at the same time relevant to the query but as different as possible from each other, with the goal of providing a broader context to the building of the final answer:
+MMR (maksimal marjinal alaka düzeyi - maximal marginal relevance) yöntemi, depodan hem sorguyla alakalı hem de birbirinden olabildiğince farklı metin parçalarını getirmek için tasarlanmıştır; buradaki amaç, nihai yanıtın oluşturulması için daha geniş bir bağlam sağlamaktır:
 
-```
+```python
 query_engine = index.as_query_engine(vector_store_query_mode="mmr")
-response = query_engine.query("Why did the author choose to work on AI?")
+response = query_engine.query("Yazar neden AI üzerinde çalışmayı seçti?")
 print(response)
 ```
 
-## Connecting to an existing store
+## Mevcut bir depoya bağlanma
 
-Since this store is backed by Baidu VectorDB, it is persistent by definition. So, if you want to connect to a store that was created and populated previously, here is how:
+Bu depo Baidu VectorDB tarafından desteklendiği için tanımı gereği kalıcıdır (persistent). Bu nedenle, daha önce oluşturulmuş ve doldurulmuş bir depoya bağlanmak isterseniz yapmanız gerekenler şunlardır:
 
-```
+```python
 vector_store = BaiduVectorDB(
     endpoint="http://192.168.X.X",
     api_key="*******",
@@ -134,27 +135,27 @@ vector_store = BaiduVectorDB(
 )
 
 
-# Create index (from preexisting stored vectors)
+# İndeks oluşturma (önceden depolanmış vektörlerden)
 new_index_instance = VectorStoreIndex.from_vector_store(
-    vector_store=new_vector_store
+    vector_store=vector_store
 )
 
 
-# now you can do querying, etc:
-query_engine = index.as_query_engine(similarity_top_k=5)
+# artık sorgulama vb. yapabilirsiniz:
+query_engine = new_index_instance.as_query_engine(similarity_top_k=5)
 response = query_engine.query(
-    "What did the author study prior to working on AI?"
+    "Yazar AI üzerinde çalışmadan önce ne okudu?"
 )
 print(response)
 ```
 
-## Metadata filtering
+## Metaveri filtreleme (Metadata filtering)
 
-The Baidu VectorDB vector store support metadata filtering in the form of exact-match `key=value` pairs at query time. The following cells, which work on a brand new collection, demonstrate this feature.
+Baidu VectorDB vektör deposu, sorgu sırasında tam eşleşen `anahtar=değer` çiftleri şeklinde metaveri filtrelemeyi destekler. Tamamen yeni bir koleksiyon üzerinde çalışan aşağıdaki hücreler bu özelliği göstermektedir.
 
-In this demo, for the sake of brevity, a single source document is loaded (the `../data/paul_graham/paul_graham_essay.txt` text file). Nevertheless, you will attach some custom metadata to the document to illustrate how you can can restrict queries with conditions on the metadata attached to the documents.
+Bu demoda, kısa tutmak adına tek bir kaynak belge yüklenmiştir (`../data/paul_graham/paul_graham_essay.txt` metin dosyası). Bununla birlikte, belgelere eklenen metaveriler üzerindeki koşullarla sorguları nasıl kısıtlayabileceğinizi göstermek için belgeye bazı özel metaveriler ekleyeceksiniz.
 
-```
+```python
 filter_fields = [
     TableField(name="source_type"),
 ]
@@ -163,7 +164,7 @@ filter_fields = [
 md_storage_context = StorageContext.from_defaults(
     vector_store=BaiduVectorDB(
         endpoint="http://192.168.X.X",
-        api_key="="*******",",
+        api_key="*******",
         table_params=TableParams(
             dimension=1536, drop_exists=True, filter_fields=filter_fields
         ),
@@ -174,11 +175,11 @@ md_storage_context = StorageContext.from_defaults(
 
 
 def my_file_metadata(file_name: str):
-    """Depending on the input file name, associate a different metadata."""
+    """Giriş dosyası adına bağlı olarak farklı bir metaveri ilişkilendir."""
     if "essay" in file_name:
         source_type = "essay"
     elif "dinosaur" in file_name:
-        # this (unfortunately) will not happen in this demo
+        # bu (maalesef) bu demoda gerçekleşmeyecek
         source_type = "dinos"
     else:
         source_type = "other"
@@ -187,7 +188,7 @@ def my_file_metadata(file_name: str):
 
 
 
-# Load documents and build index
+# Belgeleri yükle ve indeks oluştur
 md_documents = SimpleDirectoryReader(
     "../data/paul_graham", file_metadata=my_file_metadata
 ).load_data()
@@ -196,18 +197,18 @@ md_index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
+```python
 from llama_index.core.vector_stores import MetadataFilter, MetadataFilters
 ```
 
-```
+```python
 md_query_engine = md_index.as_query_engine(
     filters=MetadataFilters(
         filters=[MetadataFilter(key="source_type", value="essay")]
     )
 )
 md_response = md_query_engine.query(
-    "How long it took the author to write his thesis?"
+    "Yazarın tezini yazması ne kadar sürdü?"
 )
 print(md_response.response)
 ```

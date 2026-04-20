@@ -1,11 +1,11 @@
-# Test delete
+# Silme Testi (Test delete)
 
 ---
-title: Test delete
- | LlamaIndex OSS Documentation
+title: Silme Testi (Test delete)
+ | LlamaIndex OSS Belgeleri
 ---
 
-if ref\_doc\_id: store.delete(ref\_doc\_id) print(store.\_collection.count\_documents({}))
+Eğer ref\_doc\_id varsa: store.delete(ref\_doc\_id) print(store.\_collection.count\_documents({}))
 
-```
+```python
 ```

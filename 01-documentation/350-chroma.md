@@ -1,71 +1,64 @@
 ---
 title: Chroma
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Chroma](https://docs.trychroma.com/getting-started) is a AI-native open-source vector database focused on developer productivity and happiness. Chroma is licensed under Apache 2.0.
+> [Chroma](https://docs.trychroma.com/getting-started), geliştirici üretkenliğine ve mutluluğuna odaklanan, yapay zeka odaklı (AI-native) açık kaynaklı bir vektör veritabanıdır. Chroma, Apache 2.0 lisansı altındadır.
 
-[![Discord](https://img.shields.io/discord/1073293645303795742) ](https://discord.gg/MMeYNTmh3x)   [![License](<https://img.shields.io/static/v1?label=license\&message=Apache 2.0\&color=white>) ](https://github.com/chroma-core/chroma/blob/master/LICENSE)   ![Integration Tests](https://github.com/chroma-core/chroma/actions/workflows/chroma-integration-test.yml/badge.svg?branch=main)
+[![Discord](https://img.shields.io/discord/1073293645303795742) ](https://discord.gg/MMeYNTmh3x)   [![Lisans](<https://img.shields.io/static/v1?label=license\&message=Apache 2.0\&color=white>) ](https://github.com/chroma-core/chroma/blob/master/LICENSE)   ![Entegrasyon Testleri](https://github.com/chroma-core/chroma/actions/workflows/chroma-integration-test.yml/badge.svg?branch=main)
 
-- [Website](https://www.trychroma.com/)
-- [Documentation](https://docs.trychroma.com/)
+- [Web Sitesi](https://www.trychroma.com/)
+- [Belgeler](https://docs.trychroma.com/)
 - [Twitter](https://twitter.com/trychroma)
 - [Discord](https://discord.gg/MMeYNTmh3x)
 
-Chroma is fully-typed, fully-tested and fully-documented.
+Chroma tamamen tip tanımlı, tamamen test edilmiş ve tamamen belgelenmiştir.
 
-Install Chroma with:
+Chroma'yı şununla kurun:
 
-Terminal window
+Terminal penceresi
 
-```
+```bash
 pip install chromadb
 ```
 
-Chroma runs in various modes. See below for examples of each integrated with LlamaIndex.
+Chroma çeşitli modlarda çalışır. LlamaIndex ile entegre edilmiş her bir mod için aşağıdaki örneklere bakın.
 
-- `in-memory` - in a python script or jupyter notebook
-- `in-memory with persistence` - in a script or notebook and save/load to disk
-- `in a docker container` - as a server running your local machine or in the cloud
+- `in-memory` (bellek içi) - bir python betiğinde veya jupyter not defterinde
+- `in-memory with persistence` (kalıcılıkla bellek içi) - bir betikte veya not defterinde, diske kaydetme/yükleme özelliğiyle
+- `in a docker container` (bir docker konteynerinde) - yerel makinenizde veya bulutta çalışan bir sunucu olarak
 
-Like any other database, you can:
+Diğer tüm veritabanları gibi şunları yapabilirsiniz:
 
-- `.add`
-- `.get`
-- `.update`
-- `.upsert`
-- `.delete`
-- `.peek`
-- and `.query` runs the similarity search.
+- `.add` (ekle)
+- `.get` (getir)
+- `.update` (güncelle)
+- `.upsert` (güncelle veya ekle)
+- `.delete` (sil)
+- `.peek` (gözat)
+- ve `.query` benzerlik aramasını çalıştırır.
 
-View full docs at [docs](https://docs.trychroma.com/reference).
+Tüm belgeleri [buradan](https://docs.trychroma.com/reference) inceleyebilirsiniz.
 
-## Basic Example
+## Temel Örnek (Basic Example)
 
-In this basic example, we take the Paul Graham essay, split it into chunks, embed it using an open-source embedding model, load it into Chroma, and then query it.
+Bu temel örnekte, Paul Graham'ın bir makalesini alıyoruz, parçalara ayırıyoruz, açık kaynaklı bir gömme (embedding) modeli kullanarak gömüyoruz, Chroma'ya yüklüyoruz ve ardından sorguluyoruz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-vector-stores-chroma
 %pip install llama-index-embeddings-huggingface
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-#### Creating a Chroma Index
+#### Chroma İndeksi Oluşturma
 
-```
-# !pip install llama-index chromadb --quiet
-# !pip install chromadb
-# !pip install sentence-transformers
-# !pip install pydantic==1.10.11
-```
-
-```
-# import
+```python
+# içe aktar
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core import StorageContext
@@ -74,41 +67,41 @@ from IPython.display import Markdown, display
 import chromadb
 ```
 
-```
-# set up OpenAI
+```python
+# OpenAI kurulumu
 import os
 import getpass
 
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
+os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Anahtarı:")
 import openai
 
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# create client and a new collection
+```python
+# istemciyi ve yeni bir koleksiyonu oluştur
 chroma_client = chromadb.EphemeralClient()
 chroma_collection = chroma_client.create_collection("quickstart")
 
 
-# define embedding function
+# gömme fonksiyonunu tanımla
 embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
 
 
-# load documents
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 
 
-# set up ChromaVectorStore and load in data
+# ChromaVectorStore'u kur ve veriyi yükle
 vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
@@ -116,34 +109,22 @@ index = VectorStoreIndex.from_documents(
 )
 
 
-# Query Data
+# Veriyi Sorgula
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-```
-/Users/loganmarkewich/llama_index/llama-index/lib/python3.9/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-/Users/loganmarkewich/llama_index/llama-index/lib/python3.9/site-packages/bitsandbytes/cextension.py:34: UserWarning: The installed version of bitsandbytes was compiled without GPU support. 8-bit optimizers, 8-bit multiplication, and GPU quantization are unavailable.
-  warn("The installed version of bitsandbytes was compiled without GPU support. "
+**Yazar büyürken yazma ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve bir IBM 1401 bilgisayarında program yazmayı denedi. Daha sonra bir mikrobilgisayar edindi ve daha kapsamlı bir şekilde programlama yapmaya başladı.**
 
+## Temel Örnek (Diske kaydetme dahil)
 
+Önceki örneği genişleterek, diske kaydetmek isterseniz, Chroma istemcisini başlatmanız ve verilerin kaydedilmesini istediğiniz dizini iletmeniz yeterlidir.
 
+`Dikkat`: Chroma verileri diske otomatik olarak kaydetmek için elinden geleni yapar, ancak birden fazla bellek içi istemci birbirinin işini bozabilir. En iyi uygulama olarak, her bir yol (path) için aynı anda yalnızca bir istemci çalıştırın.
 
-'NoneType' object has no attribute 'cadam32bit_grad_fp32'
-```
-
-**The author worked on writing and programming growing up. They wrote short stories and tried writing programs on an IBM 1401 computer. Later, they got a microcomputer and started programming more extensively.**
-
-## Basic Example (including saving to disk)
-
-Extending the previous example, if you want to save to disk, simply initialize the Chroma client and pass the directory where you want the data to be saved to.
-
-`Caution`: Chroma makes a best-effort to automatically save data to disk, however multiple in-memory clients can stomp each other’s work. As a best practice, only have one client per path running at any given time.
-
-```
-# save to disk
+```python
+# diske kaydet
 
 
 db = chromadb.PersistentClient(path="./chroma_db")
@@ -157,7 +138,7 @@ index = VectorStoreIndex.from_documents(
 )
 
 
-# load from disk
+# diskten yükle
 db2 = chromadb.PersistentClient(path="./chroma_db")
 chroma_collection = db2.get_or_create_collection("quickstart")
 vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
@@ -167,27 +148,27 @@ index = VectorStoreIndex.from_vector_store(
 )
 
 
-# Query Data from the persisted index
+# Kalıcı indeksten veri sorgula
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author worked on writing and programming growing up. They wrote short stories and tried writing programs on an IBM 1401 computer. Later, they got a microcomputer and started programming games and a word processor.**
+**Yazar büyürken yazma ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve bir IBM 1401 bilgisayarında program yazmayı denedi. Daha sonra bir mikrobilgisayar edindi ve oyunlar ile bir kelime işlemci programlamaya başladı.**
 
-## Basic Example (using the Docker Container)
+## Temel Örnek (Docker Konteyneri kullanarak)
 
-You can also run the Chroma Server in a Docker container separately, create a Client to connect to it, and then pass that to LlamaIndex.
+Ayrıca Chroma Sunucusunu ayrı bir Docker konteynerinde çalıştırabilir, ona bağlanmak için bir İstemci oluşturabilir ve ardından bunu LlamaIndex'e iletebilirsiniz.
 
-Here is how to clone, build, and run the Docker Image:
+Docker İmajını nasıl kopyalayacağınız, oluşturacağınız ve çalıştıracağınız aşağıda açıklanmıştır:
 
-```
+```bash
 git clone git@github.com:chroma-core/chroma.git
 docker-compose up -d --build
 ```
 
-```
-# create the chroma client and add our data
+```python
+# chroma istemcisini oluştur ve verilerimizi ekle
 import chromadb
 
 
@@ -202,24 +183,24 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-# Query Data from the Chroma Docker index
+```python
+# Chroma Docker indeksinden veri sorgula
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**Growing up, the author wrote short stories, programmed on an IBM 1401, and wrote programs on a TRS-80 microcomputer. He also took painting classes at Harvard and worked as a de facto studio assistant for a painter. He also tried to start a company to put art galleries online, and wrote software to build online stores.**
+**Yazar büyürken kısa hikayeler yazdı, bir IBM 1401'de programlama yaptı ve bir TRS-80 mikrobilgisayarında programlar yazdı. Ayrıca Harvard'da resim dersleri aldı ve bir ressamın fiili stüdyo asistanı olarak çalıştı. Ayrıca sanat galerilerini çevrimiçi hale getirmek için bir şirket kurmaya çalıştı ve çevrimiçi mağazalar oluşturmak için yazılım yazdı.**
 
-## Update and Delete
+## Güncelleme ve Silme (Update and Delete)
 
-While building toward a real application, you want to go beyond adding data, and also update and delete data.
+Gerçek bir uygulama yolunda ilerlerken, yalnızca veri eklemenin ötesine geçmek; verileri güncellemek ve silmek istersiniz.
 
-Chroma has users provide `ids` to simplify the bookkeeping here. `ids` can be the name of the file, or a combined has like `filename_paragraphNumber`, etc.
+Chroma, burada kayıt tutmayı (bookkeeping) basitleştirmek için kullanıcıların `ids` sağlamasına olanak tanır. `ids`, dosyanın adı veya `dosya_adi_paragrafNumarasi` gibi birleşik bir hash olabilir.
 
-Here is a basic example showing how to do various operations:
+Çeşitli işlemlerin nasıl yapılacağını gösteren temel bir örnek aşağıdadır:
 
-```
+```python
 doc_to_update = chroma_collection.get(limit=1)
 doc_to_update["metadatas"][0] = {
     **doc_to_update["metadatas"][0],
@@ -232,14 +213,8 @@ updated_doc = chroma_collection.get(limit=1)
 print(updated_doc["metadatas"][0])
 
 
-# delete the last document
-print("count before", chroma_collection.count())
+# son belgeyi sil
+print("önceki sayı", chroma_collection.count())
 chroma_collection.delete(ids=[doc_to_update["ids"][0]])
-print("count after", chroma_collection.count())
-```
-
-```
-{'_node_content': '{"id_": "be08c8bc-f43e-4a71-ba64-e525921a8319", "embedding": null, "metadata": {}, "excluded_embed_metadata_keys": [], "excluded_llm_metadata_keys": [], "relationships": {"1": {"node_id": "2cbecdbb-0840-48b2-8151-00119da0995b", "node_type": null, "metadata": {}, "hash": "4c702b4df575421e1d1af4b1fd50511b226e0c9863dbfffeccb8b689b8448f35"}, "3": {"node_id": "6a75604a-fa76-4193-8f52-c72a7b18b154", "node_type": null, "metadata": {}, "hash": "d6c408ee1fbca650fb669214e6f32ffe363b658201d31c204e85a72edb71772f"}}, "hash": "b4d0b960aa09e693f9dc0d50ef46a3d0bf5a8fb3ac9f3e4bcf438e326d17e0d8", "text": "", "start_char_idx": 0, "end_char_idx": 4050, "text_template": "{metadata_str}\\n\\n{content}", "metadata_template": "{key}: {value}", "metadata_seperator": "\\n"}', 'author': 'Paul Graham', 'doc_id': '2cbecdbb-0840-48b2-8151-00119da0995b', 'document_id': '2cbecdbb-0840-48b2-8151-00119da0995b', 'ref_doc_id': '2cbecdbb-0840-48b2-8151-00119da0995b'}
-count before 20
-count after 19
+print("sonraki sayı", chroma_collection.count())
 ```

@@ -1,19 +1,19 @@
-# Bagel Vector Store
+# Bagel Vektör Deposu (Vector Store)
 
 ---
-title: Bagel Vector Store
- | LlamaIndex OSS Documentation
+title: Bagel Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-vector-stores-bagel
 %pip install llama-index
 %pip install bagelML
 ```
 
-```
+```python
 import logging
 import sys
 
@@ -22,33 +22,33 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
-# set up OpenAI
+```python
+# OpenAI kurulumu
 import os
 import getpass
 
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
+os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Anahtarı:")
 import openai
 
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-```
+```python
 import os
 
 
-# Set environment variable
-os.environ["BAGEL_API_KEY"] = getpass.getpass("Bagel API Key:")
+# Çevre değişkenini ayarla
+os.environ["BAGEL_API_KEY"] = getpass.getpass("Bagel API Anahtarı:")
 ```
 
-```
+```python
 import bagel
 from bagel import Settings
 ```
 
-```
+```python
 server_settings = Settings(
     bagel_api_impl="rest", bagel_server_host="api.bageldb.ai"
 )
@@ -62,85 +62,84 @@ collection = client.get_or_create_cluster(
 )
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.vector_stores.bagel import BagelVectorStore
 ```
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
         text=(
-            "Michael Jordan is a retired professional basketball player,"
-            " widely regarded as one of the greatest basketball players of all"
-            " time."
+            "Michael Jordan, emekli bir profesyonel basketbol oyuncusudur ve"
+            " yaygın olarak tüm zamanların en iyi basketbolcularından biri"
+            " olarak kabul edilir."
         ),
         metadata={
-            "category": "Sports",
-            "country": "United States",
+            "category": "Spor",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Angelina Jolie is an American actress, filmmaker, and"
-            " humanitarian. She has received numerous awards for her acting"
-            " and is known for her philanthropic work."
+            "Angelina Jolie, Amerikalı bir aktris, film yapımcısı ve"
+            " insancıl yardımseverdir. Oyunculuğuyla çok sayıda ödül almış"
+            " ve hayırseverlik çalışmalarıyla tanınmaktadır."
         ),
         metadata={
-            "category": "Entertainment",
-            "country": "United States",
+            "category": "Eğlence",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Elon Musk is a business magnate, industrial designer, and"
-            " engineer. He is the founder, CEO, and lead designer of SpaceX,"
-            " Tesla, Inc., Neuralink, and The Boring Company."
+            "Elon Musk, bir iş insanı, endüstriyel tasarımcı ve"
+            " mühendistir. SpaceX, Tesla, Inc., Neuralink ve The Boring Company'nin"
+            " kurucusu, CEO'su ve baş tasarımcısıdır."
         ),
         metadata={
-            "category": "Business",
-            "country": "United States",
+            "category": "İş Dünyası",
+            "country": "Amerika Birleşik Devletleri",
         },
     ),
     TextNode(
         text=(
-            "Rihanna is a Barbadian singer, actress, and businesswoman. She"
-            " has achieved significant success in the music industry and is"
-            " known for her versatile musical style."
+            "Rihanna, Barbadoslu bir şarkıcı, aktris ve iş kadınıdır. Müzik"
+            " endüstrisinde önemli bir başarı elde etmiştir ve çok yönlü"
+            " müzik tarzıyla tanınır."
         ),
         metadata={
-            "category": "Music",
+            "category": "Müzik",
             "country": "Barbados",
         },
     ),
     TextNode(
         text=(
-            "Cristiano Ronaldo is a Portuguese professional footballer who is"
-            " considered one of the greatest football players of all time. He"
-            " has won numerous awards and set multiple records during his"
-            " career."
+            "Cristiano Ronaldo, tüm zamanların en iyi futbolcularından biri"
+            " olarak kabul edilen Portekizli profesyonel bir futbolcudur. Kariyeri"
+            " boyunca sayısız ödül kazanmış ve birçok rekor kırmıştır."
         ),
         metadata={
-            "category": "Sports",
-            "country": "Portugal",
+            "category": "Spor",
+            "country": "Portekiz",
         },
     ),
 ]
 ```
 
-```
+```python
 vector_store = BagelVectorStore(collection=collection)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 ```
 
-```
+```python
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-```
+```python
 from llama_index.core.retrievers import VectorIndexAutoRetriever
 from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
@@ -148,22 +147,22 @@ from llama_index.core.vector_stores import MetadataInfo, VectorStoreInfo
 
 
 vector_store_info = VectorStoreInfo(
-    content_info="brief biography of celebrities",
+    content_info="ünlülerin kısa biyografileri",
     metadata_info=[
         MetadataInfo(
             name="category",
             type="str",
             description=(
-                "Category of the celebrity, one of [Sports, Entertainment,"
-                " Business, Music]"
+                "Ünlünün kategorisi, şunlardan biri: [Spor, Eğlence,"
+                " İş Dünyası, Müzik]"
             ),
         ),
         MetadataInfo(
             name="country",
             type="str",
             description=(
-                "Country of the celebrity, one of [United States, Barbados,"
-                " Portugal]"
+                "Ünlünün ülkesi, şunlardan biri: [Amerika Birleşik Devletleri, Barbados,"
+                " Portekiz]"
             ),
         ),
     ],
@@ -173,6 +172,6 @@ retriever = VectorIndexAutoRetriever(
 )
 ```
 
-```
-retriever.retrieve("celebrity")
+```python
+retriever.retrieve("ünlü")
 ```

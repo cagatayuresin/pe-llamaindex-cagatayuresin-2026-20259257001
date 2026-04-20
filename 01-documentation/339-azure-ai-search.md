@@ -2,25 +2,25 @@
 
 ---
 title: Azure AI Search
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Basic Example
+## Temel Örnek (Basic Example)
 
-In this notebook, we take a Paul Graham essay, split it into chunks, embed it using an Azure OpenAI embedding model, load it into an Azure AI Search index, and then query it.
+Bu not defterinde, bir Paul Graham makalesini alıyoruz, parçalara ayırıyoruz, bir Azure OpenAI gömme (embedding) modeli kullanarak gömüyoruz, bir Azure AI Search indeksine yüklüyoruz ve ardından sorguluyoruz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index
 !pip install wget
 %pip install llama-index-vector-stores-azureaisearch
 %pip install azure-search-documents==11.5.1
-%llama-index-embeddings-azure-openai
-%llama-index-llms-azure-openai
+%pip install llama-index-embeddings-azure-openai
+%pip install llama-index-llms-azure-openai
 ```
 
-```
+```python
 import logging
 import sys
 from azure.core.credentials import AzureKeyCredential
@@ -42,56 +42,56 @@ from llama_index.vector_stores.azureaisearch import (
 )
 ```
 
-## Setup Azure OpenAI
+## Azure OpenAI Kurulumu
 
-```
-aoai_api_key = "YOUR_AZURE_OPENAI_API_KEY"
-aoai_endpoint = "YOUR_AZURE_OPENAI_ENDPOINT"
+```python
+aoai_api_key = "AZURE_OPENAI_API_ANAHTARINIZ"
+aoai_endpoint = "AZURE_OPENAI_UÇ_NOKTANIZ"
 aoai_api_version = "2024-10-21"
 
 
 llm = AzureOpenAI(
-    model="YOUR_AZURE_OPENAI_COMPLETION_MODEL_NAME",
-    deployment_name="YOUR_AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME",
+    model="AZURE_OPENAI_TAMAMLAMA_MODEL_ADINIZ",
+    deployment_name="AZURE_OPENAI_TAMAMLAMA_DAĞITIM_ADINIZ",
     api_key=aoai_api_key,
     azure_endpoint=aoai_endpoint,
     api_version=aoai_api_version,
 )
 
 
-# You need to deploy your own embedding model as well as your own chat completion model
+# Kendi sohbet tamamlama modelinizin yanı sıra kendi gömme modelinizi de dağıtmanız gerekir
 embed_model = AzureOpenAIEmbedding(
-    model="YOUR_AZURE_OPENAI_EMBEDDING_MODEL_NAME",
-    deployment_name="YOUR_AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+    model="AZURE_OPENAI_GÖMME_MODEL_ADINIZ",
+    deployment_name="AZURE_OPENAI_GÖMME_DAĞITIM_ADINIZ",
     api_key=aoai_api_key,
     azure_endpoint=aoai_endpoint,
     api_version=aoai_api_version,
 )
 ```
 
-## Setup Azure AI Search
+## Azure AI Search Kurulumu
 
-```
-search_service_api_key = "YOUR-AZURE-SEARCH-SERVICE-ADMIN-KEY"
-search_service_endpoint = "YOUR-AZURE-SEARCH-SERVICE-ENDPOINT"
+```python
+search_service_api_key = "AZURE-SEARCH-HİZMETİ-ADMİN-ANAHTARINIZ"
+search_service_endpoint = "AZURE-SEARCH-HİZMETİ-UÇ-NOKTANIZ"
 search_service_api_version = "2024-07-01"
 credential = AzureKeyCredential(search_service_api_key)
 
 
 
 
-# Index name to use
-index_name = "llamaindex-vector-demo"
+# Kullanılacak indeks adı
+index_name = "llamaindex-vektor-demo"
 
 
-# Use index client to demonstrate creating an index
+# Bir indeks oluşturmayı göstermek için indeks istemcisini kullanın
 index_client = SearchIndexClient(
     endpoint=search_service_endpoint,
     credential=credential,
 )
 
 
-# Use search client to demonstration using existing index
+# Mevcut indeksi kullanmayı göstermek için arama istemcisini kullanın
 search_client = SearchClient(
     endpoint=search_service_endpoint,
     index_name=index_name,
@@ -99,22 +99,22 @@ search_client = SearchClient(
 )
 ```
 
-## Create Index (if it does not exist)
+## İndeks Oluşturma (Eğer mevcut değilse)
 
-Demonstrates creating a vector index named “llamaindex-vector-demo” if one doesn’t exist. The index has the following fields:
+Eğer mevcut değilse "llamaindex-vektor-demo" adında bir vektör indeksi oluşturmayı gösterir. İndeks aşağıdaki alanlara sahiptir:
 
-| Field Name | OData Type               |
-| ---------- | ------------------------ |
-| id         | `Edm.String`             |
-| chunk      | `Edm.String`             |
-| embedding  | `Collection(Edm.Single)` |
-| metadata   | `Edm.String`             |
-| doc\_id    | `Edm.String`             |
-| author     | `Edm.String`             |
-| theme      | `Edm.String`             |
-| director   | `Edm.String`             |
+| Alan Adı (Field Name) | OData Tipi               |
+| --------------------- | ------------------------ |
+| id                    | `Edm.String`             |
+| chunk                 | `Edm.String`             |
+| embedding             | `Collection(Edm.Single)` |
+| metadata              | `Edm.String`             |
+| doc\_id               | `Edm.String`             |
+| author                | `Edm.String`             |
+| theme                 | `Edm.String`             |
+| director              | `Edm.String`             |
 
-```
+```python
 metadata_fields = {
     "author": "author",
     "theme": ("topic", MetadataIndexFieldType.STRING),
@@ -135,21 +135,21 @@ vector_store = AzureAISearchVectorStore(
     doc_id_field_key="doc_id",
     language_analyzer="en.lucene",
     vector_algorithm_type="exhaustiveKnn",
-    # compression_type="binary" # Option to use "scalar" or "binary". NOTE: compression is only supported for HNSW
+    # compression_type="binary" # "scalar" veya "binary" kullanma seçeneği. NOT: sıkıştırma sadece HNSW için desteklenir
 )
 ```
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Loading documents
+### Belgeleri yükleme
 
-Load the documents stored in the `data/paul_graham/` using the SimpleDirectoryReader
+SimpleDirectoryReader kullanarak `data/paul_graham/` dizininde saklanan belgeleri yükleyin
 
-```
-# Load documents
+```python
+# Belgeleri yükle
 documents = SimpleDirectoryReader("../data/paul_graham/").load_data()
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
@@ -161,28 +161,28 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-# Query Data
+```python
+# Veriyi Sorgula
 query_engine = index.as_query_engine(similarity_top_k=3)
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author focused on writing and programming outside of school, writing short stories and experimenting with programming on an IBM 1401 in 9th grade. Later, the author continued programming on microcomputers and eventually convinced their father to buy a TRS-80, where they started writing simple games and a word processor.**
+**Yazar okul dışında yazma ve programlamaya odaklandı, kısa hikayeler yazdı ve 9. sınıfta bir IBM 1401 üzerinde programlama denemeleri yaptı. Daha sonra yazar mikro bilgisayarlarda programlamaya devam etti ve sonunda babasını bir TRS-80 almaya ikna etti, burada basit oyunlar ve bir kelime işlemci yazmaya başladı.**
 
-```
+```python
 response = query_engine.query(
-    "What did the author learn?",
+    "Yazar ne öğrendi?",
 )
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author learned about programming on early computers, the limitations of early AI, the importance of working on unprestigious things, and the significance of writing essays online.**
+**Yazar, erken bilgisayarlarda programlama yapmayı, erken yapay zekanın sınırlamalarını, prestijli olmayan şeyler üzerinde çalışmanın önemini ve çevrimiçi makale yazmanın önemini öğrendi.**
 
-## Use Existing Index
+## Mevcut İndeksi Kullanma
 
-```
-index_name = "llamaindex-vector-demo"
+```python
+index_name = "llamaindex-vektor-demo"
 
 
 metadata_fields = {
@@ -203,7 +203,7 @@ vector_store = AzureAISearchVectorStore(
 )
 ```
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     [],
@@ -211,27 +211,27 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What was a hard moment for the author?")
+response = query_engine.query("Yazar için zor olan bir an neydi?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author experienced a difficult moment when his mother had a stroke caused by colon cancer, which ultimately led to her passing away.**
+**Yazar, annesinin kolon kanserinden kaynaklanan bir felç geçirdiği ve bunun sonucunda vefat ettiği zor bir an yaşadı.**
 
-```
-response = query_engine.query("Who is the author?")
+```python
+response = query_engine.query("Yazar kimdir?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
 **Paul Graham**
 
-```
+```python
 import time
 
 
 query_engine = index.as_query_engine(streaming=True)
-response = query_engine.query("What happened at interleaf?")
+response = query_engine.query("Interleaf'te ne oldu?")
 
 
 start_time = time.time()
@@ -247,64 +247,64 @@ time_elapsed = time.time() - start_time
 tokens_per_second = token_count / time_elapsed
 
 
-print(f"\n\nStreamed output at {tokens_per_second} tokens/s")
+print(f"\n\nÇıktı {tokens_per_second} jeton/sn hızında akışla verildi")
 ```
 
+```text
+Şirket, Emacs'tan esinlenen bir betik dili ekledi ve betik dilini bir Lisp lehçesi haline getirdi.
+
+
+Çıktı 64.01633939770672 jeton/sn hızında akışla verildi
 ```
-The company added a scripting language inspired by Emacs, and made the scripting language a dialect of Lisp.
 
+## Mevcut indekse belge ekleme
 
-Streamed output at 64.01633939770672 tokens/s
-```
-
-## Adding a document to existing index
-
-```
-response = query_engine.query("What colour is the sky?")
+```python
+response = query_engine.query("Gökyüzü ne renk?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The color of the sky varies depending on factors such as the time of day, weather conditions, and location.**
+**Gökyüzünün rengi; günün saati, hava koşulları ve konum gibi faktörlere bağlı olarak değişir.**
 
-```
+```python
 from llama_index.core import Document
 
 
-index.insert_nodes([Document(text="The sky is indigo today")])
+index.insert_nodes([Document(text="Gökyüzü bugün çivit mavisi")])
 ```
 
-```
-response = query_engine.query("What colour is the sky?")
+```python
+response = query_engine.query("Gökyüzü ne renk?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The color of the sky is indigo.**
+**Gökyüzünün rengi çivit mavisi.**
 
-## Filtering
+## Filtreleme (Filtering)
 
-Filters can be applied to queries using either the `filters` parameter to use llama-index’s filter syntax or the `odata_filters` parameter to pass in filters directly.
+Filtreler, llama-index'in filtre sözdizimini (syntax) kullanmak için `filters` parametresi veya filtreleri doğrudan iletmek için `odata_filters` parametresi kullanılarak sorgulara uygulanabilir.
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
-        text="The Shawshank Redemption",
+        text="Esaretin Bedeli (The Shawshank Redemption)",
         metadata={
             "author": "Stephen King",
-            "theme": "Friendship",
+            "theme": "Dostluk",
         },
     ),
     TextNode(
-        text="The Godfather",
+        text="Baba (The Godfather)",
         metadata={
             "director": "Francis Ford Coppola",
-            "theme": "Mafia",
+            "theme": "Mafya",
         },
     ),
     TextNode(
-        text="Inception",
+        text="Başlangıç (Inception)",
         metadata={
             "director": "Christopher Nolan",
         },
@@ -312,11 +312,11 @@ nodes = [
 ]
 ```
 
-```
+```python
 index.insert_nodes(nodes)
 ```
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilters,
     MetadataFilter,
@@ -329,128 +329,118 @@ from llama_index.core.vector_stores.types import (
 
 filters = MetadataFilters(
     filters=[
-        MetadataFilter(key="theme", value="Mafia", operator=FilterOperator.EQ)
+        MetadataFilter(key="theme", value="Mafya", operator=FilterOperator.EQ)
     ],
-    # if you want to apply multiple filters, you can use the AND, OR, NOT condition
+    # birden fazla filtre uygulamak isterseniz AND, OR, NOT koşulunu kullanabilirsiniz
     # condition=FilterCondition.AND
 )
 
 
 retriever = index.as_retriever(filters=filters)
-retriever.retrieve("What is inception about?")
+retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 ```
 
-```
-[NodeWithScore(node=TextNode(id_='f0c299d8-1f59-4338-9c4e-06b99855ed23', embedding=None, metadata={'director': 'Francis Ford Coppola', 'theme': 'Mafia'}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='The Godfather', mimetype='text/plain', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.8120511)]
+```python
+[NodeWithScore(node=TextNode(id_='f0c299d8-1f59-4338-9c4e-06b99855ed23', embedding=None, metadata={'director': 'Francis Ford Coppola', 'theme': 'Mafya'}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Baba (The Godfather)', mimetype='text/plain', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.8120511)]
 ```
 
-Or passing in the odata\_filters parameter directly:
+Veya doğrudan `odata_filters` parametresini ileterek:
 
-```
-odata_filters = "theme eq 'Mafia'"
+```python
+odata_filters = "theme eq 'Mafya'"
 retriever = index.as_retriever(
     vector_store_kwargs={"odata_filters": odata_filters}
 )
-retriever.retrieve("What is inception about?")
+retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 ```
 
-## Query Mode
+## Sorgu Modu (Query Mode)
 
-Four query modes are supported: DEFAULT (vector search), SPARSE, HYBRID, and SEMANTIC\_HYBRID.
+Dört sorgu modu desteklenir: DEFAULT (vektör araması), SPARSE, HYBRID ve SEMANTIC\_HYBRID.
 
-### Perform a Vector Search
+### Vektör Araması Gerçekleştirme
 
-```
+```python
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 
 
 default_retriever = index.as_retriever(
     vector_store_query_mode=VectorStoreQueryMode.DEFAULT
 )
-response = default_retriever.retrieve("What is inception about?")
+response = default_retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 
 
-# Loop through each NodeWithScore in the response
+# Yanıttaki her NodeWithScore üzerinden döngü kurun
 for node_with_score in response:
-    node = node_with_score.node  # The TextNode object
-    score = node_with_score.score  # The similarity score
-    chunk_id = node.id_  # The chunk ID
+    node = node_with_score.node  # TextNode nesnesi
+    score = node_with_score.score  # Benzerlik puanı
+    chunk_id = node.id_  # Parça (chunk) ID'si
 
 
-    # Extract the relevant metadata from the node
-    file_name = node.metadata.get("file_name", "Unknown")
-    file_path = node.metadata.get("file_path", "Unknown")
+    # Düğümden ilgili metaverileri ayıklayın
+    file_name = node.metadata.get("file_name", "Bilinmiyor")
+    file_path = node.metadata.get("file_path", "Bilinmiyor")
 
 
-    # Extract the text content from the node
-    text_content = node.text if node.text else "No content available"
+    # Düğümden metin içeriğini ayıklayın
+    text_content = node.text if node.text else "İçerik mevcut değil"
 
 
-    # Print the results in a user-friendly format
-    print(f"Score: {score}")
-    print(f"File Name: {file_name}")
-    print(f"Id: {chunk_id}")
-    print("\nExtracted Content:")
+    # Sonuçları kullanıcı dostu bir formatta yazdırın
+    print(f"Puan (Score): {score}")
+    print(f"Dosya Adı: {file_name}")
+    print(f"Kimlik (Id): {chunk_id}")
+    print("\nAyıklanan İçerik:")
     print(text_content)
-    print("\n" + "=" * 40 + " End of Result " + "=" * 40 + "\n")
+    print("\n" + "=" * 40 + " Sonucun Sonu " + "=" * 40 + "\n")
 ```
 
+```text
+Puan (Score): 0.87485534
+Dosya Adı: Bilinmiyor
+Kimlik (Id): b4d2af4e-1de0-4cfe-8b18-629722bc12d7
+
+
+Ayıklanan İçerik:
+Inception (Başlangıç)
+
+
+======================================== Sonucun Sonu ========================================
+
+
+Puan (Score): 0.8120511
+Dosya Adı: Bilinmiyor
+Kimlik (Id): f0c299d8-1f59-4338-9c4e-06b99855ed23
+
+
+Ayıklanan İçerik:
+Baba (The Godfather)
+
+
+======================================== Sonucun Sonu ========================================
 ```
-Score: 0.87485534
-File Name: Unknown
-Id: b4d2af4e-1de0-4cfe-8b18-629722bc12d7
 
+### Hibrit Arama Gerçekleştirme (Hybrid Search)
 
-Extracted Content:
-Inception
-
-
-======================================== End of Result ========================================
-
-
-Score: 0.8120511
-File Name: Unknown
-Id: f0c299d8-1f59-4338-9c4e-06b99855ed23
-
-
-Extracted Content:
-The Godfather
-
-
-======================================== End of Result ========================================
-```
-
-### Perform a Hybrid Search
-
-```
+```python
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 
 
 hybrid_retriever = index.as_retriever(
     vector_store_query_mode=VectorStoreQueryMode.HYBRID
 )
-hybrid_retriever.retrieve("What is inception about?")
+hybrid_retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 ```
 
-```
-[NodeWithScore(node=TextNode(id_='18de619a-94ca-46d9-bb17-51bd1b5c041a', embedding=None, metadata={'director': 'Christopher Nolan'}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Inception', mimetype='text/plain', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.03333333507180214),
- NodeWithScore(node=TextNode(id_='226f09aa-b9f1-40eb-a377-35da6f288fa1', embedding=None, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, excluded_embed_metadata_keys=['file_name', 'file_type', 'file_size', 'creation_date', 'last_modified_date', 'last_accessed_date'], excluded_llm_metadata_keys=['file_name', 'file_type', 'file_size', 'creation_date', 'last_modified_date', 'last_accessed_date'], relationships={<NodeRelationship.SOURCE: '1'>: RelatedNodeInfo(node_id='ba4cac4e-640c-41de-b01d-2c0116f753c8', node_type=<ObjectType.DOCUMENT: '4'>, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, hash='aec9c37ce12c52b02feb44993a53c84733fc31d3637224bda1c831b42009fc17'), <NodeRelationship.PREVIOUS: '2'>: RelatedNodeInfo(node_id='b4120ac2-8829-4253-87ac-a714c1e680a2', node_type=<ObjectType.TEXT: '1'>, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, hash='65795efeb29d8b8af5b61ff4d7b5607dfb0d262cb13f1eec55bb2e3d30654b28'), <NodeRelationship.NEXT: '3'>: RelatedNodeInfo(node_id='7bf9e654-5bbb-40a8-8cb5-12e3737a837d', node_type=<ObjectType.TEXT: '1'>, metadata={}, hash='2cca6e84108227c4e35fdd947606cebb212464fbe7dc51e4204ee27d62533e54')}, text='I recruited Dan Giffin, who had worked for Viaweb, and two undergrads who wanted summer jobs, and we got to work trying to build what it\'s now clear is about twenty companies and several open source projects worth of software. The language for defining applications would of course be a dialect of Lisp. But I wasn\'t so naive as to assume I could spring an overt Lisp on a general audience; we\'d hide the parentheses, like Dylan did.\r\n\r\nBy then there was a name for the kind of company Viaweb was, an "application service provider," or ASP. This name didn\'t last long before it was replaced by "software as a service," but it was current for long enough that I named this new company after it: it was going to be called Aspra.\r\n\r\nI started working on the application builder, Dan worked on network infrastructure, and the two undergrads worked on the first two services (images and phone calls). But about halfway through the summer I realized I really didn\'t want to run a company — especially not a big one, which it was looking like this would have to be. I\'d only started Viaweb because I needed the money. Now that I didn\'t need money anymore, why was I doing this? If this vision had to be realized as a company, then screw the vision. I\'d build a subset that could be done as an open source project.\r\n\r\nMuch to my surprise, the time I spent working on this stuff was not wasted after all. After we started Y Combinator, I would often encounter startups working on parts of this new architecture, and it was very useful to have spent so much time thinking about it and even trying to write some of it.\r\n\r\nThe subset I would build as an open source project was the new Lisp, whose parentheses I now wouldn\'t even have to hide. A lot of Lisp hackers dream of building a new Lisp, partly because one of the distinctive features of the language is that it has dialects, and partly, I think, because we have in our minds a Platonic form of Lisp that all existing dialects fall short of. I certainly did. So at the end of the summer Dan and I switched to working on this new dialect of Lisp, which I called Arc, in a house I bought in Cambridge.\r\n\r\nThe following spring, lightning struck. I was invited to give a talk at a Lisp conference, so I gave one about how we\'d used Lisp at Viaweb. Afterward I put a postscript file of this talk online, on paulgraham.com, which I\'d created years before using Viaweb but had never used for anything. In one day it got 30,000 page views. What on earth had happened? The referring urls showed that someone had posted it on Slashdot. [10]\r\n\r\nWow, I thought, there\'s an audience. If I write something and put it on the web, anyone can read it. That may seem obvious now, but it was surprising then. In the print era there was a narrow channel to readers, guarded by fierce monsters known as editors. The only way to get an audience for anything you wrote was to get it published as a book, or in a newspaper or magazine. Now anyone could publish anything.\r\n\r\nThis had been possible in principle since 1993, but not many people had realized it yet. I had been intimately involved with building the infrastructure of the web for most of that time, and a writer as well, and it had taken me 8 years to realize it. Even then it took me several years to understand the implications. It meant there would be a whole new generation of essays. [11]\r\n\r\nIn the print era, the channel for publishing essays had been vanishingly small. Except for a few officially anointed thinkers who went to the right parties in New York, the only people allowed to publish essays were specialists writing about their specialties. There were so many essays that had never been written, because there had been no way to publish them. Now they could be, and I was going to write them. [12]\r\n\r\nI\'ve worked on several different things, but to the extent there was a turning point where I figured out what to work on, it was when I started publishing essays online. From then on I knew that whatever else I did, I\'d always write essays too.\r\n\r\nI knew that online essays would be a marginal medium at first. Socially they\'d seem more like rants posted by nutjobs on their GeoCities sites than the genteel and beautifully typeset compositions published in The New Yorker. But by this point I knew enough to find that encouraging instead of discouraging.', mimetype='text/plain', start_char_idx=40977, end_char_idx=45334, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.016393441706895828)]
-```
+### Anlamsal Yeniden Sıralama ile Hibrit Arama Gerçekleştirme
 
-### Perform a Hybrid Search with Semantic Reranking
+Bu mod, arama uygunluğunu artırmak için hibrit arama sonuçlarına anlamsal yeniden sıralama (semantic reranking) ekler.
 
-This mode incorporates semantic reranking to hybrid search results to improve search relevance.
+Daha fazla ayrıntı için lütfen bu bağlantıya bakın: <https://learn.microsoft.com/azure/search/semantic-search-overview>
 
-Please see this link for further details: <https://learn.microsoft.com/azure/search/semantic-search-overview>
-
-```
+```python
 hybrid_retriever = index.as_retriever(
     vector_store_query_mode=VectorStoreQueryMode.SEMANTIC_HYBRID
 )
-hybrid_retriever.retrieve("What is inception about?")
-```
-
-```
-[NodeWithScore(node=TextNode(id_='b4d2af4e-1de0-4cfe-8b18-629722bc12d7', embedding=None, metadata={'director': 'Christopher Nolan'}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Inception', mimetype='text/plain', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=2.379289150238037),
- NodeWithScore(node=TextNode(id_='07d77810-7697-4f16-a945-43b725795641', embedding=None, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, excluded_embed_metadata_keys=['file_name', 'file_type', 'file_size', 'creation_date', 'last_modified_date', 'last_accessed_date'], excluded_llm_metadata_keys=['file_name', 'file_type', 'file_size', 'creation_date', 'last_modified_date', 'last_accessed_date'], relationships={<NodeRelationship.SOURCE: '1'>: RelatedNodeInfo(node_id='e02f3256-42cf-4e96-8a2a-5ba4b5bae898', node_type=<ObjectType.DOCUMENT: '4'>, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, hash='aec9c37ce12c52b02feb44993a53c84733fc31d3637224bda1c831b42009fc17'), <NodeRelationship.PREVIOUS: '2'>: RelatedNodeInfo(node_id='022dfb3b-baa4-477b-bd0e-2ab9d8ebbf93', node_type=<ObjectType.TEXT: '1'>, metadata={'file_path': 'c:\\Dev\\llama_index\\docs\\docs\\examples\\vector_stores\\..\\data\\paul_graham\\paul_graham_essay.txt', 'file_name': 'paul_graham_essay.txt', 'file_type': 'text/plain', 'file_size': 75395, 'creation_date': '2024-08-23', 'last_modified_date': '2024-08-23'}, hash='3cac601cf9b6b268149bedd26c5f6767d9492f245d57c8a11e591cd631ce0b00'), <NodeRelationship.NEXT: '3'>: RelatedNodeInfo(node_id='b8570137-ba64-4838-84b4-baa2fd7322fa', node_type=<ObjectType.TEXT: '1'>, metadata={}, hash='7b37bcc69aec36a618efa128df1f1e8f6bd49b1ab4f57aea517945db504d0d83')}, text='[2]\r\n\r\nI\'m only up to age 25 and already there are such conspicuous patterns. Here I was, yet again about to attend some august institution in the hopes of learning about some prestigious subject, and yet again about to be disappointed. The students and faculty in the painting department at the Accademia were the nicest people you could imagine, but they had long since arrived at an arrangement whereby the students wouldn\'t require the faculty to teach anything, and in return the faculty wouldn\'t require the students to learn anything. And at the same time all involved would adhere outwardly to the conventions of a 19th century atelier. We actually had one of those little stoves, fed with kindling, that you see in 19th century studio paintings, and a nude model sitting as close to it as possible without getting burned. Except hardly anyone else painted her besides me. The rest of the students spent their time chatting or occasionally trying to imitate things they\'d seen in American art magazines.\r\n\r\nOur model turned out to live just down the street from me. She made a living from a combination of modelling and making fakes for a local antique dealer. She\'d copy an obscure old painting out of a book, and then he\'d take the copy and maltreat it to make it look old. [3]\r\n\r\nWhile I was a student at the Accademia I started painting still lives in my bedroom at night. These paintings were tiny, because the room was, and because I painted them on leftover scraps of canvas, which was all I could afford at the time. Painting still lives is different from painting people, because the subject, as its name suggests, can\'t move. People can\'t sit for more than about 15 minutes at a time, and when they do they don\'t sit very still. So the traditional m.o. for painting people is to know how to paint a generic person, which you then modify to match the specific person you\'re painting. Whereas a still life you can, if you want, copy pixel by pixel from what you\'re seeing. You don\'t want to stop there, of course, or you get merely photographic accuracy, and what makes a still life interesting is that it\'s been through a head. You want to emphasize the visual cues that tell you, for example, that the reason the color changes suddenly at a certain point is that it\'s the edge of an object. By subtly emphasizing such things you can make paintings that are more realistic than photographs not just in some metaphorical sense, but in the strict information-theoretic sense. [4]\r\n\r\nI liked painting still lives because I was curious about what I was seeing. In everyday life, we aren\'t consciously aware of much we\'re seeing. Most visual perception is handled by low-level processes that merely tell your brain "that\'s a water droplet" without telling you details like where the lightest and darkest points are, or "that\'s a bush" without telling you the shape and position of every leaf. This is a feature of brains, not a bug. In everyday life it would be distracting to notice every leaf on every bush. But when you have to paint something, you have to look more closely, and when you do there\'s a lot to see. You can still be noticing new things after days of trying to paint something people usually take for granted, just as you can after days of trying to write an essay about something people usually take for granted.\r\n\r\nThis is not the only way to paint. I\'m not 100% sure it\'s even a good way to paint. But it seemed a good enough bet to be worth trying.\r\n\r\nOur teacher, professor Ulivi, was a nice guy. He could see I worked hard, and gave me a good grade, which he wrote down in a sort of passport each student had. But the Accademia wasn\'t teaching me anything except Italian, and my money was running out, so at the end of the first year I went back to the US.\r\n\r\nI wanted to go back to RISD, but I was now broke and RISD was very expensive, so I decided to get a job for a year and then return to RISD the next fall. I got one at a company called Interleaf, which made software for creating documents. You mean like Microsoft Word? Exactly. That was how I learned that low end software tends to eat high end software. But Interleaf still had a few years to live yet. [5]\r\n\r\nInterleaf had done something pretty bold. Inspired by Emacs, they\'d added a scripting language, and even made the scripting language a dialect of Lisp.', mimetype='text/plain', start_char_idx=13709, end_char_idx=18066, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.9201899170875549)]
+hybrid_retriever.retrieve("Başlangıç (Inception) ne hakkındadır?")
 ```

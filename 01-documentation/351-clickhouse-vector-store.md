@@ -1,20 +1,20 @@
 ---
-title: ClickHouse Vector Store
- | LlamaIndex OSS Documentation
+title: ClickHouse Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of using the ClickHouseVectorStore.
+Bu not defterinde, ClickHouseVectorStore kullanımına dair hızlı bir demo göstereceğiz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index
 !pip install clickhouse_connect
 ```
 
-#### Creating a ClickHouse Client
+#### ClickHouse İstemcisi (Client) Oluşturma
 
-```
+```python
 import logging
 import sys
 
@@ -23,7 +23,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
+```python
 from os import environ
 import clickhouse_connect
 
@@ -31,7 +31,7 @@ import clickhouse_connect
 environ["OPENAI_API_KEY"] = "sk-*"
 
 
-# initialize client
+# istemciyi başlat
 client = clickhouse_connect.get_client(
     host="localhost",
     port=8123,
@@ -40,65 +40,50 @@ client = clickhouse_connect.get_client(
 )
 ```
 
-#### Load documents, build and store the VectorStoreIndex with ClickHouseVectorStore
+#### Belgeleri yükleme, ClickHouseVectorStore ile VectorStoreIndex oluşturma ve saklama
 
-Here we will use a set of Paul Graham essays to provide the text to turn into embeddings, store in a `ClickHouseVectorStore` and query to find context for our LLM QnA loop.
+Burada, gömme (embedding) haline getirilecek metni sağlamak, bir `ClickHouseVectorStore` içinde saklamak ve LLM Soru-Cevap (QnA) döngümüz için bağlam bulmak amacıyla bir dizi Paul Graham makalesini kullanacağız.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.clickhouse import ClickHouseVectorStore
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("../data/paul_graham").load_data()
-print("Document ID:", documents[0].doc_id)
-print("Number of Documents: ", len(documents))
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
+print("Belge Sayısı: ", len(documents))
 ```
 
-```
-Document ID: d03ac7db-8dae-4199-bc38-445dec51a534
-Number of Documents:  1
+```text
+Belge Kimliği (Document ID): d03ac7db-8dae-4199-bc38-445dec51a534
+Belge Sayısı:  1
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
---2024-02-13 10:08:31--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.109.133, 185.199.110.133, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+Dosyalarınızı [SimpleDirectoryReader](/examples/data_connectors/simple_directory_reader.ipynb) kullanarak tek tek işleyebilirsiniz:
 
-
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.003s
-
-
-2024-02-13 10:08:31 (23.9 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
-```
-
-You can process your files individually using [SimpleDirectoryReader](/examples/data_connectors/simple_directory_reader.ipynb):
-
-```
+```python
 loader = SimpleDirectoryReader("./data/paul_graham/")
 documents = loader.load_data()
 for file in loader.input_files:
     print(file)
-    # Here is where you would do any preprocessing
+    # Burası herhangi bir ön işleme (preprocessing) yapacağınız yerdir
 ```
 
-```
+```text
 data/paul_graham/paul_graham_essay.txt
 ```
 
-```
-# initialize with metadata filter and store indexes
+```python
+# meta veri filtresi ile başlat ve indeksleri sakla
 from llama_index.core import StorageContext
 
 
@@ -111,20 +96,20 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-Now ClickHouse vector store supports filter search and hybrid search
+Artık ClickHouse vektör deposu, filtreli aramayı ve hibrit aramayı desteklemektedir.
 
-You can learn more about [query\_engine](/module_guides/deploying/query_engine/index.md) and [retriever](/module_guides/querying/retriever/index.md).
+[sorgu\_motoru (query\_engine)](/module_guides/deploying/query_engine/index.md) ve [erişici (retriever)](/module_guides/querying/retriever/index.md) hakkında daha fazla bilgi edinebilirsiniz.
 
-```
+```python
 import textwrap
 
 
 from llama_index.core.vector_stores import ExactMatchFilter, MetadataFilters
 
 
-# set Logging to DEBUG for more detailed outputs
+# Daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(
     filters=MetadataFilters(
         filters=[
@@ -134,21 +119,15 @@ query_engine = index.as_query_engine(
     similarity_top_k=2,
     vector_store_query_mode="hybrid",
 )
-response = query_engine.query("What did the author learn?")
+response = query_engine.query("Yazar ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author learned several things during their time at Interleaf, including the importance of having
-technology companies run by product people rather than sales people, the drawbacks of having too
-many people edit code, the value of corridor conversations over planned meetings, the challenges of
-dealing with big bureaucratic customers, and the importance of being the "entry level" option in a
-market.
-```
+**Yazar, Interleaf'te geçirdiği süre boyunca; teknoloji şirketlerinin satış elemanlarından ziyade ürün odaklı kişiler tarafından yönetilmesinin önemini, çok fazla kişinin kod düzenlemesinin dezavantajlarını, koridor konuşmalarının planlı toplantılardan daha değerli olduğunu, büyük bürokratik müşterilerle uğraşmanın zorluklarını ve bir pazarda "giriş seviyesi" seçeneği olmanın önemini içeren birkaç şey öğrendi.**
 
-#### Clear All Indexes
+#### Tüm İndeksleri Temizle
 
-```
+```python
 for document in documents:
     index.delete_ref_doc(document.doc_id)
 ```

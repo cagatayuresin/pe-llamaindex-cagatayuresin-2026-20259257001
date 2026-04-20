@@ -1,38 +1,38 @@
 ---
 title: Google Cloud SQL for PostgreSQL - `PostgresVectorStore`
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Cloud SQL](https://cloud.google.com/sql) is a fully managed relational database service that offers high performance, seamless integration, and impressive scalability. It offers MySQL, PostgreSQL, and SQL Server database engines. Extend your database application to build AI-powered experiences leveraging Cloud SQL’s LlamaIndex integrations.
+> [Cloud SQL](https://cloud.google.com/sql), yüksek performans, sorunsuz entegrasyon ve etkileyici ölçeklenebilirlik sunan, tamamen yönetilen bir ilişkisel veritabanı servisidir. MySQL, PostgreSQL ve SQL Server veritabanı motorlarını sunar. Cloud SQL'in LlamaIndex entegrasyonlarından yararlanarak yapay zeka destekli deneyimler oluşturmak için veritabanı uygulamanızı genişletin.
 
-This notebook goes over how to use `Cloud SQL for PostgreSQL` to store vector embeddings with the `PostgresVectorStore` class.
+Bu not defteri, vektör gömmelerini (vector embeddings) `PostgresVectorStore` sınıfı ile saklamak için `Cloud SQL for PostgreSQL`'in nasıl kullanılacağını göstermektedir.
 
-Learn more about the package on [GitHub](https://github.com/googleapis/llama-index-cloud-sql-pg-python/).
+Paket hakkında daha fazla bilgiyi [GitHub](https://github.com/googleapis/llama-index-cloud-sql-pg-python/) üzerinden edinebilirsiniz.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/googleapis/llama-index-cloud-sql-pg-python/blob/main/samples/llama_index_vector_store.ipynb)
 
-## Before you begin
+## Başlamadan Önce
 
-To run this notebook, you will need to do the following:
+Bu not defterini çalıştırmak için aşağıdakileri yapmanız gerekecektir:
 
-- [Create a Google Cloud Project](https://developers.google.com/workspace/guides/create-project)
-- [Enable the Cloud SQL Admin API.](https://console.cloud.google.com/flows/enableapi?apiid=sqladmin.googleapis.com)
-- [Create a Cloud SQL instance.](https://cloud.google.com/sql/docs/postgres/connect-instance-auth-proxy#create-instance)
-- [Create a Cloud SQL database.](https://cloud.google.com/sql/docs/postgres/create-manage-databases)
-- [Add a User to the database.](https://cloud.google.com/sql/docs/postgres/create-manage-users)
+- [Bir Google Cloud Projesi Oluşturun](https://developers.google.com/workspace/guides/create-project)
+- [Cloud SQL Admin API'sini Etkinleştirin.](https://console.cloud.google.com/flows/enableapi?apiid=sqladmin.googleapis.com)
+- [Bir Cloud SQL örneği (instance) oluşturun.](https://cloud.google.com/sql/docs/postgres/connect-instance-auth-proxy#create-instance)
+- [Bir Cloud SQL veritabanı oluşturun.](https://cloud.google.com/sql/docs/postgres/create-manage-databases)
+- [Veritabanına bir Kullanıcı ekleyin.](https://cloud.google.com/sql/docs/postgres/create-manage-users)
 
-### 🦙 Library Installation
+### 🦙 Kütüphane Kurulumu
 
-Install the integration library, `llama-index-cloud-sql-pg`, and the library for the embedding service, `llama-index-embeddings-vertex`.
+Entegrasyon kütüphanesi olan `llama-index-cloud-sql-pg`'yi ve gömme servisi için gerekli olan `llama-index-embeddings-vertex` kütüphanesini kurun.
 
-```
+```bash
 %pip install --upgrade --quiet llama-index-cloud-sql-pg llama-index-embeddings-vertex llama-index-llms-vertex llama-index
 ```
 
-**Colab only:** Uncomment the following cell to restart the kernel or use the button to restart the kernel. For Vertex AI Workbench you can restart the terminal using the button on top.
+**Sadece Colab:** Çekirdeği (kernel) yeniden başlatmak için aşağıdaki hücrenin yorumunu kaldırın veya düğmeyi kullanın. Vertex AI Workbench için üstteki düğmeyi kullanarak terminali yeniden başlatabilirsiniz.
 
-```
-# # Automatically restart kernel after installs so that your environment can access the new packages
+```python
+# # Kurulumlardan sonra ortamınızın yeni paketlere erişebilmesi için çekirdeği otomatik olarak yeniden başlatın
 # import IPython
 
 
@@ -40,49 +40,49 @@ Install the integration library, `llama-index-cloud-sql-pg`, and the library for
 # app.kernel.do_shutdown(True)
 ```
 
-### 🔐 Authentication
+### 🔐 Kimlik Doğrulama (Authentication)
 
-Authenticate to Google Cloud as the IAM user logged into this notebook in order to access your Google Cloud Project.
+Google Cloud Projenize erişmek için bu not defterinde oturum açmış IAM kullanıcısı olarak Google Cloud'da kimlik doğrulaması yapın.
 
-- If you are using Colab to run this notebook, use the cell below and continue.
-- If you are using Vertex AI Workbench, check out the setup instructions [here](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env).
+- Bu not defterini çalıştırmak için Colab kullanıyorsanız, aşağıdaki hücreyi kullanın ve devam edin.
+- Vertex AI Workbench kullanıyorsanız, [buradaki](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env) kurulum talimatlarına göz atın.
 
-```
+```python
 from google.colab import auth
 
 
 auth.authenticate_user()
 ```
 
-### ☁ Set Your Google Cloud Project
+### ☁ Google Cloud Projenizi Ayarlayın
 
-Set your Google Cloud project so that you can leverage Google Cloud resources within this notebook.
+Bu not defteri içinde Google Cloud kaynaklarından yararlanabilmeniz için Google Cloud projenizi ayarlayın.
 
-If you don’t know your project ID, try the following:
+Proje kimliğinizi (project ID) bilmiyorsanız aşağıdakileri deneyebilirsiniz:
 
-- Run `gcloud config list`.
-- Run `gcloud projects list`.
-- See the support page: [Locate the project ID](https://support.google.com/googleapi/answer/7014113).
+- `gcloud config list` komutunu çalıştırın.
+- `gcloud projects list` komutunu çalıştırın.
+- Destek sayfasına bakın: [Proje kimliğini bulma](https://support.google.com/googleapi/answer/7014113).
 
-```
-# @markdown Please fill in the value below with your Google Cloud project ID and then run the cell.
+```python
+# @markdown Lütfen aşağıdaki değeri Google Cloud proje kimliğinizle doldurun ve ardından hücreyi çalıştırın.
 
 
 PROJECT_ID = "my-project-id"  # @param {type:"string"}
 
 
-# Set the project id
+# Proje kimliğini ayarla
 !gcloud config set project {PROJECT_ID}
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-### Set Cloud SQL database values
+### Cloud SQL veritabanı değerlerini ayarlayın
 
-Find your database values, in the [Cloud SQL Instances page](https://console.cloud.google.com/sql?_ga=2.223735448.2062268965.1707700487-2088871159.1707257687).
+Veritabanı değerlerinizi [Cloud SQL Örnekleri sayfasında](https://console.cloud.google.com/sql?_ga=2.223735448.2062268965.1707700487-2088871159.1707257687) bulun.
 
-```
-# @title Set Your Values Here { display-mode: "form" }
+```python
+# @title Değerlerinizi Buraya Girin { display-mode: "form" }
 REGION = "us-central1"  # @param {type: "string"}
 INSTANCE = "my-primary"  # @param {type: "string"}
 DATABASE = "my-database"  # @param {type: "string"}
@@ -91,32 +91,32 @@ USER = "postgres"  # @param {type: "string"}
 PASSWORD = "my-password"  # @param {type: "string"}
 ```
 
-### PostgresEngine Connection Pool
+### PostgresEngine Bağlantı Havuzu (Connection Pool)
 
-One of the requirements and arguments to establish Cloud SQL as a vector store is a `PostgresEngine` object. The `PostgresEngine` configures a connection pool to your Cloud SQL database, enabling successful connections from your application and following industry best practices.
+Cloud SQL'i bir vektör deposu olarak kurmak için gereken gereksinimlerden ve bağımsız değişkenlerden biri `PostgresEngine` nesnesidir. `PostgresEngine`, Cloud SQL veritabanınıza bir bağlantı havuzu yapılandırarak uygulamanızdan başarılı bağlantılar kurulmasını sağlar ve endüstri en iyi uygulamalarını takip eder.
 
-To create a `PostgresEngine` using `PostgresEngine.from_instance()` you need to provide only 4 things:
+`PostgresEngine.from_instance()` kullanarak bir `PostgresEngine` oluşturmak için yalnızca 4 şeye ihtiyacınız vardır:
 
-1. `project_id` : Project ID of the Google Cloud Project where the Cloud SQL instance is located.
-2. `region` : Region where the Cloud SQL instance is located.
-3. `instance` : The name of the Cloud SQL instance.
-4. `database` : The name of the database to connect to on the Cloud SQL instance.
+1. `project_id` : Cloud SQL örneğinin bulunduğu Google Cloud Projesinin Proje Kimliği.
+2. `region` : Cloud SQL örneğinin bulunduğu bölge (region).
+3. `instance` : Cloud SQL örneğinin adı.
+4. `database` : Cloud SQL örneğinde bağlanılacak veritabanının adı.
 
-By default, [IAM database authentication](https://cloud.google.com/sql/docs/postgres/iam-authentication#iam-db-auth) will be used as the method of database authentication. This library uses the IAM principal belonging to the [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) sourced from the envionment.
+Varsayılan olarak, veritabanı kimlik doğrulama yöntemi olarak [IAM veritabanı kimlik doğrulaması](https://cloud.google.com/sql/docs/postgres/iam-authentication#iam-db-auth) kullanılacaktır. Bu kütüphane, ortamdan alınan [Uygulama Varsayılan Kimlik Bilgilerine (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) ait IAM asıl kişisini (principal) kullanır.
 
-For more informatin on IAM database authentication please see:
+IAM veritabanı kimlik doğrulaması hakkında daha fazla bilgi için lütfen şuna bakın:
 
-- [Configure an instance for IAM database authentication](https://cloud.google.com/sql/docs/postgres/create-edit-iam-instances)
-- [Manage users with IAM database authentication](https://cloud.google.com/sql/docs/postgres/add-manage-iam-users)
+- [IAM veritabanı kimlik doğrulaması için bir örnek yapılandırma](https://cloud.google.com/sql/docs/postgres/create-edit-iam-instances)
+- [IAM veritabanı kimlik doğrulaması ile kullanıcıları yönetme](https://cloud.google.com/sql/docs/postgres/add-manage-iam-users)
 
-Optionally, [built-in database authentication](https://cloud.google.com/sql/docs/postgres/built-in-authentication) using a username and password to access the Cloud SQL database can also be used. Just provide the optional `user` and `password` arguments to `PostgresEngine.from_instance()`:
+İsteğe bağlı olarak, Cloud SQL veritabanına erişmek için kullanıcı adı ve parolanın kullanıldığı [yerleşik veritabanı kimlik doğrulaması](https://cloud.google.com/sql/docs/postgres/built-in-authentication) da kullanılabilir. `PostgresEngine.from_instance()` metoduna isteğe bağlı `user` ve `password` bağımsız değişkenlerini sağlamanız yeterlidir:
 
-- `user` : Database user to use for built-in database authentication and login
-- `password` : Database password to use for built-in database authentication and login.
+- `user` : Yerleşik veritabanı kimlik doğrulaması ve oturum açma için kullanılacak veritabanı kullanıcısı.
+- `password` : Yerleşik veritabanı kimlik doğrulaması ve oturum açma için kullanılacak veritabanı parolası.
 
-**Note:** This tutorial demonstrates the async interface. All async methods have corresponding sync methods.
+**Not:** Bu öğretici asenkron (async) arayüzü göstermektedir. Tüm asenkron metodların karşılık gelen senkron (sync) metodları vardır.
 
-```
+```python
 from llama_index_cloud_sql_pg import PostgresEngine
 
 
@@ -130,22 +130,22 @@ engine = await PostgresEngine.afrom_instance(
 )
 ```
 
-### Initialize a table
+### Bir Tablo Başlatın (Initialize)
 
-The `PostgresVectorStore` class requires a database table. The `PostgresEngine` engine has a helper method `init_vector_store_table()` that can be used to create a table with the proper schema for you.
+`PostgresVectorStore` sınıfı bir veritabanı tablosu gerektirir. `PostgresEngine` motoru, sizin yerinize uygun şemaya sahip bir tablo oluşturmak için kullanılabilecek `init_vector_store_table()` yardımcı metoduna sahiptir.
 
-```
+```python
 await engine.ainit_vector_store_table(
     table_name=TABLE_NAME,
-    vector_size=768,  # Vector size for VertexAI model(textembedding-gecko@latest)
+    vector_size=768,  # VertexAI modeli (textembedding-gecko@latest) için vektör boyutu
 )
 ```
 
-#### Optional Tip: 💡
+#### İsteğe Bağlı İpucu: 💡
 
-You can also specify a schema name by passing `schema_name` wherever you pass `table_name`.
+`table_name` değerini ilettiğiniz her yerde `schema_name` değerini de ileterek bir şema adı belirtebilirsiniz.
 
-```
+```python
 SCHEMA_NAME = "my_schema"
 
 
@@ -156,16 +156,16 @@ await engine.ainit_vector_store_table(
 )
 ```
 
-### Create an embedding class instance
+### Gömme (Embedding) Sınıfı Örneği Oluşturun
 
-You can use any [Llama Index embeddings model](https://docs.llamaindex.ai/en/stable/module_guides/models/embeddings/). You may need to enable Vertex AI API to use `VertexTextEmbeddings`. We recommend setting the embedding model’s version for production, learn more about the [Text embeddings models](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings).
+Herhangi bir [Llama Index gömme modelini](https://docs.llamaindex.ai/en/stable/module_guides/models/embeddings/) kullanabilirsiniz. `VertexTextEmbeddings` kullanmak için Vertex AI API'sini etkinleştirmeniz gerekebilir. Üretim ortamı için gömme modelinin sürümünü ayarlamanızı öneririz; [Metin gömme modelleri](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings) hakkında daha fazla bilgi edinebilirsiniz.
 
-```
-# enable Vertex AI API
+```bash
+# Vertex AI API'sini etkinleştir
 !gcloud services enable aiplatform.googleapis.com
 ```
 
-```
+```python
 from llama_index.core import Settings
 from llama_index.embeddings.vertex import VertexTextEmbedding
 from llama_index.llms.vertex import Vertex
@@ -183,9 +183,9 @@ Settings.embed_model = VertexTextEmbedding(
 Settings.llm = Vertex(model="gemini-1.5-flash-002", project=PROJECT_ID)
 ```
 
-### Initialize a default PostgresVectorStore
+### Varsayılan bir PostgresVectorStore Başlatın
 
-```
+```python
 from llama_index_cloud_sql_pg import PostgresVectorStore
 
 
@@ -196,32 +196,32 @@ vector_store = await PostgresVectorStore.create(
 )
 ```
 
-### Download data
+### Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Load documents
+### Belgeleri Yükle (Load Documents)
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
 ```
 
-## Use with VectorStoreIndex
+## VectorStoreIndex ile Kullanım
 
-Create an index from the vector store by using [`VectorStoreIndex`](https://docs.llamaindex.ai/en/stable/module_guides/indexing/vector_store_index/).
+[`VectorStoreIndex`](https://docs.llamaindex.ai/en/stable/module_guides/indexing/vector_store_index/) kullanarak vektör deposundan bir indeks oluşturun.
 
-#### Initialize Vector Store with documents
+#### Belgelerle Vektör Deposunu Başlatın
 
-The simplest way to use a Vector Store is to load a set of documents and build an index from them using `from_documents`.
+Bir Vektör Deposunu kullanmanın en basit yolu, bir dizi belgeyi yüklemek ve `from_documents` kullanarak bunlardan bir indeks oluşturmaktır.
 
-```
+```python
 from llama_index.core import StorageContext, VectorStoreIndex
 
 
@@ -231,25 +231,25 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query the index
+### İndeksi Sorgula
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do?")
+response = query_engine.query("Yazar ne yaptı?")
 print(response)
 ```
 
-## Create a custom Vector Store
+## Özel bir Vektör Deposu Oluşturma (Custom Vector Store)
 
-A Vector Store can take advantage of relational data to filter similarity searches.
+Bir Vektör Deposu, benzerlik aramalarını filtrelemek için ilişkisel verilerden yararlanabilir.
 
-Create a new table with custom metadata columns. You can also re-use an existing table which already has custom columns for a Document’s id, content, embedding, and/or metadata.
+Özel meta veri sütunları olan yeni bir tablo oluşturun. Bir Belgenin kimliği (id), içeriği, gömmesi ve/veya meta verileri için zaten özel sütunlara sahip olan mevcut bir tabloyu da yeniden kullanabilirsiniz.
 
-```
+```python
 from llama_index_cloud_sql_pg import Column
 
 
-# Set table name
+# Tablo adını ayarla
 TABLE_NAME = "vectorstore_custom"
 # SCHEMA_NAME = "my_schema"
 
@@ -257,14 +257,14 @@ TABLE_NAME = "vectorstore_custom"
 await engine.ainit_vector_store_table(
     table_name=TABLE_NAME,
     # schema_name=SCHEMA_NAME,
-    vector_size=768,  # VertexAI model: textembedding-gecko@003
+    vector_size=768,  # VertexAI modeli: textembedding-gecko@003
     metadata_columns=[Column("len", "INTEGER")],
 )
 
 
 
 
-# Initialize PostgresVectorStore
+# PostgresVectorStore'u Başlat
 custom_store = await PostgresVectorStore.create(
     engine=engine,
     table_name=TABLE_NAME,
@@ -273,15 +273,15 @@ custom_store = await PostgresVectorStore.create(
 )
 ```
 
-### Add documents with metadata
+### Meta veri ile belgeleri ekleyin
 
-[Document `metadata`](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_documents/) can provide the LLM and retrieval process with more information. Learn more about different approaches for [extracting and adding metadata](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_metadata_extractor/).
+Belge [`metadata`](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_documents/) (meta verileri), LLM'ye ve erişim sürecine daha fazla bilgi sağlayabilir. [Meta veri çıkarma ve ekleme](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_metadata_extractor/) için farklı yaklaşımlar hakkında daha fazla bilgi edinebilirsiniz.
 
-```
+```python
 from llama_index.core import Document
 
 
-fruits = ["apple", "pear", "orange", "strawberry", "banana", "kiwi"]
+fruits = ["elma (apple)", "armut (pear)", "portakal (orange)", "çilek (strawberry)", "muz (banana)", "kivi (kiwi)"]
 documents = [
     Document(text=fruit, metadata={"len": len(fruit)}) for fruit in fruits
 ]
@@ -293,11 +293,11 @@ custom_doc_index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Search for documents with metadata filter
+### Meta veri filtresi ile belgeleri arayın
 
-You can apply pre-filtering to the search results by specifying a `filters` argument
+`filters` bağımsız değişkenini belirterek arama sonuçlarına ön filtreleme uygulayabilirsiniz.
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
@@ -313,15 +313,15 @@ filters = MetadataFilters(
 
 
 query_engine = custom_doc_index.as_query_engine(filters=filters)
-res = query_engine.query("List some fruits")
+res = query_engine.query("Bazı meyveleri listele")
 print(str(res.source_nodes[0].text))
 ```
 
-## Add a Index
+## Bir İndeks Ekle (Add a Index)
 
-Speed up vector search queries by applying a vector index. Learn more about [vector indexes](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes).
+Vektör indeksi uygulayarak vektör arama sorgularını hızlandırın. [Vektör indeksleri](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes) hakkında daha fazla bilgi edinebilirsiniz.
 
-```
+```python
 from llama_index_cloud_sql_pg.indexes import IVFFlatIndex
 
 
@@ -329,14 +329,14 @@ index = IVFFlatIndex()
 await vector_store.aapply_vector_index(index)
 ```
 
-### Re-index
+### Yeniden İndeksleme (Re-index)
 
-```
-await vector_store.areindex()  # Re-index using default index name
+```python
+await vector_store.areindex()  # Varsayılan indeks adını kullanarak yeniden indeksle
 ```
 
-### Remove an index
+### Bir İndeksi Kaldır
 
-```
-await vector_store.adrop_vector_index()  # Delete index using default name
+```python
+await vector_store.adrop_vector_index()  # Varsayılan adı kullanarak indeksi sil
 ```

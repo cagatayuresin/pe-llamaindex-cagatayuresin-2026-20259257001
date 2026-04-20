@@ -1,49 +1,49 @@
-# IBM Db2 Vector Store and Vector Search
-
 ---
-title: IBM Db2 Vector Store and Vector Search
- | LlamaIndex OSS Documentation
+title: IBM Db2 Vektör Deposu ve Vektör Araması
+ | LlamaIndex OSS Belgeleri
 ---
 
-LlamaIndex’s Db2 integration (llama-index-vector-stores-db2) provides vector store and vector search capabilities for working with IBM relational database Db2 version v12.1.2 and above, distributed under the MIT license. Users can use the provided implementations as-is or customize them for specific needs. Key features include:
+# IBM Db2 Vektör Deposu ve Vektör Araması
 
-- Vector storage with metadata
-- Vector similarity search and filtering options
-- Support for EUCLIDEAN\_DISTANCE, DOT\_PRODUCT, COSINE, MANHATTAN\_DISTANCE, HAMMING\_DISTANCE, and EUCLIDEAN\_SQUARED distance metrics
-- Performance optimization by index creation and Approximate nearest neighbors search. (Will be added soon)
+LlamaIndex'in Db2 entegrasyonu (`llama-index-vector-stores-db2`), MIT lisansı altında dağıtılan IBM ilişkisel veritabanı Db2 sürüm v12.1.2 ve üzeri ile çalışmak için vektör deposu ve vektör araması yetenekleri sağlar. Kullanıcılar sağlanan uygulamaları olduğu gibi kullanabilir veya belirli ihtiyaçlar için özelleştirebilirler. Temel özellikler şunları içerir:
 
-### Prerequisites for using LlamaIndex with Db2 Vector Store and Search
+- Meta verilerle vektör depolama
+- Vektör benzerlik araması ve filtreleme seçenekleri
+- EUCLIDEAN\_DISTANCE, DOT\_PRODUCT, COSINE, MANHATTAN\_DISTANCE, HAMMING\_DISTANCE ve EUCLIDEAN\_SQUARED mesafe metrikleri için destek
+- İndeks oluşturma ve Yaklaşık en yakın komşu (Approximate nearest neighbors) araması ile performans optimizasyonu (Yakında eklenecektir).
 
-Install package `llama-index-vector-stores-db2` which is the integration package for the db2 LlamaIndex Vector Store and Search.
+### Db2 Vektör Deposu ve Arama ile LlamaIndex Kullanımı İçin Ön Koşullar
 
-```
+Db2 LlamaIndex Vektör Deposu ve Araması için entegrasyon paketi olan `llama-index-vector-stores-db2` paketini kurun.
+
+```bash
 # pip install llama-index-vector-stores-db2
 ```
 
-### Connect to Db2 Vector Store
+### Db2 Vektör Deposuna Bağlanma
 
-The following sample code will show how to connect to Db2 Database. Besides the dependencies above, you will need a Db2 database instance (with version v12.1.2+, which has the vector datatype support) running.
+Aşağıdaki örnek kod, Db2 Veritabanına nasıl bağlanılacağını gösterecektir. Yukarıdaki bağımlılıkların yanı sıra, vektör veri tipi desteğine sahip bir Db2 veritabanı örneğinin (v12.1.2+ sürümü ile) çalışıyor olması gerekir.
 
-```
+```python
 import ibm_db
 import ibm_db_dbi
 
 
-database = ""
-username = ""
-password = ""
+database = "" # Veritabanı adı
+username = "" # Kullanıcı adı
+password = "" # Parola
 
 
 try:
     connection = ibm_db_dbi.connect(database, username, password)
-    print("Connection successful!")
+    print("Bağlantı başarılı!")
 except Exception as e:
-    print("Connection failed!", e)
+    print("Bağlantı başarısız!", e)
 ```
 
-### Import the required dependencies
+### Gerekli bağımlılıkları içe aktarın
 
-```
+```python
 from llama_index.core.schema import NodeRelationship, RelatedNodeInfo, TextNode
 from llama_index.core.vector_stores.types import (
     ExactMatchFilter,
@@ -56,13 +56,13 @@ from llama_index.vector_stores.db2 import base as db2llamavs
 from llama_index.vector_stores.db2 import DB2LlamaVS, DistanceStrategy
 ```
 
-### Load Documents
+### Belgeleri Yükleme
 
-```
-# Define a list of documents (These dummy examples are 4 random documents )
+```python
+# Bir belge listesi tanımlayın (Bu sahte örnekler 4 rastgele belgedir)
 text_json_list = [
     {
-        "text": "Db2 handles LOB data differently than other kinds of data. As a result, you sometimes need to take additional actions when you define LOB columns and insert the LOB data.",
+        "text": "Db2, LOB verilerini diğer veri türlerinden farklı şekilde işler. Sonuç olarak, LOB sütunlarını tanımlarken ve LOB verilerini eklerken bazen ek adımlar atmanız gerekebilir.",
         "id_": "doc_1_2_P4",
         "embedding": [1.0, 0.0],
         "relationships": "test-0",
@@ -73,7 +73,7 @@ text_json_list = [
         },
     },
     {
-        "text": "Introduced in Db2 13, SQL Data Insights brought artificial intelligence (AI) functionality to the Db2 for z/OS engine. It provided the capability to run SQL AI query to find valuable insights hidden in your Db2 data and help you make better business decisions.",
+        "text": "Db2 13 ile tanıtılan SQL Data Insights, Db2 for z/OS motoruna yapay zeka (AI) işlevselliği getirdi. Db2 verilerinizde gizli değerli içgörüleri bulmak için SQL AI sorgusu çalıştırma yeteneği sağlayarak daha iyi iş kararları almanıza yardımcı olur.",
         "id_": "doc_15.5.1_P1",
         "embedding": [0.0, 1.0],
         "relationships": "test-1",
@@ -84,7 +84,7 @@ text_json_list = [
         },
     },
     {
-        "text": "Data structures are elements that are required to use DB2®. You can access and use these elements to organize your data. Examples of data structures include tables, table spaces, indexes, index spaces, keys, views, and databases.",
+        "text": "Veri yapıları, DB2® kullanımı için gerekli olan ögelerdir. Verilerinizi düzenlemek için bu ögelere erişebilir ve kullanabilirsiniz. Veri yapılarına örnek olarak tablolar, tablo alanları (table spaces), indeksler, anahtarlar, görünümler (views) ve veritabanları verilebilir.",
         "id_": "id_22.3.4.3.1_P2",
         "embedding": [1.0, 1.0],
         "relationships": "test-2",
@@ -95,7 +95,7 @@ text_json_list = [
         },
     },
     {
-        "text": "DB2® maintains a set of tables that contain information about the data that DB2 controls. These tables are collectively known as the catalog. The catalog tables contain information about DB2 objects such as tables, views, and indexes. When you create, alter, or drop an object, DB2 inserts, updates, or deletes rows of the catalog that describe the object.",
+        "text": "DB2®, kontrol ettiği veriler hakkında bilgi içeren bir dizi tablo tutar. Bu tablolar toplu olarak katalog (catalog) olarak bilinir. Katalog tabloları tablolar, görünümler ve indeksler gibi DB2 nesneleri hakkında bilgi içerir. Bir nesne oluşturduğunuzda, değiştirdiğinizde veya sildiğinizde, DB2 kataloğun bu nesneyi tanımlayan satırlarını ekler, günceller veya siler.",
         "id_": "id_3.4.3.1_P3",
         "embedding": [2.0, 1.0],
         "relationships": "test-3",
@@ -108,11 +108,11 @@ text_json_list = [
 ]
 ```
 
-```
-# Create Llama Text Nodes
+```python
+# Llama Metin Düğümleri oluşturun
 text_nodes = []
 for text_json in text_json_list:
-    # Construct the relationships using RelatedNodeInfo
+    # RelatedNodeInfo kullanarak ilişkileri kurun
     relationships = {
         NodeRelationship.SOURCE: RelatedNodeInfo(
             node_id=text_json["relationships"]
@@ -120,14 +120,14 @@ for text_json in text_json_list:
     }
 
 
-    # Prepare the metadata dictionary; you might want to exclude certain metadata fields if necessary
+    # Meta veri sözlüğünü hazırlayın; gerekirse belirli alanları hariç tutabilirsiniz
     metadata = {
         "weight": text_json["metadata"]["weight"],
         "rank": text_json["metadata"]["rank"],
     }
 
 
-    # Create a TextNode instance
+    # Bir TextNode örneği oluşturun
     text_node = TextNode(
         text=text_json["text"],
         id_=text_json["id_"],
@@ -141,14 +141,14 @@ for text_json in text_json_list:
 print(text_nodes)
 ```
 
-### Using AI Vector Search Create a bunch of Vector Stores with different distance strategies
+### Farklı mesafe stratejileriyle Vektör Depoları oluşturun
 
-First we will create three vector stores each with different distance functions.
+İlk olarak, her biri farklı mesafe fonksiyonlarına sahip üç vektör deposu oluşturacağız.
 
-You can manually connect to the Db2 Database and will see three tables Documents\_DOT, Documents\_COSINE and Documents\_EUCLIDEAN.
+Db2 Veritabanına manuel olarak bağlandığınızda Documents\_DOT, Documents\_COSINE ve Documents\_EUCLIDEAN adlı üç tablo göreceksiniz.
 
-```
-# Ingest documents into Db2 Vector Store using different distance strategies
+```python
+# Farklı mesafe stratejileri kullanarak belgeleri Db2 Vektör Deposuna aktarın (Ingest)
 vector_store_dot = DB2LlamaVS.from_documents(
     text_nodes,
     table_name="Documents_DOT",
@@ -172,33 +172,33 @@ vector_store_euclidean = DB2LlamaVS.from_documents(
 )
 ```
 
-### Demonstrating add, delete operations for texts, and basic similarity search
+### Metinler için ekleme, silme ve temel benzerlik araması işlemlerinin gösterilmesi
 
-```
+```python
 def manage_texts(vector_stores):
     for i, vs in enumerate(vector_stores, start=1):
-        # Adding texts
+        # Metin ekleme
         try:
             vs.add_texts(text_nodes, metadata)
-            print(f"\n\n\nAdd texts complete for vector store {i}\n\n\n")
+            print(f"\n\n\nVektör deposu {i} için metin ekleme tamamlandı\n\n\n")
         except Exception as ex:
             print(
-                f"\n\n\nExpected error on duplicate add for vector store {i}\n\n\n"
+                f"\n\n\nVektör deposu {i} için yinelenen eklemede beklenen hata\n\n\n"
             )
 
 
-        # Deleting texts using the value of 'doc_id'
+        # 'doc_id' değerini kullanarak metin silme
         vs.delete("test-1")
-        print(f"\n\n\nDelete texts complete for vector store {i}\n\n\n")
+        print(f"\n\n\nVektör deposu {i} için metin silme tamamlandı\n\n\n")
 
 
-        # Similarity search
+        # Benzerlik araması
         query = VectorStoreQuery(
             query_embedding=[1.0, 1.0], similarity_top_k=3
         )
         results = vs.query(query=query)
         print(
-            f"\n\n\nSimilarity search results for vector store {i}: {results}\n\n\n"
+            f"\n\n\nVektör deposu {i} için benzerlik araması sonuçları: {results}\n\n\n"
         )
 
 
@@ -212,17 +212,17 @@ vector_store_list = [
 manage_texts(vector_store_list)
 ```
 
-### Now we will conduct a bunch of advanced searches on all 3 vector stores.
+### Şimdi 3 vektör deposunun tamamında gelişmiş aramalar yapacağız.
 
-```
+```python
 def conduct_advanced_searches(vector_stores):
     for i, vs in enumerate(vector_stores, start=1):
 
 
         def query_without_filters_returns_all_rows_sorted_by_similarity():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search without a filter
-            print("\nSimilarity search results without filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtresiz benzerlik araması
+            print("\nFiltresiz benzerlik araması sonuçları:")
             query = VectorStoreQuery(
                 query_embedding=[1.0, 1.0], similarity_top_k=3
             )
@@ -233,9 +233,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filters_returns_multiple_matches():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nFiltreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -250,9 +250,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_applies_top_k():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with top k filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nTop k filtreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -267,9 +267,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_applies_node_id_filter():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with node_id filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nnode_id filtreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -287,9 +287,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_exact_filters_returns_single_match():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nFiltreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[
                     ExactMatchFilter(key="rank", value="c"),
@@ -324,9 +324,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_on_unknown_field_returns_no_matches():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nFiltreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="unknown_field", value="c")]
             )
@@ -357,4 +357,4 @@ def conduct_advanced_searches(vector_stores):
 conduct_advanced_searches(vector_store_list)
 ```
 
-### End to End Demo
+### Uçtan Uca Demo

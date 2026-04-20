@@ -2,47 +2,47 @@
 
 ---
 title: AnalyticDB
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [AnalyticDB for PostgreSQL](https://www.alibabacloud.com/help/en/analyticdb-for-postgresql/product-overview/overview-product-overview) is a massively parallel processing (MPP) data warehousing service that is designed to analyze large volumes of data online.
+> [AnalyticDB for PostgreSQL](https://www.alibabacloud.com/help/en/analyticdb-for-postgresql/product-overview/overview-product-overview), büyük hacimli verileri çevrimiçi olarak analiz etmek için tasarlanmış, büyük ölçüde paralel işlemeli (MPP) bir veri ambarı hizmetidir.
 
-To run this notebook you need a AnalyticDB for PostgreSQL instance running in the cloud (you can get one at [common-buy.aliyun.com](https://common-buy.aliyun.com/?commodityCode=GreenplumPost\&regionId=cn-hangzhou\&request=%7B%22instance_rs_type%22%3A%22ecs%22%2C%22engine_version%22%3A%226.0%22%2C%22seg_node_num%22%3A%224%22%2C%22SampleData%22%3A%22false%22%2C%22vector_optimizor%22%3A%22Y%22%7D)).
+Bu not defterini çalıştırmak için bulutta çalışan bir AnalyticDB for PostgreSQL örneğine (instance) ihtiyacınız vardır (bir tane [common-buy.aliyun.com](https://common-buy.aliyun.com/?commodityCode=GreenplumPost\&regionId=cn-hangzhou\&request=%7B%22instance_rs_type%22%3A%22ecs%22%2C%22engine_version%22%3A%226.0%22%2C%22seg_node_num%22%3A%224%22%2C%22SampleData%22%3A%22false%22%2C%22vector_optimizor%22%3A%22Y%22%7D) adresinden alabilirsiniz).
 
-After creating the instance, you should create a manager account by [API](https://www.alibabacloud.com/help/en/analyticdb-for-postgresql/developer-reference/api-gpdb-2016-05-03-createaccount) or ‘Account Management’ at the instance detail web page.
+Örneği oluşturduktan sonra, [API](https://www.alibabacloud.com/help/en/analyticdb-for-postgresql/developer-reference/api-gpdb-2016-05-03-createaccount) aracılığıyla veya örnek detay web sayfasındaki 'Hesap Yönetimi' (Account Management) bölümünden bir yönetici hesabı oluşturmalısınız.
 
-You should ensure you have `llama-index` installed:
+`llama-index` paketinin kurulu olduğundan emin olmalısınız:
 
-```
+```bash
 %pip install llama-index-vector-stores-analyticdb
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-### Please provide parameters:
+### Lütfen parametreleri sağlayın:
 
-```
+```python
 import os
 import getpass
 
 
-# alibaba cloud ram ak and sk:
+# alibaba cloud ram ak (erişim anahtarı) ve sk (gizli anahtar):
 alibaba_cloud_ak = ""
 alibaba_cloud_sk = ""
 
 
-# instance information:
-region_id = "cn-hangzhou"  # region id of the specific instance
-instance_id = "gp-xxxx"  # adb instance id
-account = "test_account"  # instance account name created by API or 'Account Management' at the instance detail web page
-account_password = ""  # instance account password
+# örnek bilgileri:
+region_id = "cn-hangzhou"  # spesifik örneğin bölge kimliği
+instance_id = "gp-xxxx"  # adb örnek kimliği
+account = "test_account"  # API veya örnek detay web sayfasındaki 'Hesap Yönetimi' aracılığıyla oluşturulan örnek hesap adı
+account_password = ""  # örnek hesap şifresi
 ```
 
-### Import needed package dependencies:
+### Gerekli paket bağımlılıklarını içe aktarın:
 
-```
+```python
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -51,30 +51,30 @@ from llama_index.core import (
 from llama_index.vector_stores.analyticdb import AnalyticDBVectorStore
 ```
 
-### Load some example data:
+### Bazı örnek verileri yükleyin:
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Read the data:
+### Veriyi okuyun:
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge: {len(documents)}")
+print(f"İlk belge, kimlik (id): {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    "İlk belge, metin"
+    f" ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 ```
 
-### Create the AnalyticDB Vector Store object:
+### AnalyticDB Vektör Deposu (Vector Store) nesnesini oluşturun:
 
-```
+```python
 analytic_db_store = AnalyticDBVectorStore.from_params(
     access_key_id=alibaba_cloud_ak,
     access_key_secret=alibaba_cloud_sk,
@@ -89,9 +89,9 @@ analytic_db_store = AnalyticDBVectorStore.from_params(
 )
 ```
 
-### Build the Index from the Documents:
+### Belgelerden İndeksi Oluşturun:
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=analytic_db_store)
 
 
@@ -100,18 +100,18 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query using the index:
+### İndeksi kullanarak sorgulama yapın:
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Why did the author choose to work on AI?")
+response = query_engine.query("Yazar neden AI üzerinde çalışmayı seçti?")
 
 
 print(response.response)
 ```
 
-### Delete the collection:
+### Koleksiyonu silin:
 
-```
+```python
 analytic_db_store.delete_collection()
 ```

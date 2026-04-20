@@ -1,39 +1,39 @@
 ---
-title: Couchbase Vector Store
- | LlamaIndex OSS Documentation
+title: Couchbase Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-[Couchbase](https://couchbase.com/) is an award-winning distributed NoSQL cloud database that delivers unmatched versatility, performance, scalability, and financial value for all of your cloud, mobile, AI, and edge computing applications. Couchbase embraces AI with coding assistance for developers and vector search for their applications.
+[Couchbase](https://couchbase.com/), tüm bulut, mobil, yapay zeka ve uç bilişim (edge computing) uygulamalarınız için eşsiz çok yönlülük, performans, ölçeklenebilirlik ve finansal değer sunan, ödüllü, dağıtık bir NoSQL bulut veritabanıdır. Couchbase, geliştiriciler için kodlama yardımı ve uygulamaları için vektör araması ile yapay zekayı kucaklar.
 
-Vector Search is a part of the [Full Text Search Service](https://docs.couchbase.com/server/current/learn/services-and-indexes/services/search-service.html) (Search Service) in Couchbase.
+Vektör Araması (Vector Search), Couchbase'deki [Tam Metin Arama Servisi](https://docs.couchbase.com/server/current/learn/services-and-indexes/services/search-service.html)'nin (Search Service) bir parçasıdır.
 
-This tutorial explains how to use Vector Search in Couchbase. You can work with both [Couchbase Capella](https://www.couchbase.com/products/capella/) and your self-managed Couchbase Server.
+Bu öğretici, Couchbase'de Vektör Aramasının nasıl kullanılacağını açıklamaktadır. Hem [Couchbase Capella](https://www.couchbase.com/products/capella/) hem de kendi yönettiğiniz (self-managed) Couchbase Sunucusu ile çalışabilirsiniz.
 
-## Installation
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-vector-stores-couchbase llama-index
 ```
 
-## Creating Couchbase Connection
+## Couchbase Bağlantısı Oluşturma
 
-We create a connection to the Couchbase cluster initially and then pass the cluster object to the Vector Store.
+Başlangıçta Couchbase kümesine (cluster) bir bağlantı oluşturuyoruz ve ardından küme nesnesini Vektör Deposuna iletiyoruz.
 
-Here, we are connecting using the username and password. You can also connect using any other supported way to your cluster.
+Burada, kullanıcı adı ve parola kullanarak bağlanıyoruz. Kümenize desteklenen diğer yöntemlerle de bağlanabilirsiniz.
 
-For more information on connecting to the Couchbase cluster, please check the [Python SDK documentation](https://docs.couchbase.com/python-sdk/current/hello-world/start-using-sdk.html#connect).
+Couchbase kümesine bağlanma hakkında daha fazla bilgi için lütfen [Python SDK belgelerini](https://docs.couchbase.com/python-sdk/current/hello-world/start-using-sdk.html#connect) kontrol edin.
 
-```
+```python
 COUCHBASE_CONNECTION_STRING = (
-    "couchbase://localhost"  # or "couchbases://localhost" if using TLS
+    "couchbase://localhost"  # veya TLS kullanılıyorsa "couchbases://localhost"
 )
 DB_USERNAME = "Administrator"
 DB_PASSWORD = "P@ssword1!"
 ```
 
-```
+```python
 from datetime import timedelta
 
 
@@ -47,37 +47,37 @@ options = ClusterOptions(auth)
 cluster = Cluster(COUCHBASE_CONNECTION_STRING, options)
 
 
-# Wait until the cluster is ready for use.
+# Küme kullanıma hazır olana kadar bekle.
 cluster.wait_until_ready(timedelta(seconds=5))
 ```
 
-## Creating the Search Index
+## Arama İndeksi (Search Index) Oluşturma
 
-Currently, the Search index needs to be created from the Couchbase Capella or Server UI or using the REST interface.
+Şu anda, Arama indeksinin Couchbase Capella veya Sunucu kullanıcı arayüzünden (UI) ya da REST arayüzü kullanılarak oluşturulması gerekmektedir.
 
-Let us define a Search index with the name `vector-index` on the `testing` bucket
+`testing` bucket'ı üzerinde `vector-index` adında bir Arama indeksi tanımlayalım.
 
-For this example, let us use the Import Index feature on the Search Service on the UI.
+Bu örnek için kullanıcı arayüzündeki Arama Servisi'nde bulunan İndeksi İçe Aktar (Import Index) özelliğini kullanalım.
 
-We are defining an index on the testing bucket’s `_default` scope on the `_default` collection with the vector field set to `embedding` with 1536 dimensions and the text field set to text. We are also indexing and storing all the fields under metadata in the document as a dynamic mapping to account for varying document structures. The similarity metric is set to `dot_product`.
+İndeksi, `testing` bucket'ının `_default` kapsamındaki (scope) `_default` koleksiyonu üzerinde; vektör alanı `embedding` (1536 boyutlu) ve metin alanı `text` olarak ayarlanacak şekilde tanımlıyoruz. Ayrıca, değişen belge yapılarını hesaba katmak için belgedeki meta veriler altındaki tüm alanları dinamik bir eşleme (dynamic mapping) olarak indeksliyor ve saklıyoruz. Benzerlik metriği `dot_product` (nokta çarpımı) olarak ayarlanmıştır.
 
-#### How to Import an Index to the Full Text Search service?
+#### Tam Metin Arama servisine bir İndeks nasıl aktarılır?
 
-- [Couchbase Server](https://docs.couchbase.com/server/current/search/import-search-index.html)
+- [Couchbase Sunucusu (Couchbase Server)](https://docs.couchbase.com/server/current/search/import-search-index.html)
 
-  - Click on Search -> Add Index -> Import
-  - Copy the following Index definition in the Import screen
-  - Click on Create Index to create the index.
+  - Search -> Add Index -> Import adımlarını izleyin.
+  - İçe Aktar (Import) ekranına aşağıdaki İndeks tanımını kopyalayın.
+  - İndeksi oluşturmak için Create Index'e tıklayın.
 
 - [Couchbase Capella](https://docs.couchbase.com/cloud/search/import-search-index.html)
 
-  - Copy the index definition to a new file `index.json`
-  - Import the file in Capella using the instructions in the documentation.
-  - Click on Create Index to create the index.
+  - İndeks tanımını yeni bir `index.json` dosyasına kopyalayın.
+  - Belgelerdeki talimatları izleyerek dosyayı Capella'ya aktarın.
+  - İndeksi oluşturmak için Create Index'e tıklayın.
 
-#### Index Definition
+#### İndeks Tanımı (İngilizce Anahtarlar Korunmuştur)
 
-```
+```json
 {
  "name": "vector-index",
  "type": "fulltext-index",
@@ -150,40 +150,36 @@ We are defining an index on the testing bucket’s `_default` scope on the `_def
 }
 ```
 
-We will now set the bucket, scope, and collection names in the Couchbase cluster that we want to use for Vector Search.
+Şimdi Couchbase kümesinde Vektör Araması için kullanmak istediğimiz bucket, kapsam (scope) ve koleksiyon adlarını ayarlayacağız.
 
-For this example, we are using the default scope & collections.
+Bu örnek için varsayılan kapsam ve koleksiyonları kullanıyoruz.
 
-```
+```python
 BUCKET_NAME = "testing"
 SCOPE_NAME = "_default"
 COLLECTION_NAME = "_default"
 SEARCH_INDEX_NAME = "vector-index"
 ```
 
-```
-# Import required packages
+```python
+# Gerekli paketleri içe aktar
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core import StorageContext
 from llama_index.core import Settings
 from llama_index.vector_stores.couchbase import CouchbaseSearchVectorStore
 ```
 
-For this tutorial, we will use OpenAI embeddings
+Bu öğretici için OpenAI gömmelerini (embeddings) kullanacağız.
 
-```
+```python
 import os
 import getpass
 
 
-os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
+os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Anahtarı:")
 ```
 
-```
-OpenAI API Key: ········
-```
-
-```
+```python
 import logging
 import sys
 
@@ -192,36 +188,21 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Download Data
+#### Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
---2024-04-09 23:31:46--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 2606:50c0:8000::154, 2606:50c0:8001::154, 2606:50c0:8003::154, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|2606:50c0:8000::154|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+### Belgeleri Yükle
 
-
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.008s
-
-
-2024-04-09 23:31:46 (8.97 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
-```
-
-### Load the documents
-
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
+```python
 vector_store = CouchbaseSearchVectorStore(
     cluster=cluster,
     bucket_name=BUCKET_NAME,
@@ -231,41 +212,30 @@ vector_store = CouchbaseSearchVectorStore(
 )
 ```
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-```
+## Temel Örnek (Basic Example)
 
-## Basic Example
+Sorgu motoruna az önce indekslediğimiz makale hakkında bir soru soracağız.
 
-We will ask the query engine a question about the essay we just indexed.
-
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What were his investments in Y Combinator?")
+response = query_engine.query("Y Combinator'daki yatırımları nelerdi?")
 print(response)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-His investments in Y Combinator were $6k per founder, totaling $12k in the typical two-founder case, in return for 6% equity.
-```
+**Y Combinator'daki yatırımları, kurucu başına 6 bin dolardı; bu da tipik iki kuruculu bir durumda, %6 özkaynak karşılığında toplamda 12 bin dolar ediyordu.**
 
-## Metadata Filters
+## Meta Veri Filtreleri (Metadata Filters)
 
-We will create some example documents with metadata so that we can see how to filter documents based on metadata.
+Meta verilere dayanarak belgelerin nasıl filtreleneceğini görebilmek için meta veriye sahip bazı örnek belgeler oluşturacağız.
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
@@ -294,14 +264,8 @@ nodes = [
 vector_store.add(nodes)
 ```
 
-```
-['5abb42cf-7312-46eb-859e-60df4f92842a',
- 'b90525f4-38bf-453c-a51a-5f0718bccc98',
- '22f732d0-da17-4bad-b3cd-b54e2102367a']
-```
-
-```
-# Metadata filter
+```python
+# Meta veri filtresi
 from llama_index.core.vector_stores import ExactMatchFilter, MetadataFilters
 
 
@@ -313,32 +277,16 @@ filters = MetadataFilters(
 retriever = index.as_retriever(filters=filters)
 
 
-retriever.retrieve("What is inception about?")
+retriever.retrieve("Inception ne hakkındadır?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+## Özel Filtreler ve Sorguyu Geçersiz Kılma (Custom Filters and overriding Query)
 
+Couchbase şu anda LlamaIndex üzerinden yalnızca `ExactMatchFilters` desteği sunmaktadır. Ancak Couchbase; aralık filtreleri, coğrafi filtreler ve daha fazlasını içeren geniş bir filtreleme yelpazesini destekler. Bu filtreleri kullanmak için, `cb_search_options` parametresine sözlüklerden (dictionaries) oluşan bir liste olarak iletebilirsiniz. `search_options` içindeki farklı arama/sorgu olasılıkları [burada](https://docs.couchbase.com/server/current/search/search-request-params.html#query-object) bulunabilir.
 
-
-
-
-
-
-
-
-
-[NodeWithScore(node=TextNode(id_='b90525f4-38bf-453c-a51a-5f0718bccc98', embedding=None, metadata={'director': 'Francis Ford Coppola', 'theme': 'Mafia'}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='The Godfather', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.3068528194400547)]
-```
-
-## Custom Filters and overriding Query
-
-Couchbase supports `ExactMatchFilters` only at the moment via LlamaIndex. Couchbase supports a wide range of filters, including range filters, geospatial filters, and more. To use these filters, you can pass them in as a list of dictionaries to the `cb_search_options` parameter. The different search/query possibilities for the search\_options can be found [here](https://docs.couchbase.com/server/current/search/search-request-params.html#query-object).
-
-```
+```python
 def custom_query(query, query_str):
-    print("custom query", query)
+    print("özel sorgu (custom query)", query)
     return query
 
 
@@ -352,14 +300,8 @@ query_engine = index.as_query_engine(
         "custom_query": custom_query,
     }
 )
-response = query_engine.query("what were his investments in Y Combinator?")
+response = query_engine.query("Y Combinator'daki yatırımları nelerdi?")
 print(response)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-His investments in Y Combinator were based on a combination of the deal he did with Julian ($10k for 10%) and what Robert said MIT grad students got for the summer ($6k). He invested $6k per founder, which in the typical two-founder case was $12k, in return for 6%.
-```
+**Y Combinator'daki yatırımları; Julian ile yaptığı anlaşmanın ($10k karşılığında %10) ve Robert'ın MIT lisansüstü öğrencilerinin yaz dönemi için ne aldığını ($6k) söylemesinin bir kombinasyonuna dayanıyordu. Kurucu başına $6k yatırım yaptı; bu da tipik iki kuruculu vakada, %6 karşılığında $12k ediyordu.**

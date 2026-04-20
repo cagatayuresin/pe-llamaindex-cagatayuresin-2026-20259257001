@@ -1,24 +1,24 @@
-# Azure Cosmos DB No SQL Vector Store
+# Azure Cosmos DB NoSQL Vektör Deposu (Vector Store)
 
 ---
-title: Azure Cosmos DB No SQL Vector Store
- | LlamaIndex OSS Documentation
+title: Azure Cosmos DB NoSQL Vektör Deposu (Vector Store)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of how to use AzureCosmosDBNoSqlVectorSearch to perform vector searches in LlamaIndex.
+Bu not defterinde, LlamaIndex'te vektör aramaları gerçekleştirmek için `AzureCosmosDBNoSqlVectorSearch`ün nasıl kullanılacağına dair hızlı bir demo göstereceğiz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-embeddings-openai
 %pip install llama-index-llms-azure-openai
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import json
 import openai
@@ -28,30 +28,30 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 ```
 
-# Setup Azure OpenAI
+# Azure OpenAI Kurulumu
 
-The first step is to configure the llm and the embeddings model. These models will be used to create embeddings for the documents loaded into the database and for llm completions.
+İlk adım, LLM ve gömme (embeddings) modelini yapılandırmaktır. Bu modeller, veritabanına yüklenen belgeler için gömmeler oluşturmak ve LLM tamamlamaları için kullanılacaktır.
 
-```
+```python
 llm = AzureOpenAI(
     model="AZURE_OPENAI_MODEL",
-    deployment_name="AZURE_OPENAI_DEPLOYMENT_NAME",
-    azure_endpoint="AZURE_OPENAI_BASE",
-    api_key="AZURE_OPENAI_KEY",
-    api_version="AZURE_OPENAI_VERSION",
+    deployment_name="AZURE_OPENAI_DAĞITIM_ADI",
+    azure_endpoint="AZURE_OPENAI_UC_NOKTASI",
+    api_key="AZURE_OPENAI_ANAHTARI",
+    api_version="AZURE_OPENAI_VERSIYONU",
 )
 
 
 embed_model = AzureOpenAIEmbedding(
-    model="AZURE_OPENAI_EMBEDDING_MODEL",
-    deployment_name="AZURE_OPENAI_EMBEDDING_MODEL_DEPLOYMENT_NAME",
-    azure_endpoint="AZURE_OPENAI_BASE",
-    api_key="AZURE_OPENAI_KEY",
-    api_version="AZURE_OPENAI_VERSION",
+    model="AZURE_OPENAI_GÖMME_MODELI",
+    deployment_name="AZURE_OPENAI_GÖMME_MODELI_DAĞITIM_ADI",
+    azure_endpoint="AZURE_OPENAI_UC_NOKTASI",
+    api_key="AZURE_OPENAI_ANAHTARI",
+    api_version="AZURE_OPENAI_VERSIYONU",
 )
 ```
 
-```
+```python
 from llama_index.core import Settings
 
 
@@ -59,11 +59,11 @@ Settings.llm = llm
 Settings.embed_model = embed_model
 ```
 
-# Loading Documents
+# Belgeleri Yükleme
 
-In this example we will be using the paul\_graham essay which will be processed by the SimpleDirectoryReader.
+Bu örnekte, `SimpleDirectoryReader` tarafından işlenecek olan paul\_graham makalesini kullanacağız.
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
@@ -72,14 +72,14 @@ documents = SimpleDirectoryReader(
 ).load_data()
 
 
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
 ```
 
-# Create the index
+# İndeksi Oluşturma
 
-Here we establish the connection to cosmos db nosql and create a vector store index.
+Burada Cosmos DB NoSQL bağlantısını kuruyoruz ve bir vektör deposu indeksi oluşturuyoruz.
 
-```
+```python
 from azure.cosmos import CosmosClient, PartitionKey
 from llama_index.vector_stores.azurecosmosnosql import (
     AzureCosmosDBNoSqlVectorSearch,
@@ -87,13 +87,13 @@ from llama_index.vector_stores.azurecosmosnosql import (
 from llama_index.core import StorageContext
 
 
-# create cosmos client
-URI = "AZURE_COSMOSDB_URI"
-KEY = "AZURE_COSMOSDB_KEY"
+# cosmos istemcisi oluştur
+URI = "AZURE_COSMOSDB_URI_ADRESI"
+KEY = "AZURE_COSMOSDB_ANAHTARI"
 client = CosmosClient(URI, credential=KEY)
 
 
-# specify vector store properties
+# vektör deposu özelliklerini belirt
 indexing_policy = {
     "indexingMode": "consistent",
     "includedPaths": [{"path": "/*"}],
@@ -119,7 +119,7 @@ cosmos_container_properties_test = {"partition_key": partition_key}
 cosmos_database_properties_test = {}
 
 
-# create vector store
+# vektör deposunu oluştur
 store = AzureCosmosDBNoSqlVectorSearch(
     cosmos_client=client,
     vector_embedding_policy=vector_embedding_policy,
@@ -138,16 +138,16 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-# Query the index
+# İndeksi Sorgulama
 
-We can now ask questions using our index.
+Artık indeksimizi kullanarak sorular sorabiliriz.
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author love working on?")
+response = query_engine.query("Yazar ne üzerinde çalışmayı seviyordu?")
 ```
 
-```
+```python
 import textwrap
 
 
