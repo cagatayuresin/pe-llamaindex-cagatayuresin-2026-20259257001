@@ -1,135 +1,135 @@
-# NVIDIA LLM Text Completion API
+# NVIDIA LLM Metin Tamamlama API'si
 
 ---
-title: NVIDIA LLM Text Completion API
- | LlamaIndex OSS Documentation
+title: NVIDIA LLM Metin Tamamlama API'si
+ | LlamaIndex OSS Belgeleri
 ---
 
-The `llama-index-llms-nvidia` package extends the `NVIDIA` class to support the `/completions` API for code completion models such as:
+`llama-index-llms-nvidia` paketi, aşağıdaki gibi kod tamamlama modelleri için `/completions` API'sini desteklemek üzere `NVIDIA` sınıfını genişletir:
 
 - `bigcode/starcoder2-7b`
 - `bigcode/starcoder2-15b`
 
-## Installation
+## Kurulum
 
-```
+```bash
 %pip install --upgrade --quiet llama-index-llms-nvidia
 ```
 
-## Setup
+## Yapılandırma
 
-**To get started:**
+**Başlamak için:**
 
-1. Create a free account with [NVIDIA](https://build.nvidia.com/), which hosts NVIDIA AI Foundation models.
+1. NVIDIA AI Foundation modellerini barındıran [NVIDIA](https://build.nvidia.com/) üzerinden ücretsiz bir hesap oluşturun.
 
-2. Click on your model of choice.
+2. İstediğiniz modeli seçin.
 
-3. Under Input select the Python tab, and click `Get API Key`. Then click `Generate Key`.
+3. Input (Girdi) kısmından Python sekmesini seçin ve `Get API Key` düğmesine tıklayın. Ardından `Generate Key` düğmesine tıklayın.
 
-4. Copy and save the generated key as NVIDIA\_API\_KEY. From there, you should have access to the endpoints.
+4. Oluşturulan anahtarı kopyalayın ve NVIDIA\_API\_KEY olarak kaydedin. Buradan itibaren uç noktalara erişiminiz olmalıdır.
 
-```
+```python
 import getpass
 import os
 
 
-# del os.environ['NVIDIA_API_KEY']  ## delete key and reset
+# os.environ['NVIDIA_API_KEY'] silerek sıfırlayabilirsiniz
 if os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
-    print("Valid NVIDIA_API_KEY already in environment. Delete to reset")
+    print("Geçerli NVIDIA_API_KEY zaten ortamda mevcut. Sıfırlamak için silin.")
 else:
-    nvapi_key = getpass.getpass("NVAPI Key (starts with nvapi-): ")
+    nvapi_key = getpass.getpass("NVAPI Anahtarı (nvapi- ile başlar): ")
     assert nvapi_key.startswith(
         "nvapi-"
-    ), f"{nvapi_key[:5]}... is not a valid key"
+    ), f"{nvapi_key[:5]}... geçerli bir anahtar değil"
     os.environ["NVIDIA_API_KEY"] = nvapi_key
 ```
 
-```
-# llama-parse is async-first, running the async code in a notebook requires the use of nest_asyncio
+```python
+# llama-parse asenkron-önceliklidir, bir not defterinde asenkron kodu çalıştırmak için nest_asyncio kullanımı gerekir
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-## Working with the NVIDIA API Catalog
+## NVIDIA API Kataloğu ile Çalışma
 
-### Usage of the `use_chat_completions` argument
+### `use_chat_completions` bağımsız değişkeninin kullanımı
 
-Set `None` (default) to decide per-invocation whether to use `/chat/completions` or `/completions` endpoints with query keyword arguments.
+Sorgu anahtar kelime argümanlarıyla `/chat/completions` veya `/completions` uç noktalarından hangisinin kullanılacağına çağrı başına karar vermek için `None` (varsayılan) olarak ayarlayın.
 
-- Set `False` to use the `/completions` endpoint.
-- Set `True` to use the `/chat/completions` endpoint.
+- `/completions` uç noktasını kullanmak için `False` olarak ayarlayın.
+- `/chat/completions` uç noktasını kullanmak için `True` olarak ayarlayın.
 
-```
+```python
 from llama_index.llms.nvidia import NVIDIA
 
 
 llm = NVIDIA(model="bigcode/starcoder2-15b", use_chat_completions=False)
 ```
 
-### Available models
+### Mevcut modeller
 
-Use `is_chat_model` to filter available text completion models:
+Mevcut metin tamamlama modellerini filtrelemek için `is_chat_model` özelliğini kullanın:
 
-```
+```python
 print([model for model in llm.available_models if model.is_chat_model])
 ```
 
-## Working with NVIDIA NIMs
+## NVIDIA NIM'leri ile Çalışma
 
-In addition to connecting to hosted [NVIDIA NIMs](https://ai.nvidia.com), this connector can be used to connect to local NIM instances. This helps you take your applications local when necessary.
+Barındırılan [NVIDIA NIM'lerine](https://ai.nvidia.com) bağlanmanın yanı sıra, bu bağlayıcı yerel NIM örneklerine bağlanmak için de kullanılabilir. Bu, gerektiğinde uygulamalarınızı yerel ortama taşımanıza yardımcı olur.
 
-For instructions on how to set up local NIM instances, refer to [NVIDIA NIM](https://developer.nvidia.com/nim).
+Yerel NIM örneklerinin nasıl kurulacağına ilişkin talimatlar için [NVIDIA NIM](https://developer.nvidia.com/nim) sayfasına bakın.
 
-```
+```python
 from llama_index.llms.nvidia import NVIDIA
 
 
-# Connect to a NIM running at localhost:8080
+# localhost:8080 üzerinde çalışan bir NIM'e bağlanın
 llm = NVIDIA(base_url="http://localhost:8080/v1")
 ```
 
-### Complete: `.complete()`
+### Tamamlama (Complete): `.complete()`
 
-We can use `.complete()`/`.acomplete()` (which takes a string) to prompt a response from the selected model.
+Seçilen modelden bir yanıt almak için `.complete()`/`.acomplete()` (bir dize alır) yöntemini kullanabiliriz.
 
-Let’s use our default model for this task.
+Bu görev için varsayılan modelimizi kullanalım.
 
-```
-print(llm.complete("# Function that does quicksort:"))
-```
-
-As expected, LlamaIndex returns a `CompletionResponse`.
-
-#### Async Complete: `.acomplete()`
-
-There is also an async implementation which can be leveraged in the same way!
-
-```
-await llm.acomplete("# Function that does quicksort:")
+```python
+print(llm.complete("# Quicksort yapan fonksiyon:"))
 ```
 
-#### Streaming
+Beklendiği gibi, LlamaIndex bir `CompletionResponse` döndürür.
 
-```
-x = llm.stream_complete(prompt="# Reverse string in python:", max_tokens=512)
+#### Asenkron Tamamlama: `.acomplete()`
+
+Aynı şekilde kullanılabilecek bir asenkron uygulama da mevcuttur!
+
+```python
+await llm.acomplete("# Quicksort yapan fonksiyon:")
 ```
 
+#### Akış (Streaming)
+
+```python
+x = llm.stream_complete(prompt="# Python'da dizeyi tersine çevirme:", max_tokens=512)
 ```
+
+```python
 for t in x:
     print(t.delta, end="")
 ```
 
-#### Async Streaming
+#### Asenkron Akış (Async Streaming)
 
-```
+```python
 x = await llm.astream_complete(
-    prompt="# Reverse program in python:", max_tokens=512
+    prompt="# Python'da tersine çevirme programı:", max_tokens=512
 )
 ```
 
-```
+```python
 async for t in x:
     print(t.delta, end="")
 ```

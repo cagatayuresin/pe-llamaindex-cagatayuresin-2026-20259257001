@@ -2,28 +2,28 @@
 
 ---
 title: NVIDIA Triton
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-[NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server) provides a cloud and edge inferencing solution optimized for both CPUs and GPUs. This connector allows LlamaIndex to remotely interact with TensorRT-LLM models deployed with Triton.
+[NVIDIA Triton Çıkarım Sunucusu](https://github.com/triton-inference-server/server), hem CPU'lar hem de GPU'lar için optimize edilmiş bir bulut ve uç çıkarım çözümü sunar. Bu bağlayıcı, LlamaIndex'in Triton ile dağıtılmış TensorRT-LLM modelleriyle uzaktan etkileşim kurmasını sağlar.
 
-## Launch Triton Inference Server
+## Triton Çıkarım Sunucusunu Başlatma
 
-This connector requires a running instance of Triton Inference Server with A TensorRT-LLM model. For this example, we will use a [Triton Command Line Interface (Triton CLI)](https://github.com/triton-inference-server/triton_cli) to deploy a GPT2 model on Triton.
+Bu bağlayıcı, TensorRT-LLM modeliyle çalışan bir Triton Çıkarım Sunucusu örneği gerektirir. Bu örnek için, Triton üzerinde bir GPT2 modeli dağıtmak üzere [Triton Komut Satırı Arayüzü'nü (Triton CLI)](https://github.com/triton-inference-server/triton_cli) kullanacağız.
 
-When using Triton and related tools on your host (outside of a Triton container image) there are a number of additional dependencies that may be required for various workflows. Most system dependency issues can be resolved by installing and running the CLI from within the latest corresponding `tritonserver` container image, which should have all necessary system dependencies installed.
+Triton ve ilgili araçları ana makinenizde (bir Triton konteyner imajının dışında) kullanırken, çeşitli iş akışları için gerekli olabilecek bazı ek bağımlılıklar vardır. Çoğu sistem bağımlılığı sorunu, CLI'yı gerekli tüm sistem bağımlılıklarının kurulu olması gereken en son ilgili `tritonserver` konteyner imajı içinden kurarak ve çalıştırarak çözülebilir.
 
-For TRT-LLM, you can use `nvcr.io/nvidia/tritonserver:{YY.MM}-trtllm-python-py3` image, where `YY.MM` corresponds to the version of `tritonserver`, for example in this example we’re using 24.02 version of the container. To get the list of available versions, please refer to [Triton Inference Server NGC](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tritonserver).
+TRT-LLM için, `YY.MM`'nin `tritonserver` sürümüne karşılık geldiği `nvcr.io/nvidia/tritonserver:{YY.MM}-trtllm-python-py3` imajını kullanabilirsiniz; örneğin bu örnekte konteynerin 24.02 sürümünü kullanıyoruz. Mevcut sürümlerin listesini almak için lütfen [Triton Inference Server NGC](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tritonserver) sayfasına bakın.
 
-To start the container, run in your Linux terminal:
+Konteyneri başlatmak için Linux terminalinizde çalıştırın:
 
-```
+```bash
 docker run -ti --gpus all --network=host --shm-size=1g --ulimit memlock=-1 nvcr.io/nvidia/tritonserver:24.02-trtllm-python-py3
 ```
 
-Next, we’ll need to install dependencies with the following:
+Ardından, bağımlılıkları aşağıdakilerle kurmamız gerekecek:
 
-```
+```bash
 pip install \
   "psutil" \
   "pynvml>=11.5.0" \
@@ -31,77 +31,73 @@ pip install \
   "tensorrt_llm==0.8.0" --extra-index-url https://pypi.nvidia.com/
 ```
 
-Finally, run the following to install Triton CLI.
+Son olarak, Triton CLI'yı kurmak için aşağıdakini çalıştırın.
 
-```
+```bash
 pip install git+https://github.com/triton-inference-server/triton_cli.git
 ```
 
-To generate the model repository for a GPT2 model and start an instance of Triton Server, run the following commands:
+Bir GPT2 modeli için model deposunu oluşturmak ve bir Triton Sunucusu örneği başlatmak için aşağıdaki komutları çalıştırın:
 
-```
+```bash
 triton remove -m all
 triton import -m gpt2 --backend tensorrtllm
 triton start &
 ```
 
-By default, Triton listens on `localhost:8000` (HTTP) and `localhost:8001` (gRPC). This example uses the gRPC port.
+Varsayılan olarak Triton, `localhost:8000` (HTTP) ve `localhost:8001` (gRPC) üzerinden dinler. Bu örnek gRPC portunu kullanır.
 
-For more information, refer to the [Triton CLI GitHub repository](https://github.com/triton-inference-server/triton_cli).
+Daha fazla bilgi için [Triton CLI GitHub deposuna](https://github.com/triton-inference-server/triton_cli) bakın.
 
-## Install tritonclient
+## tritonclient Kurulumu
 
-Since we are interacting with Triton Inference Server, you need to [install](https://github.com/triton-inference-server/client?tab=readme-ov-file#download-using-python-package-installer-pip) the `tritonclient` package.
+Triton Çıkarım Sunucusu ile etkileşim kurduğumuz için `tritonclient` paketini [kurmanız](https://github.com/triton-inference-server/client?tab=readme-ov-file#download-using-python-package-installer-pip) gerekir.
 
-```
+```bash
 pip install tritonclient[all]
 ```
 
-Next, we’ll install llama index connector.
+Daha sonra LlamaIndex bağlayıcısını kuracağız.
 
-```
+```bash
 pip install llama-index-llms-nvidia-triton
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` çağrısı
 
-```
+```python
 from llama_index.llms.nvidia_triton import NvidiaTriton
 
 
-# A Triton server instance must be running. Use the correct URL for your desired Triton server instance.
+# Bir Triton sunucu örneği çalışıyor olmalıdır. İstenen Triton sunucu örneği için doğru URL'yi kullanın.
 triton_url = "localhost:8001"
 model_name = "gpt2"
-resp = NvidiaTriton(server_url=triton_url, model_name=model_name, tokens=32).complete("The tallest mountain in North America is ")
+resp = NvidiaTriton(server_url=triton_url, model_name=model_name, tokens=32).complete("Kuzey Amerika'daki en yüksek dağ ")
 print(resp)
 ```
 
-You should expect the following response
+Şu şekilde bir yanıt beklemelisiniz:
 
 ```
-the Great Pyramid of Giza, which is about 1,000 feet high. The Great Pyramid of Giza is the tallest mountain in North America.
+yaklaşık 1.000 fit yüksekliğindeki Giza'nın Büyük Piramidi'dir. Giza'nın Büyük Piramidi Kuzey Amerika'daki en yüksek dağdır. (Not: Bu model çıktıları halüsinasyon içerebilir.)
 ```
 
-#### Call `stream_complete` with a prompt
+#### Bir istem ile `stream_complete` çağrısı
 
-```
-resp = NvidiaTriton(server_url=triton_url, model_name=model_name, tokens=32).stream_complete("The tallest mountain in North America is ")
+```python
+resp = NvidiaTriton(server_url=triton_url, model_name=model_name, tokens=32).stream_complete("Kuzey Amerika'daki en yüksek dağ ")
 for delta in resp:
     print(delta.delta, end=" ")
 ```
 
-You should expect the following response as a stream
+Yanıtın bir akış olarak gelmesini beklemelisiniz.
 
-```
-the Great Pyramid of Giza, which is about 1,000 feet high. The Great Pyramid of Giza is the tallest mountain in North America.
-```
+## İlgili Kaynaklar
 
-## Related
+Triton Çıkarım Sunucusu hakkında daha fazla bilgi için aşağıdaki kaynaklara bakın:
 
-For more information on Triton Inference Server, refer to the following resources:
-
-- [Quickstart guide](https://github.com/triton-inference-server/server/blob/main/docs/getting_started/quickstart.md#quickstart)
-- [NVIDIA Developer Triton page](https://developer.nvidia.com/triton-inference-server)
-- [GitHub issues](https://github.com/triton-inference-server/server/issues)
+- [Hızlı başlangıç kılavuzu](https://github.com/triton-inference-server/server/blob/main/docs/getting_started/quickstart.md#quickstart)
+- [NVIDIA Developer Triton sayfası](https://developer.nvidia.com/triton-inference-server)
+- [GitHub sorunları (Issues)](https://github.com/triton-inference-server/server/issues)

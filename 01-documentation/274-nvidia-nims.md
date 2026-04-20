@@ -1,66 +1,42 @@
-# NVIDIA NIMs
+# NVIDIA NIM'leri
 
 ---
-title: NVIDIA NIMs
- | LlamaIndex OSS Documentation
+title: NVIDIA NIM'leri
+ | LlamaIndex OSS Belgeleri
 ---
 
-The `llama-index-llms-nvidia` package contains LlamaIndex integrations building applications with models on NVIDIA NIM inference microservice. NIM supports models across domains like chat, embedding, and re-ranking models from the community as well as NVIDIA. These models are optimized by NVIDIA to deliver the best performance on NVIDIA accelerated infrastructure and deployed as a NIM, an easy-to-use, prebuilt containers that deploy anywhere using a single command on NVIDIA accelerated infrastructure.
+`llama-index-llms-nvidia` paketi, NVIDIA NIM çıkarım mikro hizmetindeki modellerle uygulamalar oluşturmak için LlamaIndex entegrasyonlarını içerir. NIM; topluluğun yanı sıra NVIDIA'nın sunduğu sohbet, eşleme (embedding) ve yeniden sıralama (re-ranking) modelleri gibi farklı alanlardaki modelleri destekler. Bu modeller, NVIDIA tarafından hızlandırılmış altyapıda en iyi performansı sunmak üzere optimize edilmiş ve NVIDIA hızlandırılmış altyapısında tek bir komutla her yere dağıtılabilen, kullanımı kolay, önceden oluşturulmuş konteynerler olan NIM'ler olarak dağıtılmıştır.
 
-NVIDIA hosted deployments of NIMs are available to test on the [NVIDIA API catalog](https://build.nvidia.com/). After testing, NIMs can be exported from NVIDIA’s API catalog using the NVIDIA AI Enterprise license and run on-premises or in the cloud, giving enterprises ownership and full control of their IP and AI application.
+NIM'lerin NVIDIA tarafından barındırılan dağıtımları [NVIDIA API kataloğu](https://build.nvidia.com/) üzerinden test edilebilir. Test işleminden sonra NIM'ler, NVIDIA AI Enterprise lisansı kullanılarak NVIDIA'nın API kataloğundan dışa aktarılabilir ve kurum bünyesinde (on-premises) veya bulutta çalıştırılarak işletmelere fikri mülkiyetleri ve yapay zeka uygulamaları üzerinde sahiplik ve tam kontrol sağlar.
 
-NIMs are packaged as container images on a per model basis and are distributed as NGC container images through the NVIDIA NGC Catalog. At their core, NIMs provide easy, consistent, and familiar APIs for running inference on an AI model.
+NIM'ler, model bazında konteyner imajları olarak paketlenir ve NVIDIA NGC Kataloğu aracılığıyla NGC konteyner imajları olarak dağıtılır. Temelde NIM'ler, bir yapay zeka modeli üzerinde çıkarım (inference) yapmak için kolay, tutarlı ve tanıdık API'ler sağlar.
 
-```
+```bash
 %pip install --upgrade --quiet llama-index-core llama-index-readers-file llama-index-llms-nvidia llama-index-embeddings-nvidia llama-index-postprocessor-nvidia-rerank
 ```
 
-Bring in a test dataset, a PDF about housing construction in San Francisco in 2021.
+Bir test veri kümesi getirelim; 2021'de San Francisco'daki konut inşaatıyla ilgili bir PDF.
 
-```
+```bash
 !mkdir data
 !wget "https://www.dropbox.com/scl/fi/p33j9112y0ysgwg77fdjz/2021_Housing_Inventory.pdf?rlkey=yyok6bb18s5o31snjd2dxkxz3&dl=0" -O "data/housing_data.pdf"
 ```
 
-```
---2024-05-28 17:42:44--  https://www.dropbox.com/scl/fi/p33j9112y0ysgwg77fdjz/2021_Housing_Inventory.pdf?rlkey=yyok6bb18s5o31snjd2dxkxz3&dl=0
-Resolving www.dropbox.com (www.dropbox.com)... 162.125.1.18, 2620:100:6016:18::a27d:112
-Connecting to www.dropbox.com (www.dropbox.com)|162.125.1.18|:443... connected.
-HTTP request sent, awaiting response... 302 Found
-Location: https://ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com/cd/0/inline/CTzJ0ZeHC3AFIV3iv1bv9v0oMNXW03OW2waLdeKJNs0X6Tto0MSewm9RZBHwSLhqk4jWFaCmbhMGVXeWa6xPO4mAR4hC3xflJfwgS9Z4lpPUyE4AtlDXpnfsltjEaNeFCSY/file# [following]
---2024-05-28 17:42:45--  https://ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com/cd/0/inline/CTzJ0ZeHC3AFIV3iv1bv9v0oMNXW03OW2waLdeKJNs0X6Tto0MSewm9RZBHwSLhqk4jWFaCmbhMGVXeWa6xPO4mAR4hC3xflJfwgS9Z4lpPUyE4AtlDXpnfsltjEaNeFCSY/file
-Resolving ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com (ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com)... 162.125.4.15, 2620:100:6016:15::a27d:10f
-Connecting to ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com (ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com)|162.125.4.15|:443... connected.
-HTTP request sent, awaiting response... 302 Found
-Location: /cd/0/inline2/CTySzMwupnuXzKpccOeYJ-7RI0NK0f7XMKBkpicHxSBuuwqAvFly51Fm0oCOwFctgeTqmD3thJsTqfFNOFHNe2JSIkJerj3mMr4Du3C7x1BcSy8t5raSfHQ_qSXF1eHrhdFII8Ou59jbofYVLe0punOl-RIa9k_v722SwkxVbg0KL9MrRL48XjX7JbsYHKTHq-gZSdAmpXpIGqS22eJavcSTuYMIy_GSZtDIs3quHM3PGU4849rG34RjpvAa-XkYDBdE996CxWupZ1C2Red9jEc5Tc6miGgt8-4LbGoxKwKF5I_Q3EqHCbvkibVR8OuKSKPtQZcNJSjsvIImzDLJ2WB6BAp2CBxz8szFF3jF3Gp6Iw/file [following]
---2024-05-28 17:42:45--  https://ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com/cd/0/inline2/CTySzMwupnuXzKpccOeYJ-7RI0NK0f7XMKBkpicHxSBuuwqAvFly51Fm0oCOwFctgeTqmD3thJsTqfFNOFHNe2JSIkJerj3mMr4Du3C7x1BcSy8t5raSfHQ_qSXF1eHrhdFII8Ou59jbofYVLe0punOl-RIa9k_v722SwkxVbg0KL9MrRL48XjX7JbsYHKTHq-gZSdAmpXpIGqS22eJavcSTuYMIy_GSZtDIs3quHM3PGU4849rG34RjpvAa-XkYDBdE996CxWupZ1C2Red9jEc5Tc6miGgt8-4LbGoxKwKF5I_Q3EqHCbvkibVR8OuKSKPtQZcNJSjsvIImzDLJ2WB6BAp2CBxz8szFF3jF3Gp6Iw/file
-Reusing existing connection to ucc6b49e945b8d71944c85f4a76d.dl.dropboxusercontent.com:443.
-HTTP request sent, awaiting response... 200 OK
-Length: 4808625 (4.6M) [application/pdf]
-Saving to: ‘data/housing_data.pdf’
+## Yapılandırma
 
+Bağımlılıkları içe aktarın ve [NVIDIA API Kataloğu](https://build.nvidia.com) üzerinden aldığınız NVIDIA API anahtarınızı ayarlayın.
 
-data/housing_data.p 100%[===================>]   4.58M  8.26MB/s    in 0.6s
+**Başlamak için:**
 
+1. NVIDIA AI Foundation modellerini barındıran [NVIDIA](https://build.nvidia.com/) üzerinden ücretsiz bir hesap oluşturun.
 
-2024-05-28 17:42:47 (8.26 MB/s) - ‘data/housing_data.pdf’ saved [4808625/4808625]
-```
+2. İstediğiniz modeli seçin.
 
-## Setup
+3. **Input** (Girdi) kısmından **Python** sekmesini seçin ve **Get API Key** (API Anahtarı Al) düğmesine tıklayın. Ardından **Generate Key** (Anahtarı Oluştur) düğmesine tıklayın.
 
-Import dependencies and set up your NVIDIA API key from the [NVIDIA API Catalog](https://build.nvidia.com).
+4. Oluşturulan anahtarı kopyalayın ve `NVIDIA_API_KEY` olarak kaydedin. Buradan itibaren uç noktalara erişiminiz olmalıdır.
 
-**To get started:**
-
-1. Create a free account with [NVIDIA](https://build.nvidia.com/), which hosts NVIDIA AI Foundation models.
-
-2. Click on your model of choice.
-
-3. Under **Input**, select the **Python** tab, and click **Get API Key**. Then click **Generate Key**.
-
-4. Copy and save the generated key as `NVIDIA_API_KEY`. From there, you should have access to the endpoints.
-
-```
+```python
 from llama_index.core import SimpleDirectoryReader, Settings, VectorStoreIndex
 from llama_index.embeddings.nvidia import NVIDIAEmbedding
 from llama_index.llms.nvidia import NVIDIA
@@ -73,149 +49,145 @@ import os
 os.environ["NVIDIA_API_KEY"] = userdata.get("nvidia-api-key")
 ```
 
-Use an NVIDIA-hosted NIM for the embedding model.
+Eşleme (embedding) modeli için NVIDIA tarafından barındırılan bir NIM kullanın.
 
-NVIDIA’s default embeddings only embed the first 512 tokens, so set the chunk size to 500 to maximize the accuracy of embeddings.
+NVIDIA'nın varsayılan eşlemeleri yalnızca ilk 512 belirteci eşler, bu nedenle eşlemelerin doğruluğunu en üst düzeye çıkarmak için parça boyutunu (chunk size) 500 olarak ayarlayın.
 
-```
+```python
 Settings.text_splitter = SentenceSplitter(chunk_size=500)
 
 
 documents = SimpleDirectoryReader("./data").load_data()
 ```
 
-Set the embedding model to NVIDIA’s default. If a chunk exceeds the number of tokens the model can encode, the default behavior is to throw an error, so set `truncate="END"` to instead discard tokens that go over the limit.
+Eşleme modelini NVIDIA'nın varsayılanına ayarlayın. Bir parça, modelin kodlayabileceği belirteç sayısını aşarsa, varsayılan davranış hata fırlatmaktır; bu nedenle limiti aşan belirteçleri atmak için `truncate="END"` değerini ayarlayın.
 
-```
+```python
 Settings.embed_model = NVIDIAEmbedding(model="NV-Embed-QA", truncate="END")
 
 
 index = VectorStoreIndex.from_documents(documents)
 ```
 
-Now that the data is embedded and indexed in memory, set up the LLM. NIM can be hosted locally using Docker in 5 minutes by following the [NIM quick start guide](https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html).
+Veriler bellekte eşlendikten ve indekslendikten sonra LLM'yi kurun. NIM, [NIM hızlı başlangıç kılavuzu](https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html) takip edilerek Docker kullanılarak 5 dakika içinde yerel olarak barındırılabilir.
 
-The following example shows how to:
+Aşağıdaki örnek şunların nasıl yapılacağını gösterir:
 
-- Use Meta’s open-source `meta/llama-3.1-8b-instruct` model as a local NIM.
-- Use `meta/llama-3.1-70b-instruct` as a NIM from the API Catalog hosted by NVIDIA.
+- Meta'nın açık kaynaklı `meta/llama-3.1-8b-instruct` modelini yerel bir NIM olarak kullanma.
+- `meta/llama-3.1-70b-instruct` modelini NVIDIA tarafından barındırılan API Kataloğu üzerinden bir NIM olarak kullanma.
 
-If you are using a local NIM, change the `base_url` to your deployed NIM URL.
+Yerel bir NIM kullanıyorsanız, `base_url` değerini dağıtılmış NIM URL'nizle değiştirin.
 
-The example retrieves the top 20 most relevant chunks to answer the question.
+Örnek, soruyu yanıtlamak için en alakalı ilk 20 parçayı getirir.
 
-```
-# Self-hosted NIM: uncomment the line below and comment the API Catalog line
+```python
+# Kurum bünyesinde barındırılan (Self-hosted) NIM: Aşağıdaki satırı açın ve API Kataloğu satırını yorum haline getirin
 # Settings.llm = NVIDIA(model="meta/llama-3.1-8b-instruct", base_url="http://your-nim-host-address:8000/v1")
 
 
-# API Catalog NIM: comment this line if using a self-hosted NIM
+# API Kataloğu NIM: Kurum bünyesinde barındırılan bir NIM kullanıyorsanız bu satırı yorum yapın
 Settings.llm = NVIDIA(model="meta/llama-3.1-70b-instruct")
 
 
 query_engine = index.as_query_engine(similarity_top_k=20)
 ```
 
-Ask a simple question that is answered in one place in the document (on page 18).
+Belgede tek bir yerde (sayfa 18'de) yanıtlanan basit bir soru sorun.
 
-```
+```python
 response = query_engine.query(
-    "How many new housing units were built in San Francisco in 2021?"
+    "2021 yılında San Francisco'da kaç yeni konut birimi inşa edildi?"
 )
 print(response)
 ```
 
 ```
-There was a net addition of 4,649 units to the City’s housing stock in 2021.
+2021 yılında Şehir konut stokuna net 4.649 birim eklenmiştir.
 ```
 
-Now ask a more complicated question that requires reading a table (on page 41 of the document):
+Şimdi bir tablo okunmasını gerektiren (belgenin 41. sayfasında) daha karmaşık bir soru sorun:
 
-```
+```python
 response = query_engine.query(
-    "What was the net gain in housing units in the Mission in 2021?"
+    "2021 yılında Mission'da konut birimlerindeki net kazanç neydi?"
 )
 print(response)
 ```
 
 ```
-There is no specific information about the net gain in housing units in the Mission in 2021. The provided data is about the city's overall housing stock and production, but it does not provide a breakdown by neighborhood, including the Mission.
+2021 yılında Mission'daki konut birimlerindeki net kazanç hakkında spesifik bir bilgi bulunmamaktadır. Sağlanan veriler şehrin genel konut stoku ve üretimi hakkındadır, ancak Mission dahil olmak üzere mahalle bazında bir döküm sunmamaktadır.
 ```
 
-That’s not the right answer. Try a more advanced PDF parser, LlamaParse:
+Bu doğru cevap değil. Daha gelişmiş bir PDF ayrıştırıcısı olan LlamaParse'ı deneyin:
 
-```
+```bash
 !pip install llama-parse
 ```
 
-```
+```python
 from llama_parse import LlamaParse
 
 
-# in a notebook, LlamaParse requires this to work
+# bir not defterinde, LlamaParse'ın çalışması için bu gereklidir
 import nest_asyncio
 
 
 nest_asyncio.apply()
 
 
-# you can get a key at cloud.llamaindex.ai
+# cloud.llamaindex.ai adresinden bir anahtar alabilirsiniz
 os.environ["LLAMA_CLOUD_API_KEY"] = userdata.get("llama-cloud-key")
 
 
-# set up parser
+# ayrıştırıcıyı kur
 parser = LlamaParse(
-    result_type="markdown"  # "markdown" and "text" are available
+    result_type="markdown"  # "markdown" ve "text" seçenekleri mevcuttur
 )
 
 
-# use SimpleDirectoryReader to parse our file
+# dosyamızı ayrıştırmak için SimpleDirectoryReader kullanın
 file_extractor = {".pdf": parser}
 documents2 = SimpleDirectoryReader(
     "./data", file_extractor=file_extractor
 ).load_data()
 ```
 
-```
-Started parsing the file under job_id 84cb91f7-45ec-4b99-8281-0f4beef6a892
-```
-
-```
+```python
 index2 = VectorStoreIndex.from_documents(documents2)
 query_engine2 = index2.as_query_engine(similarity_top_k=20)
 ```
 
-```
+```python
 response = query_engine2.query(
-    "What was the net gain in housing units in the Mission in 2021?"
+    "2021 yılında Mission'da konut birimlerindeki net kazanç neydi?"
 )
 print(response)
 ```
 
 ```
-The net gain in housing units in the Mission in 2021 was 1,305 units.
+2021 yılında Mission'daki konut birimlerindeki net kazanç 1.305 birimdi.
 ```
 
-With a better parser, the LLM is able to answer the question correctly.
+Daha iyi bir ayrıştırıcı ile LLM soruyu doğru cevaplayabiliyor.
 
-Now try a trickier question:
+Şimdi daha zor bir soru deneyin:
 
-```
+```python
 response = query_engine2.query(
-    "How many affordable housing units were completed in 2021?"
+    "2021 yılında kaç adet uygun fiyatlı konut birimi tamamlandı?"
 )
 print(response)
 ```
 
 ```
-Repeat: 110
+Tekrar: 110
 ```
 
-The LLM is getting confused; this appears to be the percentage increase in housing units.
+LLM'in kafası karışıyor; bu durum konut birimlerindeki yüzde artış gibi görünüyor.
 
-Try giving the LLM more context (40 instead of 20) and then sorting those chunks with a reranker. Use NVIDIA’s reranker for this:
+LLM'e daha fazla bağlam vermeyi (20 yerine 40) ve ardından bu parçaları bir yeniden sıralayıcı (reranker) ile sıralamayı deneyin. Bunun için NVIDIA'nın yeniden sıralayıcısını kullanın:
 
-```
+```python
 from llama_index.postprocessor.nvidia_rerank import NVIDIARerank
 
 
@@ -224,15 +196,15 @@ query_engine3 = index2.as_query_engine(
 )
 ```
 
-```
+```python
 response = query_engine3.query(
-    "How many affordable housing units were completed in 2021?"
+    "2021 yılında kaç adet uygun fiyatlı konut birimi tamamlandı?"
 )
 print(response)
 ```
 
 ```
-1,495
+1.495
 ```
 
-Excellent! Now the figure is correct (this is on page 35, in case you’re wondering).
+Mükemmel! Artık rakam doğru (merak ediyorsanız bu 35. sayfadadır).

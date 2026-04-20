@@ -1,73 +1,73 @@
-# Oracle Cloud Infrastructure Data Science
+# Oracle Cloud Infrastructure Veri Bilimi (Data Science)
 
 ---
-title: Oracle Cloud Infrastructure Data Science 
- | LlamaIndex OSS Documentation
+title: Oracle Cloud Infrastructure Veri Bilimi (Data Science) 
+ | LlamaIndex OSS Belgeleri
 ---
 
-Oracle Cloud Infrastructure [(OCI) Data Science](https://www.oracle.com/artificial-intelligence/data-science) is a fully managed, serverless platform for data science teams to build, train, and manage machine learning models in Oracle Cloud Infrastructure.
+Oracle Cloud Infrastructure [(OCI) Data Science](https://www.oracle.com/artificial-intelligence/data-science), veri bilimi ekiplerinin Oracle Cloud Infrastructure'da makine öğrenimi modelleri oluşturması, eğitmesi ve yönetmesi için tam olarak yönetilen, sunucusuz bir platformdur.
 
-It offers [AI Quick Actions](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions.htm), which can be used to deploy, evaluate, and fine-tune foundation LLM models in OCI Data Science. AI Quick Actions target users who want to quickly leverage the capabilities of AI. They aim to expand the reach of foundation models to a broader set of users by providing a streamlined, code-free, and efficient environment for working with foundation models. AI Quick Actions can be accessed from the Data Science Notebook.
+OCI Data Science'da temel LLM modellerini dağıtmak, değerlendirmek ve ince ayar yapmak (fine-tune) için kullanılabilecek [AI Quick Actions](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions.htm) özelliğini sunar. AI Quick Actions, yapay zekanın yeteneklerinden hızla yararlanmak isteyen kullanıcıları hedefler. Temel modellerle çalışmak için basitleştirilmiş, kodsuz ve verimli bir ortam sağlayarak temel modellerin erişimini daha geniş bir kullanıcı kitlesine yaymayı amaçlarlar. AI Quick Actions'a Veri Bilimi Not Defteri'nden (Data Science Notebook) erişilebilir.
 
-Detailed documentation on how to deploy LLM models in OCI Data Science using AI Quick Actions is available [here](https://github.com/oracle-samples/oci-data-science-ai-samples/blob/main/ai-quick-actions/model-deployment-tips.md) and [here](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions-model-deploy.htm).
+AI Quick Actions kullanılarak OCI Data Science'da LLM modellerinin nasıl dağıtılacağına ilişkin ayrıntılı belgelere [buradan](https://github.com/oracle-samples/oci-data-science-ai-samples/blob/main/ai-quick-actions/model-deployment-tips.md) ve [buradan](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions-model-deploy.htm) ulaşılabilir.
 
-This notebook explains how to use OCI’s Data Science models with LlamaIndex.
+Bu not defteri, OCI'nın Data Science modellerinin LlamaIndex ile nasıl kullanılacağını açıklar.
 
-## Setup
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-llms-oci-data-science
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-You will also need to install the [oracle-ads](https://accelerated-data-science.readthedocs.io/en/latest/index.html) SDK.
+Ayrıca [oracle-ads](https://accelerated-data-science.readthedocs.io/en/latest/index.html) SDK'sını da kurmanız gerekecektir.
 
-```
+```bash
 !pip install -U oracle-ads
 ```
 
-## Authentication
+## Kimlik Doğrulama
 
-The authentication methods supported for LlamaIndex are equivalent to those used with other OCI services and follow the standard SDK authentication methods, specifically API Key, session token, instance principal, and resource principal. More details can be found [here](https://accelerated-data-science.readthedocs.io/en/latest/user_guide/cli/authentication.html). Make sure to have the required [policies](https://docs.oracle.com/en-us/iaas/data-science/using/model-dep-policies-auth.htm) to access the OCI Data Science Model Deployment endpoint. The [oracle-ads](https://accelerated-data-science.readthedocs.io/en/latest/index.html) helps to simplify the authentication within OCI Data Science.
+LlamaIndex için desteklenen kimlik doğrulama yöntemleri, diğer OCI hizmetleriyle kullanılanlarla eşdeğerdir ve standart SDK kimlik doğrulama yöntemlerini (özellikle API Anahtarı, oturum belirteci, örnek sorumlusu - instance principal ve kaynak sorumlusu - resource principal) takip eder. Daha fazla ayrıntıya [buradan](https://accelerated-data-science.readthedocs.io/en/latest/user_guide/cli/authentication.html) ulaşabilirsiniz. OCI Data Science Model Dağıtım uç noktasına erişmek için gerekli [politikalara](https://docs.oracle.com/en-us/iaas/data-science/using/model-dep-policies-auth.htm) sahip olduğunuzdan emin olun. [oracle-ads](https://accelerated-data-science.readthedocs.io/en/latest/index.html) kütüphanesi, OCI Data Science içindeki kimlik doğrulamasını basitleştirmeye yardımcı olur.
 
-## Basic Usage
+## Temel Kullanım
 
-Using LLMs offered by OCI Data Science AI with LlamaIndex only requires you to initialize the `OCIDataScience` interface with your Data Science Model Deployment endpoint and model ID. By default the all deployed models in AI Quick Actions get `odsc-model` ID. However this ID cna be changed during the deployment.
+OCI Data Science AI tarafından sunulan LLM'leri LlamaIndex ile kullanmak için sadece `OCIDataScience` arayüzünü Veri Bilimi Model Dağıtım uç noktanız ve model kimliğinizle başlatmanız yeterlidir. Varsayılan olarak AI Quick Actions'daki tüm dağıtılmış modeller `odsc-model` kimliğini alır. Ancak bu kimlik dağıtım sırasında değiştirilebilir.
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` çağrısı
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
     model="odsc-llm",
     endpoint="https://<MD_OCID>/predict",
 )
-response = llm.complete("Tell me a joke")
+response = llm.complete("Bana bir fıkra anlat")
 
 
 print(response)
 ```
 
-### Call `chat` with a list of messages
+### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.base.llms.types import ChatMessage
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -76,11 +76,11 @@ llm = OCIDataScience(
 )
 response = llm.chat(
     [
-        ChatMessage(role="user", content="Tell me a joke"),
+        ChatMessage(role="user", content="Bana bir fıkra anlat"),
         ChatMessage(
-            role="assistant", content="Why did the chicken cross the road?"
+            role="assistant", content="Tavuk neden yolun karşısına geçti?"
         ),
-        ChatMessage(role="user", content="I don't know, why?"),
+        ChatMessage(role="user", content="Bilmiyorum, neden?"),
     ]
 )
 
@@ -88,11 +88,11 @@ response = llm.chat(
 print(response)
 ```
 
-## Streaming
+## Akış (Streaming)
 
-**Using Dedicated Streaming endpoint**
+**Özel Akış (Streaming) uç noktasını kullanma**
 
-```
+```python
 from llama_index.llms.oci_data_science import OCIDataScience
 import ads
 
@@ -106,20 +106,20 @@ llm = OCIDataScience(
 )
 
 
-prompt = "What is the capital of France?"
+prompt = "Fransa'nın başkenti neresidir?"
 response = llm.stream_complete(prompt)
 for chunk in response:
     print(chunk.delta, end="")
 ```
 
-### Using `stream_complete` endpoint
+### `stream_complete` uç noktasını kullanma
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -128,19 +128,19 @@ llm = OCIDataScience(
 )
 
 
-for chunk in llm.stream_complete("Tell me a joke"):
+for chunk in llm.stream_complete("Bana bir fıkra anlat"):
     print(chunk.delta, end="")
 ```
 
-### Using `stream_chat` endpoint
+### `stream_chat` uç noktasını kullanma
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.base.llms.types import ChatMessage
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -149,11 +149,11 @@ llm = OCIDataScience(
 )
 response = llm.stream_chat(
     [
-        ChatMessage(role="user", content="Tell me a joke"),
+        ChatMessage(role="user", content="Bana bir fıkra anlat"),
         ChatMessage(
-            role="assistant", content="Why did the chicken cross the road?"
+            role="assistant", content="Tavuk neden yolun karşısına geçti?"
         ),
-        ChatMessage(role="user", content="I don't know, why?"),
+        ChatMessage(role="user", content="Bilmiyorum, neden?"),
     ]
 )
 
@@ -162,37 +162,37 @@ for chunk in response:
     print(chunk.delta, end="")
 ```
 
-## Async
+## Asenkron (Async)
 
-### Call `acomplete` with a prompt
+### Bir istem ile `acomplete` çağrısı
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
     model="odsc-llm",
     endpoint="https://<MD_OCID>/predict",
 )
-response = await llm.acomplete("Tell me a joke")
+response = await llm.acomplete("Bana bir fıkra anlat")
 
 
 print(response)
 ```
 
-### Call `achat` with a list of messages
+### Bir mesaj listesiyle `achat` çağrısı
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.base.llms.types import ChatMessage
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -201,11 +201,11 @@ llm = OCIDataScience(
 )
 response = await llm.achat(
     [
-        ChatMessage(role="user", content="Tell me a joke"),
+        ChatMessage(role="user", content="Bana bir fıkra anlat"),
         ChatMessage(
-            role="assistant", content="Why did the chicken cross the road?"
+            role="assistant", content="Tavuk neden yolun karşısına geçti?"
         ),
-        ChatMessage(role="user", content="I don't know, why?"),
+        ChatMessage(role="user", content="Bilmiyorum, neden?"),
     ]
 )
 
@@ -213,14 +213,14 @@ response = await llm.achat(
 print(response)
 ```
 
-### Using `astream_complete` endpoint
+### `astream_complete` uç noktasını kullanma
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -229,19 +229,19 @@ llm = OCIDataScience(
 )
 
 
-async for chunk in await llm.astream_complete("Tell me a joke"):
+async for chunk in await llm.astream_complete("Bana bir fıkra anlat"):
     print(chunk.delta, end="")
 ```
 
-### Using `astream_chat` endpoint
+### `astream_chat` uç noktasını kullanma
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.base.llms.types import ChatMessage
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -250,11 +250,11 @@ llm = OCIDataScience(
 )
 response = await llm.stream_chat(
     [
-        ChatMessage(role="user", content="Tell me a joke"),
+        ChatMessage(role="user", content="Bana bir fıkra anlat"),
         ChatMessage(
-            role="assistant", content="Why did the chicken cross the road?"
+            role="assistant", content="Tavuk neden yolun karşısına geçti?"
         ),
-        ChatMessage(role="user", content="I don't know, why?"),
+        ChatMessage(role="user", content="Bilmiyorum, neden?"),
     ]
 )
 
@@ -263,14 +263,14 @@ async for chunk in response:
     print(chunk.delta, end="")
 ```
 
-## Configure Model
+## Modeli Yapılandırma
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -288,23 +288,23 @@ llm = OCIDataScience(
 )
 response = llm.chat(
     [
-        ChatMessage(role="user", content="Tell me a joke"),
+        ChatMessage(role="user", content="Bana bir fıkra anlat."),
     ]
 )
 print(response)
 ```
 
-## Function Calling
+## Fonksiyon Çağırma (Function Calling)
 
-The [AI Quick Actions](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions.htm) offers prebuilt service containers that make deploying and serving a large language model very easy. Either one of vLLM (a high-throughput and memory-efficient inference and serving engine for LLMs) or TGI (a high-performance text generation server for the popular open-source LLMs) is used in the service container to host the model, the end point created supports the OpenAI API protocol. This allows the model deployment to be used as a drop-in replacement for applications using OpenAI API. If the deployed model supports function calling, then integration with LlamaIndex tools, through the predict\_and\_call function on the llm allows to attach any tools and let the LLM decide which tools to call (if any).
+[AI Quick Actions](https://docs.oracle.com/en-us/iaas/data-science/using/ai-quick-actions.htm), büyük bir dil modelini dağıtmayı ve sunmayı çok kolaylaştıran önceden oluşturulmuş hizmet konteynerleri sunar. Modeli barındırmak için hizmet konteynerinde vLLM (LLM'ler için yüksek verimli ve bellek verimli bir çıkarım ve sunum motoru) veya TGI (popüler açık kaynaklı LLM'ler için yüksek performanslı bir metin oluşturma sunucusu) kullanılır, oluşturulan uç nokta OpenAI API protokolünü destekler. Bu, model dağıtımının OpenAI API kullanan uygulamalar için bir drop-in (doğrudan) ikame olarak kullanılmasına olanak tanır. Dağıtılan model fonksiyon çağırmayı destekliyorsa, LlamaIndex araçlarıyla entegrasyon, LLM üzerindeki `predict_and_call` fonksiyonu aracılığıyla herhangi bir aracın eklenmesine ve hangi araçların çağrılacağına LLM'nin karar vermesine olanak tanır.
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.tools import FunctionTool
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -360,7 +360,7 @@ divide_tool = FunctionTool.from_defaults(fn=divide)
 
 response = llm.predict_and_call(
     [multiply_tool, add_tool, sub_tool, divide_tool],
-    user_msg="Calculate the result of `8 + 2 - 6`.",
+    user_msg="`8 + 2 - 6` işleminin sonucunu hesapla.",
     verbose=True,
 )
 
@@ -368,16 +368,16 @@ response = llm.predict_and_call(
 print(response)
 ```
 
-### Using `FunctionAgent`
+### `FunctionAgent` Kullanımı
 
-```
+```python
 import ads
 from llama_index.llms.oci_data_science import OCIDataScience
 from llama_index.core.tools import FunctionTool
 from llama_index.core.agent.workflow import FunctionAgent
 
 
-ads.set_auth(auth="security_token", profile="<replace-with-your-profile>")
+ads.set_auth(auth="security_token", profile="<profilinizle-değiştirin>")
 
 
 llm = OCIDataScience(
@@ -436,7 +436,7 @@ agent = FunctionAgent(
     llm=llm,
 )
 response = await agent.run(
-    "Calculate the result of `8 + 2 - 6`. Use tools. Return the calculated result."
+    "`8 + 2 - 6` işleminin sonucunu hesapla. Araçları kullan. Hesaplanan sonucu döndür."
 )
 
 
