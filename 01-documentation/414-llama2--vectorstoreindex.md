@@ -1,38 +1,38 @@
-# Llama2 + VectorStoreIndex
-
 ---
-title: Llama2 + VectorStoreIndex
- | LlamaIndex OSS Documentation
+title: Llama2 + Vektör Deposu İndeksi (VectorStoreIndex)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook walks through the proper setup to use llama-2 with LlamaIndex. Specifically, we look at using a vector store index.
+# Llama2 + Vektör Deposu İndeksi (VectorStoreIndex)
 
-## Setup
+Bu not defteri (notebook), llama-2'yi LlamaIndex ile birlikte kullanabilmek için gereken uygun kurulumu adım adım gösterir. Spesifik (Özel) olarak bir vektör deposu (vector store) indeksi kullanmaya odaklanıyoruz.
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+## Kurulum (Setup)
 
-```
+Bu Not Defterini şayet Colab üzerinde açtıysanız (çalıştıracaksanız), büyük ihtimalle sisteminize (kernel) LlamaIndex'i 🦙 kurmanız (install) gerekecektir.
+
+```bash
 %pip install llama-index-llms-replicate
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-### Keys
+### Anahtarlar (Keys)
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-..."
-os.environ["REPLICATE_API_TOKEN"] = "YOUR_REPLICATE_TOKEN"
+os.environ["REPLICATE_API_TOKEN"] = "SİZİN_REPLICATE_ANAHTARINIZ"
 ```
 
-### Load documents, build the VectorStoreIndex
+### Belgeleri yükleyin, Vektör Deposu İndeksini (VectorStoreIndex) oluşturun
 
-```
-# Optional logging
+```python
+# İsteğe Bağlı Olarak Günlük Kaydı (Optional logging)
 # import logging
 # import sys
 
@@ -47,7 +47,7 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from IPython.display import Markdown, display
 ```
 
-```
+```python
 from llama_index.llms.replicate import Replicate
 from llama_index.core.llms.llama_utils import (
     messages_to_prompt,
@@ -55,19 +55,19 @@ from llama_index.core.llms.llama_utils import (
 )
 
 
-# The replicate endpoint
+# Replicate uç noktası (endpoint)
 LLAMA_13B_V2_CHAT = "a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5"
 
 
 
 
-# inject custom system prompt into llama-2
+# llama-2'ye özel (custom) sistem komutunu (system prompt) yerleştir (inject)
 def custom_completion_to_prompt(completion: str) -> str:
     return completion_to_prompt(
         completion,
         system_prompt=(
-            "You are a Q&A assistant. Your goal is to answer questions as "
-            "accurately as possible is the instructions and context provided."
+            "Sen bir Soru-Cevap (Q&A) asistanısın. Görevin ve hedefin (goal); "
+            "soruları, sağlanan talimatlar (instructions) ve bağlama (context) en uygun ve doğru şekilde yanıtlamaktır."
         ),
     )
 
@@ -77,65 +77,65 @@ def custom_completion_to_prompt(completion: str) -> str:
 llm = Replicate(
     model=LLAMA_13B_V2_CHAT,
     temperature=0.01,
-    # override max tokens since it's interpreted
-    # as context window instead of max tokens
+    # llama 2'de doğrudan jeton (max token) olarak ayarlamak/yorumlanmak
+    # yerine, max token sınırını bağlam/pencere aralığına çevirdiğinden ez/kaldır
     context_window=4096,
-    # override completion representation for llama 2
+    # llama 2 için komut tamamlamanın/düzeltmenin (completion representation) üzerini çiz (override)
     completion_to_prompt=custom_completion_to_prompt,
-    # if using llama 2 for data agents, also override the message representation
+    # eğer veri ajanları (data agents) için llama 2'yi kullanıyorsanız, mesaj temsili/ifadesi aralığını da (message representation) geçersiz kılmalısınız! (override)
     messages_to_prompt=messages_to_prompt,
 )
 ```
 
-```
+```python
 from llama_index.core import Settings
 
 
 Settings.llm = llm
 ```
 
-Download Data
+Veriyi İndirin
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
+```python
 index = VectorStoreIndex.from_documents(documents)
 ```
 
-## Querying
+## Sorgulama (Querying)
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Günlük Kaydı modunu DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
 ```
 
-```
-response = query_engine.query("What did the author do growing up?")
+```python
+response = query_engine.query("Yazar büyürken neler yaptı? (What did the author do growing up?)")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**Based on the context information provided, the author’s activities growing up were:**
+**Bu kapsamda tedarik edilen (the context information provided) verilere istinaden yazar büyüme evresinde yazarın faaliyeti (activities) şunlardır:**
 
-**1. Writing short stories, which were “awful” and had “hardly any plot.”
-2. Programming on an IBM 1401 computer in 9th grade, using an early version of Fortran language.
-3. Building simple games, a program to predict the height of model rockets, and a word processor for his father.
-4. Reading science fiction novels, such as “The Moon is a Harsh Mistress” by Heinlein, which inspired him to work on AI.
-5. Living in Florence, Italy, and walking through the city’s streets to the Accademia.**
+**1. "Hiçbir iyi olayı bulunmayan" kısa taslağa dökülmüş ("awful" / "hardly any plot") korkunç edebi karamalar ve senaryolar/hikayeler düzmek.
+2. Keza okul takviminin 9. derecesindeyken, IBM imzası taşıyıp "1401" konfigürasyonuyla bezenmiş klasman bir yapıda, tam anlamıyla primitif sayılabilecek Fortran uzantısı aracılığıyla erken dönem programları kodlamak.
+3. Kendi oyun simülasyonları tasarlarken (Building simple games), minyatür bazlı füzelerin yahut benzeri uçarcasına yükselen sistemlerin test edilebileceği formları birleştirmek ve dahi ebeveynine/babasına tahsis üzere bir döküm aracı (kelime sistemci: a word processor) işlemek.
+4. "The Moon is a Harsh Mistress" ("Ay Zalim Bir Metres" - Heinlein tarafından yazılmış) eserleri ve edebi/kurgusal bilim senaryo odaklı içeriklerle kendini beslemek; ki bunun getirisi kendisine resmen ilham kaynağı olup AI yolunun da kapılarını açmış oldu (inspired him to work on AI).
+5. Zamanını en çok geçirdiği mekanlardan ve duraklardan Floransa - İtalya bölgesinde/şehri yaşayıp, buradaki caddelerden Akademya (Accademia) mevkiine (binalarına doğru) turlamak (walking).**
 
-**Please note that these activities are mentioned in the text and are not based on prior knowledge or assumptions.**
+**Lütfen metinde geçmeyen birtakım öngörülerinizi buradaki metnin içinde yazmamasına nazaran ön kanaat/varsayım bazlı değerlendirmeler üzerinden analiz/not etmeyiniz! (are not based on prior knowledge or assumptions)**
 
-### Streaming Support
+### Akış / Yayın Desteği (Streaming Support)
 
-```
+```python
 query_engine = index.as_query_engine(streaming=True)
-response = query_engine.query("What happened at interleaf?")
+response = query_engine.query("Interleaf'te ne oldu? (What happened at interleaf?)")
 for token in response.response_gen:
     print(token, end="")
 ```
 
-```
- Based on the context information provided, it appears that the author worked at Interleaf, a company that made software for creating and managing documents. The author mentions that Interleaf was "on the way down" and that the company's Release Engineering group was large compared to the group that actually wrote the software. It is inferred that Interleaf was experiencing financial difficulties and that the author was nervous about money. However, there is no explicit mention of what specifically happened at Interleaf.
+```bash
+ Buradaki bilgi ve verili metne bakıldığında, anladığımız kadarıyla yazarın yolu kendi ürettiği sistemler ile (özellikle dokümanların - creating and managing documents tasarlanıp idare edilmesi bağlamında) hizmet sunan 'Interleaf' firmasından geçmiş gibi bir mana ifade ediyor (worked at Interleaf / the author mentions). Ancak döküm de yazılanlara referans sağladığımızda, belli ki kurumu (firmayı) temsil eden Interleaf bu aşamada ciddi bir sarsılma/tökezlenmeye ("on the way down") adım atıyordu (çöküşe doğru). Üstelik sistem yazılımcısına dönük Sürüm/Mühendislik ekibinden daha cüsseli (the company's Release Engineering group was large) bir yazılım takım ve grupsal yığınına sahip olduğu belli ve keza bu yapı dahi göz önündeydi. Bütün bu denklemler yazarı hem parasal manada strese sokmakla ve hem de net / sarih/ açık bir izahat/ifade vermemesinin dışında Interleaf'te bizzat da nelerin döndüğünün de açıklıkla yazılmamasında/bilinmemesinde bizleri yanıltmıyor.
 ```

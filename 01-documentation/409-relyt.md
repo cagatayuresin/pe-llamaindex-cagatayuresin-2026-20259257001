@@ -1,27 +1,27 @@
-# Relyt
-
 ---
 title: Relyt
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
+
+# Relyt
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/vector_stores/PGVectoRsDemo.ipynb)
 
-Firstly, you will probably need to install dependencies :
+Öncelikle muhtemelen bağımlılıkları (dependencies) kurmanız gerekecektir:
 
-```
+```bash
 %pip install llama-index-vector-stores-relyt
 ```
 
-```
+```bash
 %pip install llama-index "pgvecto_rs[sdk]"
 ```
 
-Then start the relyt as the [official document](https://docs.relyt.cn/docs/vector-engine/use/):
+Ardından, [resmi belgede (official document)](https://docs.relyt.cn/docs/vector-engine/use/) yer aldığı üzere relyt'i başlatın:
 
-Setup the logger.
+Günlükleyiciyi (logger) ayarlayın.
 
-```
+```python
 import logging
 import os
 import sys
@@ -31,9 +31,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Creating a pgvecto\_rs client
+#### Bir pgvecto\_rs istemcisi oluşturma
 
-```
+```python
 from pgvecto_rs.sdk import PGVectoRs
 
 
@@ -49,22 +49,22 @@ URL = "postgresql+psycopg://{username}:{password}@{host}:{port}/{db_name}".forma
 client = PGVectoRs(
     db_url=URL,
     collection_name="example",
-    dimension=1536,  # Using OpenAI’s text-embedding-ada-002
+    dimension=1536,  # OpenAI'nin text-embedding-ada-002'si kullanılıyor
 )
 ```
 
-#### Setup OpenAI
+#### OpenAI'yi kurma
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-..."
 ```
 
-#### Load documents, build the PGVectoRsStore and VectorStoreIndex
+#### Belgeleri yükleyin, PGVectoRs Deposu ve Vektör Deposu İndeksini (PGVectoRsStore and VectorStoreIndex) oluşturun
 
-```
+```python
 from IPython.display import Markdown, display
 
 
@@ -72,20 +72,20 @@ from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 from llama_index.vector_stores.relyt import RelytVectorStore
 ```
 
-Download Data
+Veriyi İndirin
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 ```
 
-```
-# initialize without metadata filter
+```python
+# meta veri (metadata) filtresi olmadan başlatın
 from llama_index.core import StorageContext
 
 
@@ -96,23 +96,23 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeks Sorgulayın (Query Index)
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha detaylı çıktılar için Günlüklemeyi (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```bash
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author, growing up, worked on writing and programming. They wrote short stories and also tried writing programs on an IBM 1401 computer. They later got a microcomputer and started programming more extensively, writing simple games and a word processor.**
+**Yazar büyürken yazma ve programlama üzerine çalışmalar yürüttü. Kısa hikayeler yazdı ve bir IBM 1401 bilgisayarında da bazı programlar teşkil etmeye çalıştı. Sonrasında kendisine ait bir mikrobilgisayar edindiğinde yazılım programlamaya daha fazla ağırlık göstererek, birtakım çok basit oyunlar ve kelime işlemci (word processor) yazılımları ortaya koydu.**

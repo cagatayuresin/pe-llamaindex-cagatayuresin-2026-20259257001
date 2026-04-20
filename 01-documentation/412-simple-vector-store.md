@@ -1,17 +1,17 @@
-# Simple Vector Store
-
 ---
-title: Simple Vector Store
- | LlamaIndex OSS Documentation
+title: Basit Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Basit Vektör Deposu (Simple Vector Store)
 
-```
+Eğer bu Not Defterini (Notebook) Colab ortamında açıyorsanız, muhtemelen LlamaIndex'i 🦙 sisteminize kurmanız gerekecektir.
+
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import os
 import openai
 
@@ -20,16 +20,16 @@ os.environ["OPENAI_API_KEY"] = "sk-..."
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükleyin, VectorStoreIndex'i (Vektör Deposu İndeksi) oluşturun
 
-```
+```python
 import nltk
 
 
 nltk.download("stopwords")
 ```
 
-```
+```bash
 [nltk_data] Downloading package stopwords to
 [nltk_data]     /Users/jerryliu/nltk_data...
 [nltk_data]   Package stopwords is already up-to-date!
@@ -46,11 +46,11 @@ nltk.download("stopwords")
 True
 ```
 
-```
+```python
 import llama_index.core
 ```
 
-```
+```bash
 [nltk_data] Downloading package stopwords to /Users/jerryliu/Programmi
 [nltk_data]     ng/gpt_index/.venv/lib/python3.10/site-
 [nltk_data]     packages/llama_index/core/_static/nltk_cache...
@@ -61,7 +61,7 @@ import llama_index.core
 [nltk_data]   Unzipping tokenizers/punkt.zip.
 ```
 
-```
+```python
 import logging
 import sys
 
@@ -79,276 +79,276 @@ from llama_index.core import (
 from IPython.display import Markdown, display
 ```
 
-Download Data
+Veriyi İndirin
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
+```bash
 --2024-02-12 13:21:13--  https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt
-Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.110.133, 185.199.111.133, 185.199.108.133, ...
-Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.110.133|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 75042 (73K) [text/plain]
-Saving to: ‘data/paul_graham/paul_graham_essay.txt’
+raw.githubusercontent.com (raw.githubusercontent.com) çözümleniyor... 185.199.110.133, 185.199.111.133, 185.199.108.133, ...
+raw.githubusercontent.com (raw.githubusercontent.com)|185.199.110.133|:443 adresine bağlanılıyor... bağlanıldı.
+HTTP isteği gönderildi, yanıt bekleniyor... 200 OK
+Uzunluk: 75042 (73K) [text/plain]
+Kaydediliyor: ‘data/paul_graham/paul_graham_essay.txt’
 
 
-data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.02s
+data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    0.02s içinde
 
 
-2024-02-12 13:21:13 (4.76 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
+2024-02-12 13:21:13 (4.76 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ kaydedildi [75042/75042]
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
+```python
 index = VectorStoreIndex.from_documents(documents)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 ```
 
-```
-# save index to disk
+```python
+# indeksi diske kaydet
 index.set_index_id("vector_index")
 index.storage_context.persist("./storage")
 ```
 
-```
-# rebuild storage context
+```python
+# depolama bağlamını yeniden kur/inşa et
 storage_context = StorageContext.from_defaults(persist_dir="storage")
-# load index
+# indeksi yükle
 index = load_index_from_storage(storage_context, index_id="vector_index")
 ```
 
-```
-INFO:llama_index.core.indices.loading:Loading indices with ids: ['vector_index']
-Loading indices with ids: ['vector_index']
+```bash
+INFO:llama_index.core.indices.loading:Şu kimliklere (ids) sahip indeksler yükleniyor: ['vector_index']
+Şu kimliklere (ids) sahip indeksler yükleniyor: ['vector_index']
 ```
 
-#### Query Index
+#### İndeks Sorgulayın (Query Index)
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# Daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(response_mode="tree_summarize")
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author wrote short stories and also worked on programming, specifically on an IBM 1401 computer in 9th grade. They later transitioned to working with microcomputers, starting with a kit-built microcomputer and eventually acquiring a TRS-80. They wrote simple games, a program to predict rocket heights, and even a word processor. Although the author initially planned to study philosophy in college, they eventually switched to studying AI.**
+**Yazar bu mecrada kısa hikayeler kaleme alarak, bunlara ilaveten programlama üzerine (özellikle 9. sınıfta yer aldığı dönem boyunca bir IBM 1401 bilgisayar eşliğinde) çeşitli çalışmalar yürüttü. Kendisi daha sonra kitleler için yapılmış standart bir mikrobilgisayarla değil de, kit halinde alınmış modüler bir mikrobilgisayarla işlem yapmaya yönelerek nihayetinde bir TRS-80 tabanına uzanış gerçekleştirdi. Buna binaen basit oyunlar, roketlerin yükseleceği mesafeleri (yükseklik) tespit etmeye olanak tanıyan bir tür deneme ve dahi bilinen kelime işlemcilerine uzanan programlar yazdı. Yazar en başta üniversite yıllarında doğrudan felsefe okumayı tasarlasa da sonraları bir netice olarak (veya yönelerek) Yapay Zeka (AI) alanında çalışmaya karar verdi.**
 
-**Query Index with SVM/Linear Regression**
+**SVM / Doğrusal Regresyon (Linear Regression) ile İndeks Sorgulama**
 
-Use Karpathy’s [SVM-based](https://twitter.com/karpathy/status/1647025230546886658?s=20) approach. Set query as positive example, all other datapoints as negative examples, and then fit a hyperplane.
+Karpathy’nin [SVM tabanlı](https://twitter.com/karpathy/status/1647025230546886658?s=20) (SVM-based) yaklaşımını kullanın. Sorguyu pozitif örnek olarak, diğer tüm veri noktalarını ise negatif örnekler olarak ayarlayın ve ardından da bir hiperdüzlem (hyperplane) uydurun (fit).
 
-```
+```python
 query_modes = [
     "svm",
     "linear_regression",
     "logistic_regression",
 ]
 for query_mode in query_modes:
-    # set Logging to DEBUG for more detailed outputs
+    # Daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
     query_engine = index.as_query_engine(vector_store_query_mode=query_mode)
-    response = query_engine.query("What did the author do growing up?")
-    print(f"Query mode: {query_mode}")
+    response = query_engine.query("Yazar büyürken neler yaptı?")
+    print(f"Sorgu modu (Query mode): {query_mode}")
     display(Markdown(f"<b>{response}</b>"))
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 
 
 
 
-/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: The default value of `dual` will change from `True` to `'auto'` in 1.5. Set the value of `dual` explicitly to suppress the warning.
+/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: `dual` öğesinin varsayılan (default) değeri 1.5 sürümünde `True` iken değişerek `'auto'` olacaktır. Uyarıyı (warning) bastırmak (kaldırmak için) için `dual` değerini açıkça ayarlayın.
   warnings.warn(
 
 
 
 
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-Query mode: svm
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+Sorgu modu: svm
 ```
 
-**The author wrote short stories and also worked on programming, specifically on an IBM 1401 computer in 9th grade. They later got a microcomputer and started programming on it, writing simple games and a word processor. They initially planned to study philosophy in college but ended up switching to AI.**
+**Yazar bu mecrada kısa hikayeler kaleme alarak, bunlara ilaveten programlama üzerine (özellikle 9. sınıfta yer aldığı dönem boyunca bir IBM 1401 bilgisayar eşliğinde) çeşitli çalışmalar yürüttü. Kendisi daha sonra kitleler için yapılmış standart bir mikrobilgisayarla değil de, kit halinde alınmış modüler bir mikrobilgisayarla işlem yapmaya yönelerek nihayetinde bir TRS-80 tabanına uzanış gerçekleştirdi. Buna binaen basit oyunlar ve kelime işlemcisine uzanan programlar yazdı. Yazar en başta üniversitedeyken felsefe okumayı tasarlasa da sonraları bir netice olarak Yapay Zeka (AI) alanında çalışmaya karar verdi.**
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-
-
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 
 
-/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: The default value of `dual` will change from `True` to `'auto'` in 1.5. Set the value of `dual` explicitly to suppress the warning.
+
+
+/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: `dual` öğesinin varsayılan (default) değeri 1.5 sürümünde `True` iken değişerek `'auto'` olacaktır. Uyarıyı (warning) bastırmak (kaldırmak için) için `dual` değerini açıkça ayarlayın.
   warnings.warn(
 
 
 
 
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-Query mode: linear_regression
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+Sorgu modu: linear_regression
 ```
 
-**The author wrote short stories and also worked on programming, specifically on an IBM 1401 computer in 9th grade. They later got a microcomputer and started programming on it, writing simple games and a word processor. They initially planned to study philosophy in college but ended up switching to AI.**
+**Yazar kısa hikayeler kaleme alarak ve ayrıca programlama üzerine (özellikle 9. sınıfta olduğu bir dönemde bir IBM 1401 bilgisayarı eşliğinde) çeşitli çalışmalarda bulundu. Sonrasında standart (mikrobilgisayar) bir düzen yerine; kit halinde alınmış bir mikrobilgisayar bazında işlem yapmaya yönelerek basit oyunlar ve ardından (dahi) bilinen kelime işlemcilerine varıncaya dek programlar yazdı. Yazar en başta felsefe okumayı tasarlasa da sonraları yönünü Yapay Zeka (AI) alanına değiştirdi.**
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-
-
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 
 
-/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: The default value of `dual` will change from `True` to `'auto'` in 1.5. Set the value of `dual` explicitly to suppress the warning.
+
+
+/Users/jerryliu/Programming/gpt_index/.venv/lib/python3.10/site-packages/sklearn/svm/_classes.py:31: FutureWarning: `dual` öğesinin varsayılan (default) değeri 1.5 sürümünde `True` iken değişerek `'auto'` olacaktır. Uyarıyı (warning) bastırmak (kaldırmak için) için `dual` değerini açıkça ayarlayın.
   warnings.warn(
 
 
 
 
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-Query mode: logistic_regression
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+Sorgu modu: logistic_regression
 ```
 
-**The author wrote short stories and also worked on programming, specifically on an IBM 1401 computer in 9th grade. They later got a microcomputer and started programming on it, writing simple games and a word processor. They initially planned to study philosophy in college but eventually switched to AI.**
+**Yazar bu dönemde kısa öyküler kaleme aldı ve ilaveten programlama üzerinde (bilhassa 9. sınıfa tekabül eden bir IBM 1401 platformu çerçevesinde) çalıştı. Bilahare kendisine has bir mikrobilgisayara adım atarak bu formatla bazı yapılar meydana getirdi; sözgelimi kelime işlemcisine uzanıp, basit oyunlar kodladı. Yazar esasında felsefe eğitimine başlasa da bir nihayet olarak Yapay Zeka (AI) tabanına geçti.**
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author wrote short stories and also worked on programming, specifically on an IBM 1401 computer in 9th grade. They later got a microcomputer and started programming on it, writing simple games and a word processor. They initially planned to study philosophy in college but eventually switched to AI.**
+**Yazar bu dönemde kısa öyküler kaleme aldı ve ilaveten programlama üzerinde (bilhassa 9. sınıfa tekabül eden bir IBM 1401 platformu çerçevesinde) çalıştı. Bilahare kendisine has bir mikrobilgisayara adım atarak bu formatla bazı yapılar meydana getirdi; sözgelimi kelime işlemcisine uzanıp, basit oyunlar kodladı. Yazar esasında felsefe eğitimine başlasa da bir nihayet olarak Yapay Zeka (AI) tabanına geçti.**
 
-```
+```python
 print(response.source_nodes[0].text)
 ```
 
+```bash
+Ne Üzerinde Çalıştım
+
+
+Şubat 2021
+
+
+Üniversiteden önce okul dışında üzerinde çalıştığım iki ana şey yazma ve programlamaydı. Makaleler yazmadım. O zamanlar yeni başlayan yazarların yazması gerekenleri yazdım ki muhtemelen hâlâ böyledir: kısa hikayeler. Hikayelerim korkunçtu (awful). Neredeyse hiçbir olay örgüleri yoktu, sadece derin olduklarını hayal ettiğim, güçlü hislere sahip karakterler vardı.
+
+
+Yazmayı denediğim ilk programlar, okul bölgemizin o zamanlar "veri işleme" (data processing) olarak adlandırılan şey için kullandığı IBM 1401 üzerindeydi. Bu 9. sınıftaydı, yani 13 veya 14 yaşındaydım. Okul bölgesinin 1401'i tesadüfen (happened to) ortaokulumuzun bodrum katındaydı ve arkadaşım Rich Draves ile birlikte kullanma iznimiz vardı. CPU, disk sürücüleri, yazıcı, kart okuyucu (card reader) gibi tüm bu uzaylı görünümlü (alien-looking) makinelerin parlak floresan ışıklar altındaki yükseltilmiş bir zeminde durduğu, mini bir Bond kötü adamının sığınağı (lair) gibi hissediliyordu.
+
+
+Kullandığımız dil Fortran'ın eski bir sürümüydü. Programları delikli kartlara (punch cards) yazmanız, ardından bunları kart okuyucuya istiflemeniz ve programı belleğe (memory) yüklemek ve çalıştırmak için bir düğmeyi basmanız gerekiyordu. Sonuç genellikle olağanüstü gürültülü (spectacularly loud) yazıcıda bir şeyler yazdırmaktan ibaret olurdu.
+
+
+1401 kafamı karıştırmıştı (puzzled). Onunla ne yapacağımı tam olarak bir türlü çözemiyordum. Ve geriye dönüp baktığımda da, hakikatte de zaten elimden gelen çok bir şey de yoktu denebilir. Programlara (veri olarak yapılabilecek) tek veri girişi "delinmiş kağıt kartları" (punch cards) halindeydi lakin delinmiş kağıtlar bünyesinde elimde olan bir verim yoktu. Diğer yegâne opsiyonum hiçbir veriye bağımlı olmayan pi (pi sayıları) hesaplamaları yapmaktan öteye gitmemekteydi. Lakin bu kapsamdaki çekici/cezbeden türden görevleri üstlenmek için yeterli seviyede matematik bilgim bulunmuyordu. Bu sebeple yazdığım kod satırlarını dahi (programları) hiç hatırlayamıyor olmam beni kesinlikle hiç şaşırtmıyor, çünkü eyleme geçirebilecekleri kayda ve tabana değer özellikleri bulunmuyordu. Olan en berrak ve sarih hatıram ise; yazdığım kodların bittiğine dair programın işleyişi hakkında emin olduğum anda, programlarımdan birinin duraklama ve (terminate) işlemini bitirme serüveni tamamlanmadığında elde ettiğim sonlanmaması gerçeğidir. Bir zaman paylaşımlı (time-sharing) sunucusu olmayan ve eş zamanlı işlem yürütemeyen tek kanallı makinede/bilgisayarda (machine without time-sharing) hatayla sonlandırılmış bir döküm çıktısında olan; veri merkezi görevlisinin (data center manager) anında yüzünden anladığım hal; bunun, teknik değil sadece kurumsal bir çöküntü oluşuydu.
+
+
+Mikrobilgisayarlarla ise tüm yapılar ve bakış açısı bütünüyle boyut değiştirdi. Yalnızca kurguyu besleyerek ve duraksamasını beklemeden de bir yığın (stack of punch cards) zımba kartı destesine girmeden evvel bizzat masanızda oturan; verinize ve tüm girdilerinize bir anda aksiyonel cevap üretebilen komputere (bilgisayara) sahip olma imkânına sahip oldunuz. [1]
+
+
+Arkadaşlarımdan mikrobilgisayar sahibi olan ilk kişi, cihazı bizzat kendi donanımıyla (kendi marifetiyle) (built it himself) dizayn etmişti. Bu bilgisayar yapısı doğrudan Heathkit aracılığıyla, donanımsal yapısı kurgulanabilir (sold as a kit by) bir platform dahilindeydi. Sisteme yerleştirilen metin yapısı aracılığıyla ve bizzat kendi kodunu girmesi aşamasında onu ve olan biteni takip etmem esnasında ne kadar heyecan duyduğumu ve kendisini kıskandığımı hâlâ tüm şeffaflığıyla (vividly) anımsıyorum (I remember vividly).
+
+
+O yıllarda bilgisayar formatları (sistemleri) fazlasıyla paha ve maddi bir külfet (expensive) değerindeydi. Ancak yaklaşık 1980 tarihinde; uzun aylar/seneler süren telkinlerin/baskıların sonrasında babamı bir 'TRS-80' almaya ikna dahi etsem de kendimi geliştirmeye başladım. Gerçi dönem standartları için, (the gold standard then) tam bir Altın Standard formu da 'Apple II' idi ama yine de bu format ('TRS-80') sistem de benim için kâfi ve çalışabileceğim nitelikteydi. Kendi asıl odak serüvenimin dahi aslında bir çerçevede tam da burada şahlandığını (başladığını) söylemeliyim. (Basit yapı kodlamaları) Örneğin ilk süreçte kimi basit oyunlar yazdım (I wrote simple games), akabinde roket tasarım test modelleri baz alarak, kendi minyatür modellerimin/roketlerimin çıkabileceği maksimum irtifayı ve test aşamalarını öngörebilecek spesifik kodlamalardan (a program to predict how high my model rockets would fly), ki o süreçte bunları çok mühim detay ve olaylar bütünü kabul ediyorum; babamın bile kullanıp en son kitap evresi noktasında işine koşan/kullandığı en az bir kitabı barındıran; spesifik bir de kelime döküm dosyası yazdım (word processor). Bir veri ve donanım belleği üzerinden işlenerek yalnız 2 civarı kitap yaprağı metin döküm hafızasını bünyesine alan komputerde her biri takribi iki sayfayı işleyerek ilerlettiği baskıları basarak işlemi sonlandırabilsin ama, bir klasik el ve tuş makinesine da kıyasla evvelden her şeye bedel ve paha biçilemez bir imkana sahiptir (but it was a lot better than a typewriter).
+
+
+Bilhassa her şeye karşın programlamayı ziyadesiyle de sevsem, bir vakit ne yalan söyleyeyim ki ilk ve öncelikli öğrenim kararlarım dahi programlama ekseninde ilerlemiyordu (Though I liked programming, I didn't plan to study it in college.). Tüm ciddiyet, gerçeklik (felsefe - philosophy) arayışımın saf bir getirisi olarak üniversite tahsilimde her süreçte bir tık ve gömlek de üstünlüğünün etkisinde, dâir olana (to be the study of the ultimate truths); yani diğer donanımları çok daha ehemmiyetli bir seviyenin basamağında geride hissettiren asıl bilgi/hakikat evrenine tutkuluyum sanıyordum. Neticesinde liseden kalan tüm hamasi hayallere değmiş olacak mıydı diye sormanıza kalmadan da üniversite hayatımın (got to college) akışında öğrendim; tüm kavramsal alana yayılan her felsefe dalının (her o ilmi disiplinin alt metni de diyebilirsiniz) zaten o gerçeği savunan (ultimate truths) yapısının (space of ideas) dar ve sığ olduğuydu. Haliyle artık kendisini hissettiren saf gerçekleri savunarak tüm bu alanı boş (left for philosophy were edge cases) ve anlamsız bıraktığını keşfetmiştim...
+
+
+Esasen sadece on sekiz (18) yaşım dahilindeyken kendi düşünce bulutlarımda bunu tanımlayıp size aktarabilme imkânına sahip olmadığımdan (I couldn't have put this into words when I was 18) dahi bunu ilk defa o an; ama ancak yine derste (felsefede) canımın ciddi oranda (boring) da sıkılmasının bir eyleme de taşmasıyla kararlarımı tazeleyerek fark etmiş oldum. Bu andan kelli en sonunda zihnimi AI - (Yapay zeka) üzerine çevrildim ve kendime farklı bir macera, taban buldum.
+
+
+Zaten; 1980 senesinin o dönemki ortaları; havanın, atmosferin bizzat o en AI'a ve rüzgâra eğilim evreleri de denilebilirdi. Lakin spesifik ölçekte AI mecrasını ve kendisini bir meslek / gelecek odaklı kılan esas olay ise bilhassa Mike isminde fütüristik bilgisayar odaklı (intelligent computer) akıl / zekâ ile yazılan The Moon is a Harsh Mistress adeta; Heinlein serisi kurgusal/roman eseri idi ve bir nevi Winograd ile bir simülasyon olarak SHRDLU formunun yayınlandığı PBS belgeselini (PBS documentary) beraber gördüğüm ana rastlar. Gerçi aradan ne kadar zaman aksın; lakin hala eseri dönüp okuma veya şahit olduklarımdan ders çıkartma arayışımlarımı düşününce "eserin/kitabın aradan bunca vakit aksa dahi eskidiğini vs. hissettim mi?" (aged) net demem zor elbet de. Ne var ne yok tam olarak kitabı tecrübe edinerek o anki dünyasına adeta gömüldüğüm de en saf ve bir o kadar en yalın gerçeğim/safhalarımdır (I was drawn entirely into its world.). En nihayetinde o form yapıya eninde sonunda zaten illa bir gün varacağımız belli ve aniden benim nazarımda Winograd sunumlarına ve bilhassa SHRDLU modülü esasına şahitliğim ise tam bu öngörülerin son kertelerine ulaşıp birkaç yıla buraların tamamen evrileceğine/geleceğine dayandığıydı (Winograd using SHRDLU, it seemed like that time would be a few years at most.). 
 ```
-What I Worked On
 
+**Özel gömme / ekleme (custom embedding) dizesiyle beraber (string) İndeks Sorgulama (Query Index)**
 
-February 2021
-
-
-Before college the two main things I worked on, outside of school, were writing and programming. I didn't write essays. I wrote what beginning writers were supposed to write then, and probably still are: short stories. My stories were awful. They had hardly any plot, just characters with strong feelings, which I imagined made them deep.
-
-
-The first programs I tried writing were on the IBM 1401 that our school district used for what was then called "data processing." This was in 9th grade, so I was 13 or 14. The school district's 1401 happened to be in the basement of our junior high school, and my friend Rich Draves and I got permission to use it. It was like a mini Bond villain's lair down there, with all these alien-looking machines — CPU, disk drives, printer, card reader — sitting up on a raised floor under bright fluorescent lights.
-
-
-The language we used was an early version of Fortran. You had to type programs on punch cards, then stack them in the card reader and press a button to load the program into memory and run it. The result would ordinarily be to print something on the spectacularly loud printer.
-
-
-I was puzzled by the 1401. I couldn't figure out what to do with it. And in retrospect there's not much I could have done with it. The only form of input to programs was data stored on punched cards, and I didn't have any data stored on punched cards. The only other option was to do things that didn't rely on any input, like calculate approximations of pi, but I didn't know enough math to do anything interesting of that type. So I'm not surprised I can't remember any programs I wrote, because they can't have done much. My clearest memory is of the moment I learned it was possible for programs not to terminate, when one of mine didn't. On a machine without time-sharing, this was a social as well as a technical error, as the data center manager's expression made clear.
-
-
-With microcomputers, everything changed. Now you could have a computer sitting right in front of you, on a desk, that could respond to your keystrokes as it was running instead of just churning through a stack of punch cards and then stopping. [1]
-
-
-The first of my friends to get a microcomputer built it himself. It was sold as a kit by Heathkit. I remember vividly how impressed and envious I felt watching him sitting in front of it, typing programs right into the computer.
-
-
-Computers were expensive in those days and it took me years of nagging before I convinced my father to buy one, a TRS-80, in about 1980. The gold standard then was the Apple II, but a TRS-80 was good enough. This was when I really started programming. I wrote simple games, a program to predict how high my model rockets would fly, and a word processor that my father used to write at least one book. There was only room in memory for about 2 pages of text, so he'd write 2 pages at a time and then print them out, but it was a lot better than a typewriter.
-
-
-Though I liked programming, I didn't plan to study it in college. In college I was going to study philosophy, which sounded much more powerful. It seemed, to my naive high school self, to be the study of the ultimate truths, compared to which the things studied in other fields would be mere domain knowledge. What I discovered when I got to college was that the other fields took up so much of the space of ideas that there wasn't much left for these supposed ultimate truths. All that seemed left for philosophy were edge cases that people in other fields felt could safely be ignored.
-
-
-I couldn't have put this into words when I was 18. All I knew at the time was that I kept taking philosophy courses and they kept being boring. So I decided to switch to AI.
-
-
-AI was in the air in the mid 1980s, but there were two things especially that made me want to work on it: a novel by Heinlein called The Moon is a Harsh Mistress, which featured an intelligent computer called Mike, and a PBS documentary that showed Terry Winograd using SHRDLU. I haven't tried rereading The Moon is a Harsh Mistress, so I don't know how well it has aged, but when I read it I was drawn entirely into its world. It seemed only a matter of time before we'd have Mike, and when I saw Winograd using SHRDLU, it seemed like that time would be a few years at most.
-```
-
-**Query Index with custom embedding string**
-
-```
+```python
 from llama_index.core import QueryBundle
 ```
 
-```
+```python
 query_bundle = QueryBundle(
-    query_str="What did the author do growing up?",
-    custom_embedding_strs=["The author grew up painting."],
+    query_str="Yazar büyürken neler yaptı?",
+    custom_embedding_strs=["Yazar resim yaparak büyüdü."],
 )
 query_engine = index.as_query_engine()
 response = query_engine.query(query_bundle)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The context does not provide information about what the author did growing up.**
+**Mevcut (sunulan) bağlam (context), yazarın büyürken ne yaptığına dair herhangi bir bilgi (information) vermiyor (sağlamaz).**
 
-**Use maximum marginal relevance**
+**Maksimum marjinal (marginal) alaka düzeyini (relevance) (MMR) kullanma**
 
-Instead of ranking vectors purely by similarity, adds diversity to the documents by penalizing documents similar to ones that have already been found based on [MMR](https://www.cs.cmu.edu/~jgc/publication/The_Use_MMR_Diversity_Based_LTMIR_1998.pdf) . A lower mmr\_treshold increases diversity.
+Vektörleri salt/sadece benzerliğe göre sıralamak (ranking) yerine, halihazırda bulunanlarla benzer belgelere ceza/yaptırım (penalizing documents) uygulayarak, [MMR](https://www.cs.cmu.edu/~jgc/publication/The_Use_MMR_Diversity_Based_LTMIR_1998.pdf) temel alınmak (based on) suretiyle belgelere çeşitlilik (diversity) kazandırır. Daha düşük bir mmr\_eşiği (mmr\_threshold) uygulanırsa, bu ayar çeşitliliği büyük bir düzeyde artırır.
 
-```
+```python
 query_engine = index.as_query_engine(
     vector_store_query_mode="mmr", vector_store_kwargs={"mmr_threshold": 0.2}
 )
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-#### Get Sources
+#### Kaynakları/İçerikleri Elde Edin (Get Sources)
 
-```
+```python
 print(response.get_formatted_sources())
 ```
 
+```bash
+> Source (Doc id: c4118521-8f55-4a4d-819a-2db546b6491e): Ne Üzerinde Çalıştım (What I Worked On)
+
+
+Şubat 2021
+
+
+Üniversiteden önce okul dışında üzerinde çalıştığım iki ana şey...
+
+
+> Source (Doc id: 74f77233-e4fe-4389-9820-76dd9f765af6): Bu da; yapıları kullanımları itibariyle kolay formata çekmekle birlikte onları ucuza (inexpensive) tekabül ettirir anlamı/manasına da çıkıyordu. Esasen bir miktar (fukara) zengin değildik denebilir ama, bir bağlamda da...
 ```
-> Source (Doc id: c4118521-8f55-4a4d-819a-2db546b6491e): What I Worked On
 
+#### Filtreler (Filters) Aracılığıyla İndeks Sorgulama (Query Index)
 
-February 2021
+Sorgularımızı doğrudan meta verilerimizi (metadata) de hesaba alarak yapılandırabilir, aynı zamanda (we can also filter) da filtreleyebiliriz (elekten geçirebiliriz).
 
-
-Before college the two main things I worked on, outside of schoo...
-
-
-> Source (Doc id: 74f77233-e4fe-4389-9820-76dd9f765af6): Which meant being easy to use and inexpensive. It was lucky for us that we were poor, because tha...
-```
-
-#### Query Index with Filters
-
-We can also filter our queries using metadata
-
-```
+```python
 from llama_index.core import Document
 
 
@@ -358,12 +358,12 @@ doc = Document(text="target", metadata={"tag": "target"})
 index.insert(doc)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 from llama_index.core.vector_stores import ExactMatchFilter, MetadataFilters
 
 
@@ -378,29 +378,29 @@ retriever = index.as_retriever(
 )
 
 
-source_nodes = retriever.retrieve("What did the author do growing up?")
+source_nodes = retriever.retrieve("Yazar büyürken neler yaptı?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+```bash
+INFO:httpx:HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+HTTP İsteği (Request): POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 ```
 
-```
-# retrieves only our target node, even though we set the top k to 20
+```python
+# Her ne kadar tepe limit bandını (top k değerini) 20 belirlemiş olsak da; kodumuz spesifik olarak yine salt ana eylemi içeren bizim hedeflenen düğümü/veriyi (target node) geri getirir.
 print(len(source_nodes))
 ```
 
-```
+```bash
 1
 ```
 
-```
+```python
 print(source_nodes[0].text)
 print(source_nodes[0].metadata)
 ```
 
-```
-target
-{'tag': 'target'}
+```bash
+hedef (target)
+{'tag': 'hedef (target)'}
 ```

@@ -1,85 +1,85 @@
-# S3VectorStore Integration
-
 ---
-title: S3VectorStore Integration
- | LlamaIndex OSS Documentation
+title: S3VectorStore Entegrasyonu
+ | LlamaIndex OSS Belgeleri
 ---
 
-This is a vector store integration for LlamaIndex that uses S3Vectors.
+# S3VectorStore Entegrasyonu
 
-[Find out more about S3Vectors](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-getting-started.html).
+Bu, S3Vectors kullanan LlamaIndex için bir vektör deposu entegrasyonudur.
 
-This notebook will assume that you have already created a S3 vector bucket (and possibly also an index).
+[S3Vectors hakkında daha fazla bilgi edinin](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-getting-started.html).
 
-## Installation
+Bu not defteri (notebook), halihazırda bir S3 vektör paketi (bucket) (ve muhtemelen de bir indeks) oluşturduğunuzu varsayacaktır.
 
-```
+## Kurulum
+
+```bash
 %pip install llama-index-vector-stores-s3 llama-index-embeddings-openai
 ```
 
-## Usage
+## Kullanım
 
-### Creating the vector store object
+### Vektör deposu nesnesini oluşturma
 
-You can create a new vector index in an existing S3 bucket.
+Mevcut bir S3 paketi (bucket) içinde yeni bir vektör indeksi yaratabilirsiniz.
 
-If you don’t have S3 credentials configured in your environment, you can provide a boto3 session with credentials.
+Ortamınızda (environment) yapılandırılmış (configured) S3 kimlik bilgileriniz (credentials) yoksa, bu kimlik bilgilerini barındıran bir boto3 oturumu sağlayabilirsiniz.
 
-```
+```python
 from llama_index.vector_stores.s3 import S3VectorStore
 import boto3
 
 
 vector_store = S3VectorStore.create_index_from_bucket(
-    # S3 bucket name or ARN
+    # S3 paketi adı veya ARN
     bucket_name_or_arn="test-bucket",
-    # Name for the new index
-    index_name="my-index",
-    # Vector dimension (e.g., 1536 for OpenAI embeddings)
+    # Yeni indeksin adı
+    index_name="benim-indeksim",
+    # Vektör boyutu (örn. OpenAI gömmeleri / embeddings için 1536)
     dimension=1536,
-    # Distance metric: "cosine", "euclidean", etc.
+    # Mesafe / Uzaklık ölçütü: "cosine", "euclidean", vb.
     distance_metric="cosine",
-    # Data type for vectors
+    # Vektörler için veri türü
     data_type="float32",
-    # Batch size for inserting vectors (max 500)
+    # Vektör eklemek (insert) için yığın (batch) boyutu (maksimum 500)
     insert_batch_size=500,
-    # Metadata keys that won't be filterable
+    # Filtrelenemeyecek (non-filterable) meta veri (metadata) anahtarları
     non_filterable_metadata_keys=["custom_field"],
-    # Optional: provide a boto3 session for custom AWS configuration
+    # İsteğe bağlı: Özel AWS konfigürasyonları / yapılandırmaları için bir boto3 oturumu verin
     # sync_session=boto3.Session(...)
 )
 ```
 
-Or, you can use an existing vector index in an existing S3 bucket.
+Veya halihazırda bulunan mevcut bir S3 paketindeki yine kullanıma açık mevcut bir vektör indeksini kullanabilirsiniz.
 
-```
+```python
 from llama_index.vector_stores.s3 import S3VectorStore
 import boto3
 
 
 vector_store = S3VectorStore(
-    # Index name or ARN
-    index_name_or_arn="my-index",
-    # S3 bucket name or ARN
+    # İndeks adı veya ARN
+    index_name_or_arn="benim-indeksim",
+    # S3 paketi adı veya ARN
     bucket_name_or_arn="test-bucket",
-    # Data type for vectors (must match index)
+    # Vektörler için geçerli veri türü (indeksle eşleşmelidir)
     data_type="float32",
-    # Distance metric (must match index)
+    # Mesafe ölçütü / hesabı (indeksle eşleşmelidir)
     distance_metric="cosine",
-    # Batch size for inserting vectors (max 500)
+    # Vektör kurulumu / yerleşimi adına yığın boyutu (maksimum 500)
     insert_batch_size=500,
-    # Optional: specify metadata field containing text if you already have a populated index
+    # İsteğe bağlı (Optional): Şayet önceden indeks doldurduysanız içinde metin bulunan meta verilerini belirtebilirsiniz. 
     # text_field="content",
-    # Optional: provide a boto3 session for custom AWS configuration
+    # İsteğe bağlı: AWS ayarları adına (custom) yeni bir boto3 oturumu başlatın
     # sync_session=boto3.Session(...),
 )
 ```
 
-### Using the vector store with an index
+### Vektör deposunu bir indeks ile beraber kullanmak
 
-Once you have a vector store, you can use it with an index:
+Elinizde geçerli bir vektör deponuz olduğunda, bunu bir indeks üzerine entegre edebilirsiniz:
 
-```
+```python
 from llama_index.core import (
     VectorStoreIndex,
     StorageContext,
@@ -89,27 +89,27 @@ from llama_index.core import (
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 
-# Load some data
+# Biraz veri yükleyin
 # documents = SimpleDirectoryReader("data").load_data()
 
 
-# Or create new documents
+# Ya da yeni belgeler oluşturun
 documents = [
-    Document(text="Hello, world!", metadata={"key": "1"}),
-    Document(text="Hello, world! 2", metadata={"key": "2"}),
+    Document(text="Merhaba, dünya! (Hello, world!)", metadata={"key": "1"}),
+    Document(text="Merhaba, dünya! 2 (Hello, world! 2)", metadata={"key": "2"}),
 ]
 
 
-# Create a new index
+# Yeni bir indeks kurun (Create a new index)
 index = VectorStoreIndex.from_documents(
     documents,
     storage_context=StorageContext.from_defaults(vector_store=vector_store),
-    # optional: set the embed model
+    # isteğe bağlı: gömme (embed) modelini belirleyin
     embed_model=OpenAIEmbedding(model="text-embedding-3-small", api_key="..."),
 )
 
 
-# Or reload from an existing index
+# Veya zaten kullanımda olan mevcut bir indeksten yeniden çalıştırın (ya da yükleyin)
 # index = VectorStoreIndex.from_vector_store(
 #     vector_store=vector_store,
 #     # optional: set the embed model
@@ -117,18 +117,18 @@ index = VectorStoreIndex.from_documents(
 # )
 ```
 
-```
-nodes = index.as_retriever(similarity_top_k=1).retrieve("Hello, world!")
+```python
+nodes = index.as_retriever(similarity_top_k=1).retrieve("Merhaba, dünya! (Hello, world!)")
 print(nodes[0].text)
 ```
 
-```
-Hello, world!
+```bash
+Merhaba, dünya! (Hello, world!)
 ```
 
-You can also use filters to help you retrieve the correct nodes!
+Doğru ve net düğümleri (nodes) alabilmeniz ve tespit etmeniz adına filtrelerden de faydalanabilirsiniz!
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilters,
     MetadataFilter,
@@ -149,30 +149,30 @@ nodes = index.as_retriever(
         ],
         condition=FilterCondition.AND,
     ),
-).retrieve("Hello, world!")
+).retrieve("Merhaba, dünya! (Hello, world!)")
 
 
 print(nodes[0].text)
 ```
 
-```
-Hello, world! 2
+```bash
+Merhaba, dünya! 2 (Hello, world! 2)
 ```
 
-### Using the vector store directly
+### Vektör deposunu doğrudan kullanma
 
-You can also use the vector store directly:
+Ayrıca vektör deposunu hiçbir bileşenle ilişkilendirmeden, bilakis doğrudan kullanabilirsiniz:
 
-```
+```python
 from llama_index.core.schema import TextNode
 from llama_index.core.vector_stores.types import VectorStoreQuery
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 
-# embed nodes
+# düğümleri (nodes) gömün
 nodes = [
-    TextNode(text="Hello, world!"),
-    TextNode(text="Hello, world! 2"),
+    TextNode(text="Merhaba, dünya! (Hello, world!)"),
+    TextNode(text="Merhaba, dünya! 2 (Hello, world! 2)"),
 ]
 
 
@@ -182,19 +182,19 @@ for node, embedding in zip(nodes, embeddings):
     node.embedding = embedding
 
 
-# add nodes to the vector store
+# vektör deposuna bağlı haldeki düğümleri ekleyin
 vector_store.add(nodes)
 
 
-# query the vector store
+# vektör deposunu sorgulayın
 query = VectorStoreQuery(
-    query_embedding=embed_model.get_query_embedding("Hello, world!"),
+    query_embedding=embed_model.get_query_embedding("Merhaba, dünya! (Hello, world!)"),
     similarity_top_k=2,
 )
 results = vector_store.query(query)
 print(results.nodes[0].text)
 ```
 
-```
-Hello, world!
+```bash
+Merhaba, dünya! (Hello, world!)
 ```
