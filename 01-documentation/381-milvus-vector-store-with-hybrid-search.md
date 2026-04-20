@@ -1,103 +1,90 @@
-# Milvus Vector Store With Hybrid Search
-
 ---
-title: Milvus Vector Store With Hybrid Search
- | LlamaIndex OSS Documentation
+title: Hibrit Arama (Hybrid Search) ile Milvus Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-Hybrid search leverages the strengths of both semantic retrieval and keyword matching to deliver more accurate and contextually relevant results. By combining the advantages of semantic search and keyword matching, hybrid search is particularly effective in complex information retrieval tasks.
+# Hibrit Arama (Hybrid Search) ile Milvus Vektör Deposu
 
-This notebook demonstrates how to use Milvus for hybrid search in LlamaIndex RAG pipelines. We’ll begin with the recommended default hybrid search (semantic + BM25) and then explore other alternative sparse embedding methods and customization of hybrid reranker.
+Hibrit arama, daha doğru ve bağlamsal olarak ilgili sonuçlar sunmak için hem semantik erişimin hem de anahtar kelime eşleştirmenin güçlü yanlarından yararlanır. Semantik arama ve anahtar kelime eşleştirmenin avantajlarını birleştiren hibrit arama, özellikle karmaşık bilgi erişim görevlerinde etkilidir.
 
-## Prerequisites
+Bu not defteri, LlamaIndex RAG boru hatlarında (pipelines) hibrit arama için Milvus'un nasıl kullanılacağını göstermektedir. Önerilen varsayılan hibrit arama (semantik + BM25) ile başlayacağız ve ardından diğer alternatif seyrek gömme (sparse embedding) yöntemlerini ve hibrit yeniden sıralayıcının (reranker) özelleştirilmesini keşfedeceğiz.
 
-**Install dependencies**
+## Ön Koşullar
 
-Before getting started, make sure you have the following dependencies installed:
+**Bağımlılıkları kurun**
 
-```
+Başlamadan önce aşağıdaki bağımlılıkların kurulu olduğundan emin olun:
+
+```bash
 ! pip install llama-index-vector-stores-milvus
 ! pip install llama-index-embeddings-openai
 ! pip install llama-index-llms-openai
 ```
 
-> If you’re using Google Colab, you may need to **restart the runtime** (Navigate to the “Runtime” menu at the top of the interface, and select “Restart session” from the dropdown menu.)
+> Google Colab kullanıyorsanız, **çalışma zamanını yeniden başlatmanız** gerekebilir (Ekranın üst kısmındaki "Runtime" menüsüne gidin ve açılır menüden "Restart session" seçeneğini seçin.)
 
-**Set up accounts**
+**Hesapları ayarlayın**
 
-This tutorial uses OpenAI for text embeddings and answer generation. You need to prepare the [OpenAI API key](https://platform.openai.com/api-keys).
+Bu eğitim; metin gömmeleri ve cevap oluşturma için OpenAI kullanır. [OpenAI API anahtarını](https://platform.openai.com/api-keys) hazırlamanız gerekir.
 
-```
+```python
 import openai
 
 
 openai.api_key = "sk-"
 ```
 
-To use the Milvus vector store, specify your Milvus server `URI` (and optionally with the `TOKEN`). To start a Milvus server, you can set up a Milvus server by following the [Milvus installation guide](https://milvus.io/docs/install-overview.md) or simply trying [Zilliz Cloud](https://docs.zilliz.com/docs/register-with-zilliz-cloud) for free.
+Milvus vektör deposunu kullanmak için Milvus sunucu `URI` (ve isteğe bağlı olarak `TOKEN`) bilginizi belirtin. Bir Milvus sunucusu başlatmak için [Milvus kurulum kılavuzunu](https://milvus.io/docs/install-overview.md) takip ederek bir Milvus sunucusu kurabilir veya ücretsiz olarak [Zilliz Cloud](https://docs.zilliz.com/docs/register-with-zilliz-cloud)'u deneyebilirsiniz.
 
-> Full-text search is currently supported in Milvus Standalone, Milvus Distributed, and Zilliz Cloud, but not yet in Milvus Lite (planned for future implementation). Reach out <support@zilliz.com> for more information.
+> Tam metin araması şu anda Milvus Standalone, Milvus Distributed ve Zilliz Cloud'da desteklenmektedir, ancak henüz Milvus Lite'da desteklenmemektedir (gelecekteki uygulama için planlanmıştır). Daha fazla bilgi için <support@zilliz.com> ile iletişime geçin.
 
-```
+```python
 URI = "http://localhost:19530"
 # TOKEN = ""
 ```
 
-**Load example data**
+**Örnek veriyi yükle**
 
-Run the following commands to download sample documents into the “data/paul\_graham” directory:
+Örnek belgeleri "data/paul_graham" dizinine indirmek için aşağıdaki komutları çalıştırın:
 
-```
+```bash
 ! mkdir -p 'data/paul_graham/'
 ! wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-Then use `SimpleDirectoryReaderLoad` to load the essay “What I Worked On” by Paul Graham:
+Ardından, Paul Graham'ın "What I Worked On" (Neler Üzerine Çalıştım) makalesini yüklemek için `SimpleDirectoryReader` kullanın:
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 
 
-# Let's take a look at the first document
-print("Example document:\n", documents[0])
+# İlk belgeye göz atalım
+print("Örnek belge:\n", documents[0])
 ```
 
-```
-Example document:
- Doc ID: f9cece8c-9022-46d8-9d0e-f29d70e1dbbe
-Text: What I Worked On  February 2021  Before college the two main
-things I worked on, outside of school, were writing and programming. I
-didn't write essays. I wrote what beginning writers were supposed to
-write then, and probably still are: short stories. My stories were
-awful. They had hardly any plot, just characters with strong feelings,
-which I ...
-```
+## BM25 ile Hibrit Arama
 
-## Hybrid Search with BM25
+Bu bölüm, BM25 kullanarak hibrit bir aramanın nasıl gerçekleştirileceğini gösterir. Başlamak için `MilvusVectorStore`'u başlatacağız ve örnek belgeler için bir indeks oluşturacağız. Varsayılan yapılandırma şunları kullanır:
 
-This section shows how to perform a hybrid search using BM25. To get started, we will initialize the `MilvusVectorStore` and create an index for the example documents. The default configuration uses:
+- Varsayılan gömme modelinden gelen yoğun gömmeler (OpenAI'nin `text-embedding-ada-002` modeli)
+- `enable_sparse` True ise tam metin araması için BM25
+- Hibrit arama etkinleştirilmişse sonuçları birleştirmek için k=60 ile `RRFRanker`
 
-- Dense embeddings from the default embedding model (OpenAI’s `text-embedding-ada-002`)
-- BM25 for full-text search if enable\_sparse is True
-- RRFRanker with k=60 for combining results if hybrid search is enabled
-
-```
-# Create an index over the documnts
+```python
+# Belgeler üzerinde bir indeks oluşturun
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core import StorageContext, VectorStoreIndex
-
-
 
 
 vector_store = MilvusVectorStore(
     uri=URI,
     # token=TOKEN,
-    dim=1536,  # vector dimension depends on the embedding model
-    enable_sparse=True,  # enable the default full-text search using BM25
-    overwrite=True,  # drop the collection if it already exists
+    dim=1536,  # vektör boyutu gömme modeline bağlıdır
+    enable_sparse=True,  # BM25 kullanarak varsayılan tam metin aramasını etkinleştir
+    overwrite=True,  # koleksiyon zaten varsa sil ve yeniden oluştur
 )
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
@@ -105,57 +92,48 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-2025-04-17 03:38:16,645 [DEBUG][_create_connection]: Created new connection using: cf0f4df74b18418bb89ec512063c1244 (async_milvus_client.py:547)
-Sparse embedding function is not provided, using default.
-Default sparse embedding function: BM25BuiltInFunction(input_field_names='text', output_field_names='sparse_embedding').
-```
+İşte `MilvusVectorStore` içindeki yoğun (dense) ve seyrek (sparse) alanları yapılandırmak için argümanlar hakkında daha fazla bilgi:
 
-Here is more information about the arguments for configuring dense and sparse fields in the `MilvusVectorStore`:
+**Yoğun (dense) alan**
 
-**dense field**
+- `enable_dense (bool)`: Yoğun gömmeyi etkinleştirmek veya devre dışı bırakmak için bir bayrak. Varsayılan olarak True'dur.
+- `dim (int, isteğe bağlı)`: Koleksiyon için gömme vektörlerinin boyutu.
+- `embedding_field (str, isteğe bağlı)`: Koleksiyon için yoğun gömme alanının adı, varsayılan olarak DEFAULT_EMBEDDING_KEY.
+- `index_config (dict, isteğe bağlı)`: Yoğun gömme indeksini oluşturmak için kullanılan yapılandırma. Varsayılan olarak None'dır.
+- `search_config (dict, isteğe bağlı)`: Milvus yoğun indeksinde arama yapmak için kullanılan yapılandırma. Bunun `index_config` tarafından belirtilen indeks tipiyle uyumlu olması gerektiğini unutmayın. Varsayılan olarak None'dır.
+- `similarity_metric (str, isteğe bağlı)`: Yoğun gömme için kullanılacak benzerlik metriği; şu anda IP, COSINE ve L2 desteklenmektedir.
 
-- `enable_dense (bool)`: A boolean flag to enable or disable dense embedding. Defaults to True.
-- `dim (int, optional)`: The dimension of the embedding vectors for the collection.
-- `embedding_field (str, optional)`: The name of the dense embedding field for the collection, defaults to DEFAULT\_EMBEDDING\_KEY.
-- `index_config (dict, optional)`: The configuration used for building the dense embedding index. Defaults to None.
-- `search_config (dict, optional)`: The configuration used for searching the Milvus dense index. Note that this must be compatible with the index type specified by `index_config`. Defaults to None.
-- `similarity_metric (str, optional)`: The similarity metric to use for dense embedding, currently supports IP, COSINE and L2.
+**Seyrek (sparse) alan**
 
-**sparse field**
+- `enable_sparse (bool)`: Seyrek gömmeyi etkinleştirmek veya devre dışı bırakmak için bir bayrak. Varsayılan olarak False'dur.
+- `sparse_embedding_field (str)`: Seyrek gömme alanının adı, varsayılan olarak DEFAULT_SPARSE_EMBEDDING_KEY.
+- `sparse_embedding_function (Union[BaseSparseEmbeddingFunction, BaseMilvusBuiltInFunction], isteğe bağlı)`: Eğer `enable_sparse` True ise, metni seyrek gömmeye dönüştürmek için bu nesne sağlanmalıdır. None ise, varsayılan seyrek gömme işlevi (BM25BuiltInFunction) kullanılır veya yerleşik işlevleri olmayan mevcut koleksiyon için BGEM3SparseEmbedding kullanılır.
+- `sparse_index_config (dict, isteğe bağlı)`: Seyrek gömme indeksini oluşturmak için kullanılan yapılandırma. Varsayılan olarak None'dır.
 
-- `enable_sparse (bool)`: A boolean flag to enable or disable sparse embedding. Defaults to False.
-- `sparse_embedding_field (str)`: The name of sparse embedding field, defaults to DEFAULT\_SPARSE\_EMBEDDING\_KEY.
-- `sparse_embedding_function (Union[BaseSparseEmbeddingFunction, BaseMilvusBuiltInFunction], optional)`: If enable\_sparse is True, this object should be provided to convert text to a sparse embedding. If None, the default sparse embedding function (BM25BuiltInFunction) will be used, or use BGEM3SparseEmbedding given existing collection without built-in functions.
-- `sparse_index_config (dict, optional)`: The configuration used to build the sparse embedding index. Defaults to None.
+Sorgulama aşamasında hibrit aramayı etkinleştirmek için `vector_store_query_mode` parametresini "hybrid" olarak ayarlayın. Bu, hem semantik arama hem de tam metin aramasından gelen arama sonuçlarını birleştirecek ve yeniden sıralayacaktır. Örnek bir sorguyla test edelim: "Yazar Viaweb'de ne öğrendi?":
 
-To enable hybrid search during the querying stage, set `vector_store_query_mode` to “hybrid”. This will combine and rerank search results from both semantic search and full-text search. Let’s test with a sample query: “What did the author learn at Viaweb?”:
-
-```
+```python
 import textwrap
 
 
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid", similarity_top_k=5
 )
-response = query_engine.query("What did the author learn at Viaweb?")
+response = query_engine.query("Yazar Viaweb'de ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-The author learned about retail, the importance of user feedback, and the significance of growth
-rate as the ultimate test of a startup at Viaweb.
-```
+**"Yazar Viaweb'de perakendeciliği, kullanıcı geri bildirimlerinin önemini ve bir girişimin nihai testi olarak büyüme oranının önemini öğrendi."**
 
-### Customize text analyzer
+### Metin analizörünü özelleştirme
 
-Analyzers play a vital role in full-text search by breaking sentences into tokens and performing lexical processing, such as stemming and stop-word removal. They are typically language-specific. For more details, refer to [Milvus Analyzer Guide](https://milvus.io/docs/analyzer-overview.md#Analyzer-Overview).
+Analizörler (analyzers), cümleleri belirteçlere (tokens) ayırarak ve gövdeleme (stemming) ile durdurma kelimelerinin (stop-word) temizlenmesi gibi sözcüksel işlemler gerçekleştirerek tam metin aramasında hayati bir rol oynar. Genellikle dile özeldirler. Daha fazla bilgi için [Milvus Analizör Kılavuzu](https://milvus.io/docs/analyzer-overview.md#Analyzer-Overview)'na bakın.
 
-Milvus supports two types of analyzers: **Built-in Analyzers** and **Custom Analyzers**. By default, if `enable_sparse` is set to True, `MilvusVectorStore` utilizes the `BM25BuiltInFunction` with default configurations, employing the standard built-in analyzer that tokenizes text based on punctuation.
+Milvus iki tür analizörü destekler: **Yerleşik Analizörler (Built-in Analyzers)** ve **Özel Analizörler (Custom Analyzers)**. Varsayılan olarak, `enable_sparse` True olarak ayarlanmışsa, `MilvusVectorStore`, metni noktalama işaretlerine göre belirteçlere ayıran standart yerleşik analizörü kullanan varsayılan yapılandırmalı `BM25BuiltInFunction`'ı kullanır.
 
-To use a different analyzer or customize the existing one, you can provide values to the `analyzer_params` argument when building the `BM25BuiltInFunction`. Then, set this function as the `sparse_embedding_function` in `MilvusVectorStore`.
+Farklı bir analizör kullanmak veya mevcut olanı özelleştirmek için `BM25BuiltInFunction` oluştururken `analyzer_params` argümanına değerler sağlayabilirsiniz. Ardından, bu işlevi `MilvusVectorStore` içinde `sparse_embedding_function` olarak ayarlayın.
 
-```
+```python
 from llama_index.vector_stores.milvus.utils import BM25BuiltInFunction
 
 
@@ -163,9 +141,9 @@ bm25_function = BM25BuiltInFunction(
     analyzer_params={
         "tokenizer": "standard",
         "filter": [
-            "lowercase",  # Built-in filter
-            {"type": "length", "max": 40},  # Custom cap size of a single token
-            {"type": "stop", "stop_words": ["of", "to"]},  # Custom stopwords
+            "lowercase",  # Yerleşik filtre
+            {"type": "length", "max": 40},  # Tek bir belirtecin özel sınır boyutu
+            {"type": "stop", "stop_words": ["of", "to"]},  # Özel durdurma kelimeleri
         ],
     },
     enable_match=True,
@@ -177,28 +155,24 @@ vector_store = MilvusVectorStore(
     # token=TOKEN,
     dim=1536,
     enable_sparse=True,
-    sparse_embedding_function=bm25_function,  # BM25 with custom analyzer
+    sparse_embedding_function=bm25_function,  # Özel analizörlü BM25
     overwrite=True,
 )
 ```
 
-```
-2025-04-17 03:38:48,085 [DEBUG][_create_connection]: Created new connection using: 61afd81600cb46ee89f887f16bcbfe55 (async_milvus_client.py:547)
-```
+## Diğer Seyrek Gömmeler (Sparse Embeddings) ile Hibrit Arama
 
-## Hybrid Search with Other Sparse Embedding
+Semantik aramayı BM25 ile birleştirmenin yanı sıra Milvus, [BGE-M3](https://arxiv.org/abs/2402.03216) gibi bir seyrek gömme işlevi kullanarak hibrit aramayı da destekler. Aşağıdaki örnek, seyrek gömmeler oluşturmak için yerleşik `BGEM3SparseEmbeddingFunction`'ı kullanır.
 
-Besides combining semantic search with BM25, Milvus also supports hybrid search using a sparse embedding function such as [BGE-M3](https://arxiv.org/abs/2402.03216). The following example uses the built-in `BGEM3SparseEmbeddingFunction` to generate sparse embeddings.
+İlk olarak `FlagEmbedding` paketini kurmamız gerekiyor:
 
-First, we need to install the `FlagEmbedding` package:
-
-```
+```bash
 ! pip install -q FlagEmbedding
 ```
 
-Then let’s build the vector store and index using the default OpenAI model for densen embedding and the built-in BGE-M3 for sparse embedding:
+Ardından, yoğun gömme için varsayılan OpenAI modelini ve seyrek gömme için yerleşik BGE-M3'ü kullanarak vektör deposunu ve indeksi oluşturalım:
 
-```
+```python
 from llama_index.vector_stores.milvus.utils import BGEM3SparseEmbeddingFunction
 
 
@@ -218,45 +192,30 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-Fetching 30 files: 100%|██████████| 30/30 [00:00<00:00, 68871.99it/s]
-2025-04-17 03:39:02,074 [DEBUG][_create_connection]: Created new connection using: ff4886e2f8da44e08304b748d9ac9b51 (async_milvus_client.py:547)
-Chunks: 100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
-```
+Şimdi örnek bir soruyla hibrit arama sorgusu gerçekleştirelim:
 
-Now let’s perform a hybrid search query with a sample question:
-
-```
+```python
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid", similarity_top_k=5
 )
-response = query_engine.query("What did the author learn at Viaweb??")
+response = query_engine.query("Yazar Viaweb'de ne öğrendi??")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-Chunks: 100%|██████████| 1/1 [00:00<00:00, 17.29it/s]
+**"Yazar; perakendeciliği, kullanıcı geri bildirimlerinin önemini, bir girişimde büyüme oranının değerini, fiyatlandırma stratejisinin önemini, saygın olmayan işler üzerinde çalışmanın faydalarını ve bir girişimi yönetmenin zorluklarını ve ödüllerini öğrendi."**
 
+### Seyrek Gömme İşlevini Özelleştirme
 
+Seyrek gömme işlevini, aşağıdaki yöntemleri içeren `BaseSparseEmbeddingFunction` sınıfından miras aldığı sürece özelleştirebilirsiniz:
 
+- `encode_queries`: Bu yöntem, metinleri sorgular için seyrek gömme listesine dönüştürür.
+- `encode_documents`: Bu yöntem, metinleri belgeler için seyrek gömme listesine dönüştürür.
 
-The author learned about retail, the importance of user feedback, the value of growth rate in a
-startup, the significance of pricing strategy, the benefits of working on things that weren't
-prestigious, and the challenges and rewards of running a startup.
-```
+Her yöntemin çıktısı, sözlüklerden oluşan bir liste olan seyrek gömme formatını takip etmelidir. Her sözlük, boyutu temsil eden bir anahtara (tam sayı) ve o boyuttaki gömmenin büyüklüğünü temsil eden karşılık gelen bir değere (kayan noktalı sayı) sahip olmalıdır (örneğin, {1: 0.5, 2: 0.3}).
 
-### Customize Sparse Embedding Function
+Örneğin, işte BGE-M3 kullanan özel bir seyrek gömme işlevi uygulaması:
 
-You can also customize the sparse embedding function as long as it inherits from `BaseSparseEmbeddingFunction`, including the following methods:
-
-- `encode_queries`: This method converts texts into list of sparse embeddings for queries.
-- `encode_documents`: This method converts text into list of sparse embeddings for documents.
-
-The output of each method should follow the format of the sparse embedding, which is a list of dictionaries. Each dictionary should have a key (an integer) representing the dimension, and a corresponding value (a float) representing the embedding’s magnitude in that dimension (e.g., {1: 0.5, 2: 0.3}).
-
-For example, here’s a custom sparse embedding function implementation using BGE-M3:
-
-```
+```python
 from FlagEmbedding import BGEM3FlagModel
 from typing import List
 from llama_index.vector_stores.milvus.utils import BaseSparseEmbeddingFunction
@@ -264,7 +223,7 @@ from llama_index.vector_stores.milvus.utils import BaseSparseEmbeddingFunction
 
 
 
-class ExampleEmbeddingFunction(BaseSparseEmbeddingFunction):
+class ÖrnekGömmeİşlevi(BaseSparseEmbeddingFunction):
     def __init__(self):
         self.model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=False)
 
@@ -296,30 +255,30 @@ class ExampleEmbeddingFunction(BaseSparseEmbeddingFunction):
         return result
 ```
 
-## Customize hybrid reranker
+## Hibrit Yeniden Sıralayıcıyı (Reranker) Özelleştirme
 
-Milvus supports two types of [reranking strategies](https://milvus.io/docs/reranking.md): Reciprocal Rank Fusion (RRF) and Weighted Scoring. The default ranker in `MilvusVectorStore` hybrid search is RRF with k=60. To customize the hybrid ranker, modify the following parameters:
+Milvus iki tür [yeniden sıralama stratejisini](https://milvus.io/docs/reranking.md) destekler: Resiprokal Sıralama Füzyonu (Reciprocal Rank Fusion - RRF) ve Ağırlıklı Puanlama (Weighted Scoring). `MilvusVectorStore` hibrit aramasındaki varsayılan sıralayıcı, k=60 ile RRF'dir. Hibrit sıralayıcıyı özelleştirmek için aşağıdaki parametreleri değiştirin:
 
-- `hybrid_ranker (str)`: Specifies the type of ranker used in hybrid search queries. Currently only supports \[“RRFRanker”, “WeightedRanker”]. Defaults to “RRFRanker”.
+- `hybrid_ranker (str)`: Hibrit arama sorgularında kullanılan sıralayıcı tipini belirtir. Şu anda yalnızca ["RRFRanker", "WeightedRanker"] desteklenmektedir. Varsayılan olarak "RRFRanker"dır.
 
-- `hybrid_ranker_params (dict, optional)`: Configuration parameters for the hybrid ranker. The structure of this dictionary depends on the specific ranker being used:
+- `hybrid_ranker_params (dict, isteğe bağlı)`: Hibrit sıralayıcı için yapılandırma parametreleri. Bu sözlüğün yapısı, kullanılan belirli sıralayıcıya bağlıdır:
 
-  - For “RRFRanker”, it should include:
-    - “k” (int): A parameter used in Reciprocal Rank Fusion (RRF). This value is used to calculate the rank scores as part of the RRF algorithm, which combines multiple ranking strategies into a single score to improve search relevance. The default value is 60 if not specified.
+  - "RRFRanker" için şunları içermelidir:
+    - "k" (int): Resiprokal Sıralama Füzyonu'nda (RRF) kullanılan bir parametre. Bu değer, arama alaka düzeyini artırmak için birden fazla sıralama stratejisini tek bir puanda birleştiren RRF algoritmasının bir parçası olarak sıralama puanlarını hesaplamak için kullanılır. Belirtilmezse varsayılan değer 60'tır.
 
-  - For “WeightedRanker”, it expects:
+  - "WeightedRanker" için şunları bekler:
 
-    - “weights” (list of float): A list of exactly two weights:
+    - "weights" (kayan noktalı sayı listesi): Tam olarak iki ağırlıktan oluşan bir liste:
 
-      1. The weight for the dense embedding component.
-      2. The weight for the sparse embedding component. These weights are used to balance the significance of the dense and sparse components of the embeddings in the hybrid retrieval process. The default weights are \[1.0, 1.0] if not specified.
+      1. Yoğun gömme bileşeni için ağırlık.
+      2. Seyrek gömme bileşeni için ağırlık. Bu ağırlıklar, hibrit erişim sürecinde gömmelerin yoğun ve seyrek bileşenlerinin önemini dengelemek için kullanılır. Belirtilmezse varsayılan ağırlıklar [1.0, 1.0]'dır.
 
-```
+```python
 vector_store = MilvusVectorStore(
     uri=URI,
     # token=TOKEN,
     dim=1536,
-    overwrite=False,  # Use the existing collection created in the previous example
+    overwrite=False,  # Önceki örnekte oluşturulan mevcut koleksiyonu kullan
     enable_sparse=True,
     hybrid_ranker="WeightedRanker",
     hybrid_ranker_params={"weights": [1.0, 0.5]},
@@ -328,24 +287,8 @@ index = VectorStoreIndex.from_vector_store(vector_store)
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid", similarity_top_k=5
 )
-response = query_engine.query("What did the author learn at Viaweb?")
+response = query_engine.query("Yazar Viaweb'de ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-```
-2025-04-17 03:44:00,419 [DEBUG][_create_connection]: Created new connection using: 09c051fb18c04f97a80f07958856587b (async_milvus_client.py:547)
-Sparse embedding function is not provided, using default.
-No built-in function detected, using BGEM3SparseEmbeddingFunction().
-Fetching 30 files: 100%|██████████| 30/30 [00:00<00:00, 136622.28it/s]
-Chunks: 100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
-
-
-
-
-The author learned several valuable lessons at Viaweb, including the importance of understanding
-growth rate as the ultimate test of a startup, the significance of user feedback in shaping the
-software, and the realization that web applications were the future of software development.
-Additionally, the experience at Viaweb taught the author about the challenges and rewards of running
-a startup, the value of simplicity in software design, and the impact of pricing strategies on
-attracting customers.
-```
+**"Yazar, Viaweb'de bir girişimin nihai testi olarak büyüme oranını anlamanın önemi, yazılımın şekillenmesinde kullanıcı geri bildirimlerinin önemi ve web uygulamalarının yazılım geliştirmenin geleceği olduğu gerçeği dahil olmak üzere birkaç değerli ders öğrendi. Ayrıca, Viaweb deneyimi yazara bir girişimi yönetmenin zorlukları ve ödülleri, yazılım tasarımında sadeliğin değeri ve fiyatlandırma stratejilerinin müşteri çekme üzerindeki etkisi hakkında eğitim verdi."**

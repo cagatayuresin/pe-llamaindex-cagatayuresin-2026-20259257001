@@ -1,25 +1,25 @@
-# MyScale Vector Store
-
 ---
-title: MyScale Vector Store
- | LlamaIndex OSS Documentation
+title: MyScale Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook we are going to show a quick demo of using the MyScaleVectorStore.
+# MyScale Vektör Deposu
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu not defterinde, `MyScaleVectorStore` kullanımına dair hızlı bir demo göstereceğiz.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-myscale
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-#### Creating a MyScale Client
+#### MyScale İstemcisi Oluşturma
 
-```
+```python
 import logging
 import sys
 
@@ -28,7 +28,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-```
+```python
 from os import environ
 import clickhouse_connect
 
@@ -36,60 +36,51 @@ import clickhouse_connect
 environ["OPENAI_API_KEY"] = "sk-*"
 
 
-# initialize client
+# istemciyi başlat
 client = clickhouse_connect.get_client(
-    host="YOUR_CLUSTER_HOST",
+    host="KUME_HOST_ADRESINIZ",
     port=8443,
-    username="YOUR_USERNAME",
-    password="YOUR_CLUSTER_PASSWORD",
+    username="KULLANICI_ADINIZ",
+    password="KUME_SIFRENIZ",
 )
 ```
 
-#### Load documents, build and store the VectorStoreIndex with MyScaleVectorStore
+#### Belgeleri Yükleme, MyScaleVectorStore ile VectorStoreIndex Oluşturma ve Saklama
 
-Here we will use a set of Paul Graham essays to provide the text to turn into embeddings, store in a `MyScaleVectorStore` and query to find context for our LLM QnA loop.
+Burada, gömmelere dönüştürülecek metni sağlamak için Paul Graham makalelerinden oluşan bir set kullanacağız, bunları bir `MyScaleVectorStore`da saklayacağız ve LLM QnA (Soru-Cevap) döngümüz için bağlam bulmak üzere sorgulayacağız.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.myscale import MyScaleVectorStore
 from IPython.display import Markdown, display
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("../data/paul_graham").load_data()
-print("Document ID:", documents[0].doc_id)
-print("Number of Documents: ", len(documents))
+print("Belge Kimliği:", documents[0].doc_id)
+print("Belge Sayısı: ", len(documents))
 ```
 
-```
-Document ID: a5f2737c-ed18-4e5d-ab9a-75955edb816d
-Number of Documents:  1
-```
+Veriyi İndir
 
-Download Data
-
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-You can process your files individually using [SimpleDirectoryReader](/examples/data_connectors/simple_directory_reader.ipynb):
+Dosyalarınızı [SimpleDirectoryReader](/examples/data_connectors/simple_directory_reader.ipynb) kullanarak tek tek işleyebilirsiniz:
 
-```
+```python
 loader = SimpleDirectoryReader("./data/paul_graham/")
 documents = loader.load_data()
 for file in loader.input_files:
     print(file)
-    # Here is where you would do any preprocessing
+    # Burası herhangi bir ön işleme yapacağınız yerdir
 ```
 
-```
-../data/paul_graham/paul_graham_essay.txt
-```
-
-```
-# initialize with metadata filter and store indexes
+```python
+# meta veri filtresi ile başlatın ve indeksleri saklayın
 from llama_index.core import StorageContext
 
 
@@ -102,20 +93,20 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-Now MyScale vector store supports filter search and hybrid search
+MyScale vektör deposu artık filtreli aramayı ve hibrit aramayı desteklemektedir.
 
-You can learn more about [query\_engine](/module_guides/deploying/query_engine/index.md) and [retriever](/module_guides/querying/retriever/index.md).
+[Sorgu motoru (query_engine)](/module_guides/deploying/query_engine/index.md) ve [erişici (retriever)](/module_guides/querying/retriever/index.md) hakkında daha fazla bilgi edinebilirsiniz.
 
-```
+```python
 import textwrap
 
 
 from llama_index.core.vector_stores import ExactMatchFilter, MetadataFilters
 
 
-# set Logging to DEBUG for more detailed outputs
+# daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(
     filters=MetadataFilters(
         filters=[
@@ -125,13 +116,13 @@ query_engine = index.as_query_engine(
     similarity_top_k=2,
     vector_store_query_mode="hybrid",
 )
-response = query_engine.query("What did the author learn?")
+response = query_engine.query("Yazar ne öğrendi?")
 print(textwrap.fill(str(response), 100))
 ```
 
-#### Clear All Indexes
+#### Tüm İndeksleri Temizleme
 
-```
+```python
 for document in documents:
     index.delete_ref_doc(document.doc_id)
 ```

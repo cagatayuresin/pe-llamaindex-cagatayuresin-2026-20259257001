@@ -1,53 +1,52 @@
-# Nile Vector Store (Multi-tenant PostgreSQL)
-
 ---
-title: Nile Vector Store (Multi-tenant PostgreSQL)
- | LlamaIndex OSS Documentation
+title: Nile Vektör Deposu (Çok Kiracılı PostgreSQL)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook shows how to use the Postgres based vector store `NileVectorStore` to store and query vector embeddings for multi-tenant RAG applications.
+# Nile Vektör Deposu (Çok Kiracılı PostgreSQL)
 
-## What is Nile?
+Bu not defteri, çok kiracılı (multi-tenant) RAG uygulamaları için vektör gömmelerini saklamak ve sorgulamak üzere PostgreSQL tabanlı vektör deposu olan `NileVectorStore`un nasıl kullanılacağını gösterir.
 
-Nile is a Postgres database that enables all database operations per tenant including auto-scaling, branching, and backups, with full customer isolation.
+## Nile Nedir?
 
-Multi-tenant RAG applications are increasingly popular, since they provide security and privacy while using large language models.
+Nile; otomatik ölçeklendirme, dallanma (branching) ve yedeklemeler dahil olmak üzere kiracı başına tüm veritabanı işlemlerini tam müşteri izolasyonu ile sağlayan bir Postgres veritabanıdır.
 
-However, managing the underlying Postgres database is not straightforward. DB-per-tenant is expensive and complex to manage, while shared-DB has security and privacy concerns, and also limits the scalability and performance of the RAG application. Nile re-engineered Postgres to deliver the best of all worlds - the isolation of DB-per-tenant, at the cost, efficiency and developer experience of a shared-DB.
+Çok kiracılı RAG uygulamaları, büyük dil modellerini kullanırken güvenlik ve gizlilik sağladıkları için giderek daha popüler hale gelmektedir.
 
-Storing millions of vectors in a shared-DB can be slow and require significant resources to index and query. But if you store 1000 tenants in Nile’s virtual tenant databases, each with 1000 vectors, this can be quite managable. Especially since you can place larger tenants on their own compute, while smaller tenants can efficiently share compute resources and auto-scale as needed.
+Ancak, alttaki Postgres veritabanını yönetmek basit değildir. Kiracı başına DB (DB-per-tenant) yönetimi pahalı ve karmaşıktır; paylaşımlı DB (shared-DB) ise güvenlik ve gizlilik endişelerine sahiptir ve ayrıca RAG uygulamasının ölçeklenebilirliğini ve performansını sınırlar. Nile, Postgres'i her iki dünyanın en iyisini sunacak şekilde yeniden tasarladı: paylaşımlı bir DB'nin maliyetinde, verimliliğinde ve geliştirici deneyiminde, kiracı başına DB'nin izolasyonunu sağlar.
 
-## Getting Started with Nile
+Paylaşımlı bir DB'de milyonlarca vektörü saklamak yavaş olabilir ve indeksleme/sorgulama için önemli kaynaklar gerektirebilir. Ancak Nile'ın sanal kiracı veritabanlarında, her biri 1000 vektöre sahip 1000 kiracı saklarsanız, bu oldukça yönetilebilir olabilir. Özellikle büyük kiracıları kendi işlem güçlerine (compute) yerleştirebilirken, küçük kiracıların işlem kaynaklarını verimli bir şekilde paylaşmasını ve gerektiğinde otomatik olarak ölçeklenmesini sağlayabilirsiniz.
 
-Start by signing up for [Nile](https://console.thenile.dev/?utm_campaign=partnerlaunch\&utm_source=llamaindex\&utm_medium=docs). Once you’ve signed up for Nile, you’ll be promoted to create your first database. Go ahead and do so. You’ll be redirected to the “Query Editor” page of your new database.
+## Nile ile Başlarken
 
-From there, click on “Home” (top icon on the left menu), click on “generate credentials” and copy the resulting connection string. You will need it in a sec.
+[Nile](https://console.thenile.dev/?utm_campaign=partnerlaunch&utm_source=llamaindex&utm_medium=docs)'a kaydolarak başlayın. Nile'a kaydolduktan sonra, ilk veritabanınızı oluşturmanız istenecektir. Devam edin ve oluşturun. Yeni veritabanınızın "Query Editor" (Sorgu Düzenleyici) sayfasına yönlendirileceksiniz.
 
-## Additional Resources
+Oradan "Home"a (sol menüdeki üst simge) tıklayın, "generate credentials" (kimlik bilgileri oluştur) butonuna basın ve sonuçta oluşan bağlantı dizesini kopyalayın. Bir saniye içinde buna ihtiyacınız olacak.
 
-- [Nile’s LlamaIndex documentation](https://www.thenile.dev/docs/partners/llama)
-- [Nile’s generative AI and vector embeddings docs](https://www.thenile.dev/docs/ai-embeddings)
-- [Nile’s pgvector primer](https://www.thenile.dev/docs/ai-embeddings/pg_vector)
-- [Few things you didn’t know about pgvector](https://www.thenile.dev/blog/pgvector_myth_debunking)
+## Ek Kaynaklar
 
-## Before you begin
+- [Nile'ın LlamaIndex dokümantasyonu](https://www.thenile.dev/docs/partners/llama)
+- [Nile'ın üretken yapay zeka ve vektör gömme dokümanları](https://www.thenile.dev/docs/ai-embeddings)
+- [Nile'ın pgvector el kitabı](https://www.thenile.dev/docs/ai-embeddings/pg_vector)
+- [pgvector hakkında bilmediğiniz birkaç şey](https://www.thenile.dev/blog/pgvector_myth_debunking)
 
-### Install dependencies
+## Başlamadan Önce
 
-Lets install and import dependencies.
+### Bağımlılıkları Kurun
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bağımlılıkları kuralım ve içe aktaralım.
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-nile
-%pip install /Users/gwen/workspaces/llama_index/llama-index-integrations/vector_stores/llama-index-vector-stores-nile/dist/llama_index_vector_stores_nile-0.1.1.tar.gz
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 import logging
 
 
@@ -61,30 +60,30 @@ from llama_index.core.vector_stores import (
 from llama_index.vector_stores.nile import NileVectorStore, IndexType
 ```
 
-### Setup connection to Nile database
+### Nile Veritabanına Bağlantı Kurun
 
-Assuming you followed the instructions in the previous section, Getting Started with Nile, you should now have a connection string to your Nile database.
+Nile ile Başlarken bölümündeki talimatları uyguladıysanız, artık Nile veritabanınıza bir bağlantı dizginiz olmalıdır.
 
-You can set it in an environment variable called `NILEDB_SERVICE_URL`, or in Python directly.
+Bunu `NILEDB_SERVICE_URL` adlı bir ortam değişkeninde veya doğrudan Python'da ayarlayabilirsiniz.
 
+```bash
+%env NILEDB_SERVICE_URL=postgresql://kullaniciadi:sifre@us-west-2.db.thenile.dev:5432/niledb
 ```
-%env NILEDB_SERVICE_URL=postgresql://username:password@us-west-2.db.thenile.dev:5432/niledb
-```
 
-And now, we’ll create a `NileVectorStore`. Note that in addition to the usual parameters like URL and dimensions, we also set `tenant_aware=True`.
+Ve şimdi bir `NileVectorStore` oluşturacağız. URL ve boyutlar gibi olağan parametrelere ek olarak `tenant_aware=True` ayarını da yaptığımıza dikkat edin.
 
-:fire: NileVectorStore supports both tenant-aware vector stores, that isolates the documents for each tenant and a regular store which is typically used for shared data that all tenants can access. Below, we’ll demonstrate the tenant-aware vector store.
+🔥 `NileVectorStore`, hem her kiracı (tenant) için belgeleri izole eden kiracı duyarlı (tenant-aware) vektör depolarını hem de genellikle tüm kiracıların erişebileceği paylaşılan veriler için kullanılan normal bir depoyu destekler. Aşağıda, kiracı duyarlı vektör deposunu göstereceğiz.
 
-```
-# Get the service url by reading local .env file with NILE_SERVICE_URL variable
+```python
+# NILEDB_SERVICE_URL değişkenine sahip yerel .env dosyasını okuyarak servis url'sini alın
 import os
 
 
 NILEDB_SERVICE_URL = os.environ["NILEDB_SERVICE_URL"]
 
 
-# OR set it explicitly
-# NILE_SERVICE_URL = "postgresql://nile:password@db.thenile.dev:5432/nile"
+# VEYA açıkça ayarlayın
+# NILEDB_SERVICE_URL = "postgresql://nile:sifre@db.thenile.dev:5432/nile"
 
 
 vector_store = NileVectorStore(
@@ -95,36 +94,31 @@ vector_store = NileVectorStore(
 )
 ```
 
-### Setup OpenAI
+### OpenAI Kurulumu
 
-You can set it in an .env file, or in Python directly
+Bunu bir .env dosyasında veya doğrudan Python'da ayarlayabilirsiniz.
 
-```
+```bash
 %env OPENAI_API_KEY=sk-...
 ```
 
-```
-# Uncomment and set it explicitly if you prefer not to use .env
-# os.environ["OPENAI_API_KEY"] = "sk-..."
-```
+## Çok Kiracılı Benzerlik Araması
 
-## Multi-tenant similarity search
+LlamaIndex ve Nile ile çok kiracılı benzerlik aramasını göstermek için, her biri farklı bir şirketin satış görüşmesine ait dökümleri içeren iki belge indireceğiz. Nexiv BT hizmetleri sunarken, ModaMart perakende sektöründedir. Her belgeye kiracı tanımlayıcıları ekleyeceğiz ve onları kiracı duyarlı bir vektör deposuna yükleyeceğiz. Ardından, depoyu her kiracı için sorgulayacağız. Aynı sorunun nasıl iki farklı yanıt oluşturduğunu göreceksiniz; çünkü her kiracı için farklı belgeleri getirecektir.
 
-To demonstrate multi-tenant similarity search with LlamaIndex and Nile, we will download two documents - each with a transcript from a sales call by a different company. Nexiv provides IT services and ModaMart is in retail. We’ll add tenant identifiers to each document and load them to a tenant-aware vector store. Then, we will query the store for each tenant. You will see how the same question generates two different responses, because it retrieves different documents for each tenant.
+### Veriyi İndir
 
-### Download data
-
-```
+```bash
 !mkdir -p data
 !wget "https://raw.githubusercontent.com/niledatabase/niledatabase/main/examples/ai/sales_insight/data/transcripts/nexiv-solutions__0_transcript.txt" -O "data/nexiv-solutions__0_transcript.txt"
 !wget "https://raw.githubusercontent.com/niledatabase/niledatabase/main/examples/ai/sales_insight/data/transcripts/modamart__0_transcript.txt" -O "data/modamart__0_transcript.txt"
 ```
 
-### Load documents
+### Belgeleri Yükle
 
-We’ll use LlamaIndex’s `SimpleDirectoryReader` to load the documents. Because we want to update the documents with the tenant metadata after loading, we’ll use a separate reader for each tenant
+Belgeleri yüklemek için LlamaIndex'in `SimpleDirectoryReader`ını kullanacağız. Belgeleri yükledikten sonra kiracı meta verileriyle güncellemek istediğimiz için her kiracı için ayrı bir okuyucu (reader) kullanacağız.
 
-```
+```python
 reader = SimpleDirectoryReader(
     input_files=["data/nexiv-solutions__0_transcript.txt"]
 )
@@ -135,37 +129,37 @@ reader = SimpleDirectoryReader(input_files=["data/modamart__0_transcript.txt"])
 documents_modamart = reader.load_data()
 ```
 
-### Enrich documents with tenant metadata
+### Belgeleri Kiracı Meta Verileriyle Zenginleştirin
 
-We are going to create two Nile tenants and the add the tenant ID of each to the document metadata. We are also adding some additional metadata like a custom document ID and a category. This metadata can be used for filtering documents during the retrieval process. Of course, in your own application, you could also load documents for existing tenants and add any metadata information you find useful.
+İki Nile kiracısı (tenant) oluşturacağız ve her birinin kiracı kimliğini (tenant ID) belge meta verilerine ekleyeceğiz. Ayrıca özel bir belge kimliği ve kategori gibi bazı ek meta veriler de ekliyoruz. Bu meta veriler, erişim sürecinde belgeleri filtrelemek için kullanılabilir. Elbette kendi uygulamanızda mevcut kiracılar için de belgeler yükleyebilir ve yararlı bulduğunuz herhangi bir meta veri bilgisini ekleyebilirsiniz.
 
-```
+```python
 tenant_id_nexiv = str(vector_store.create_tenant("nexiv-solutions"))
 tenant_id_modamart = str(vector_store.create_tenant("modamart"))
 
 
-# Add the tenant id to the metadata
+# Kiracı kimliğini meta veriye ekle
 for i, doc in enumerate(documents_nexiv, start=1):
     doc.metadata["tenant_id"] = tenant_id_nexiv
     doc.metadata[
         "category"
-    ] = "IT"  # We will use this to apply additional filters in a later example
-    doc.id_ = f"nexiv_doc_id_{i}"  # We are also setting a custom id, this is optional but can be useful
+    ] = "BT"  # Bunu daha sonraki bir örnekte ek filtreler uygulamak için kullanacağız
+    doc.id_ = f"nexiv_doc_id_{i}"  # Özel bir id de belirliyoruz, bu isteğe bağlıdır ancak kullanışlı olabilir
 
 
 for i, doc in enumerate(documents_modamart, start=1):
     doc.metadata["tenant_id"] = tenant_id_modamart
-    doc.metadata["category"] = "Retail"
+    doc.metadata["category"] = "Perakende"
     doc.id_ = f"modamart_doc_id_{i}"
 ```
 
-### Creating a VectorStore index with NileVectorStore
+### NileVectorStore ile VectorStore İndeksi Oluşturma
 
-We are loading all documents to the same `VectorStoreIndex`. Since we created a tenant-aware `NileVectorStore` when we set things up, Nile will correctly use the `tenant_id` field in the metadata to isolate them.
+Tüm belgeleri aynı `VectorStoreIndex`e yüklüyoruz. Ayarlarımızı yaparken kiracı duyarlı bir `NileVectorStore` oluşturduğumuz için Nile, belgeleri izole etmek üzere meta verideki `tenant_id` alanını doğru bir şekilde kullanacaktır.
 
-Loading documents without `tenant_id` to a tenant-aware store will throw a `ValueException`.
+`tenant_id` olmadan belgeleri kiracı duyarlı bir depoya yüklemek `ValueException` hatasına neden olur.
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     documents_nexiv + documents_modamart,
@@ -174,18 +168,11 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-/Users/gwen/.pyenv/versions/3.10.15/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-Parsing nodes: 100%|██████████| 2/2 [00:00<00:00, 1129.32it/s]
-Generating embeddings: 100%|██████████| 2/2 [00:00<00:00,  4.58it/s]
-```
+### İndeksi Her Kiracı İçin Sorgulama
 
-### Querying the index for each tenant
+Aşağıda her sorgu için kiracıyı nasıl belirttiğimizi ve dolayısıyla sadece o kiracı için geçerli bir yanıt aldığımızı görebilirsiniz.
 
-You can see below how we specify the tenant for each query, and therefore we get an answer relevant to that tenant and only for them
-
-```
+```python
 nexiv_query_engine = index.as_query_engine(
     similarity_top_k=3,
     vector_store_kwargs={
@@ -194,14 +181,12 @@ nexiv_query_engine = index.as_query_engine(
 )
 
 
-print(nexiv_query_engine.query("What were the customer pain points?"))
+print(nexiv_query_engine.query("Müşterinin yaşadığı sıkıntılar (pain points) nelerdi?"))
 ```
 
-```
-The customer pain points were related to managing customer data using multiple platforms, leading to data discrepancies, time-consuming reconciliation efforts, and decreased productivity.
-```
+**"Müşterinin sıkıntıları, müşteri verilerini birden fazla platform kullanarak yönetmekle ilgiliydi; bu durum veri tutarsızlıklarına, zaman alan uzlaştırma çabalarına ve üretkenliğin azalmasına neden oluyordu."**
 
-```
+```python
 modamart_query_engine = index.as_query_engine(
     similarity_top_k=3,
     vector_store_kwargs={
@@ -210,47 +195,43 @@ modamart_query_engine = index.as_query_engine(
 )
 
 
-print(modamart_query_engine.query("What were the customer pain points?"))
+print(modamart_query_engine.query("Müşterinin yaşadığı sıkıntılar (pain points) nelerdi?"))
 ```
 
-```
-The customer's pain points were concerns about the quality and value of the winter jackets, skepticism towards reviews, worries about sizing and fit when ordering clothes online, and the desire for a warm but lightweight jacket.
-```
+**"Müşterinin sıkıntıları; kışlık ceketlerin kalitesi ve değeri hakkındaki endişeler, yorumlara yönelik şüphecilik, çevrimiçi kıyafet siparişi verirken beden ve uyum konusundaki endişeler ve sıcak tutan ama hafif bir ceket isteğiydi."**
 
-### Querying existing embeddings
+### Mevcut Gömmeleri Sorgulama
 
-In the example above, we created the index by loading and embedding new documents. But what if we already generated the embeddings and stored them in Nile. In that case, you still initialize `NileVectorStore` as above, but instead of `VectorStoreIndex.from_documents(...)` you use this:
+Yukarıdaki örnekte, yeni belgeleri yükleyip gömerek indeksi oluşturduk. Peki ya gömmeleri zaten oluşturup Nile'da sakladıysak? Bu durumda `NileVectorStore`u yine yukarıdaki gibi başlatırsınız, ancak `VectorStoreIndex.from_documents(...)` yerine şunu kullanırsınız:
 
-```
+```python
 index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 query_engine = index.as_query_engine(
     vector_store_kwargs={
         "tenant_id": str(tenant_id_modamart),
     },
 )
-response = query_engine.query("What action items do we need to follow up on?")
+response = query_engine.query("Takip etmemiz gereken aksiyon maddeleri nelerdir?")
 
 
 print(response)
 ```
 
-```
-The action items to follow up on include sending the customer detailed testimonials about the lightweight and warm qualities of the jackets, providing the customer with a sizing guide, and emailing the customer a 10% discount on their first purchase.
-```
+**"Takip edilmesi gereken aksiyon maddeleri şunları içerir: müşteriye ceketlerin hafiflik ve sıcak tutma özellikleri hakkında detaylı tanıklılar göndermek, müşteriye bir beden kılavuzu sağlamak ve müşteriye ilk alışverişinde %10 indirim kuponu e-postası göndermek."**
 
-## Using ANN indexes for approximate nearest neighbor search
+## Yaklaşık En Yakın Komşu Araması için ANN İndekslerini Kullanma
 
-Nile supports all indexes supported by pgvector - IVFFlat and HNSW. IVFFlat is faster, uses fewer resources and is simple to tune. HNSW uses more resources to create and use, and is more challenging to tune but has great accuracy/speed tradeoffs. Lets see how to use indexes, even though a 2-document example doesn’t actually require them.
+Nile, pgvector tarafından desteklenen tüm indeksleri destekler - IVFFlat ve HNSW. IVFFlat daha hızlıdır, daha az kaynak kullanır ve ayarlanması basittir. HNSW oluşturmak ve kullanmak için daha fazla kaynak kullanır ve ayarlanması daha zordur ancak harika doğruluk/hız dengelerine sahiptir. Gelelim indeksleri nasıl kullanacağımıza (her ne kadar 2 belgeli bir örnek aslında bunları gerektirmese de).
 
-### IVFFlat Index
+### IVFFlat İndeksi
 
-IVFFlat indexes work by separating the vector space into regions called “lists”, first finding the nearest lists and then searching for the nearest neighbors within these lists. You specify the number of lists (`nlists`) during index creation, and then when querying, you can specify how many nearest lists will be used in the search (`ivfflat_probes`).
+IVFFlat indeksleri, vektör uzayını "listeler" adı verilen bölgelere ayırarak, önce en yakın listeleri bulup ardından bu listeler içindeki en yakın komşuları arayarak çalışır. İndeks oluşturma sırasında liste sayısını (`nlists`) belirtirsiniz ve sorgu yaparken aramada kaç en yakın listenin kullanılacağını (`ivfflat_probes`) belirtebilirsiniz.
 
-```
+```python
 try:
     vector_store.create_index(index_type=IndexType.PGVECTOR_IVFFLAT, nlists=10)
 except Exception as e:
-    # This will throw an error if the index already exists, which may be expected
+    # İndeks zaten mevcutsa bu bir hata fırlatacaktır, bu beklenen bir durum olabilir
     print(e)
 
 
@@ -264,28 +245,24 @@ nexiv_query_engine = index.as_query_engine(
 
 
 print(
-    nexiv_query_engine.query("What action items do we need to follow up on?")
+    nexiv_query_engine.query("Takip etmemiz gereken aksiyon maddeleri nelerdir?")
 )
 
 
 vector_store.drop_index()
 ```
 
-```
-Index documents_embedding_idx already exists
-```
+### HNSW İndeksi
 
-### HNSW Index
+HNSW indeksleri, vektör uzayını her katmanın değişen ayrıntı düzeylerinde noktalar arasındaki bağlantıları içerdiği çok katmanlı bir grafiğe ayırarak çalışır. Arama sırasında kaba katmanlardan daha ince katmanlara doğru ilerleyerek verideki en yakın komşuları belirler. İndeks oluşturma sırasında, bir katmandaki maksimum bağlantı sayısını (`m`) ve grafı oluştururken dikkate alınan aday vektör sayısını (`ef_construction`) belirtirsiniz. Sorgulama yaparken, aranacak aday listesinin boyutunu (`hnsw_ef`) belirtebilirsiniz.
 
-HNSW indexes work by separating the vector space into a multi-layer graph where each layer contains connections between points at varying levels of granularity. During a search, it navigates from coarse to finer layers, identifying the nearest neighbors in the data. During index creation, you specify the maximum number of connections in a layer (`m`) and the number of candidate vectors considered when building the graph (`ef_construction`). While querying, you can specify the size of the candidate list that will be searched (`hnsw_ef`).
-
-```
+```python
 try:
     vector_store.create_index(
         index_type=IndexType.PGVECTOR_HNSW, m=16, ef_construction=64
     )
 except Exception as e:
-    # This will throw an error if the index already exists, which may be expected
+    # İndeks zaten mevcutsa bu bir hata fırlatacaktır
     print(e)
 
 
@@ -298,23 +275,23 @@ nexiv_query_engine = index.as_query_engine(
 )
 
 
-print(nexiv_query_engine.query("Did we mention any pricing?"))
+print(nexiv_query_engine.query("Fiyatlandırmadan bahsettik mi?"))
 
 
 vector_store.drop_index()
 ```
 
-## Additional VectorStore operations
+## Ek VectorStore İşlemleri
 
-### Metadata Filters
+### Meta Veri Filtreleri
 
-`NileVectorStore` also supports filtering vectors based on metadata. For example, when we loaded the documents, we included `category` metadata for each document. We can now use this information to filter the retrieved documents. Note that this filtering is **in addition** to the tenant filter. In a tenant-aware vector store, the tenant filter is mandatory, in order to prevent accidental data leaks.
+`NileVectorStore` ayrıca meta verilere dayanarak vektörlerin filtrelenmesini destekler. Örneğin, belgeleri yüklediğimizde her belge için `category` meta verisini dahil etmiştik. Artık getirilen belgeleri filtrelemek için bu bilgiyi kullanabiliriz. Bu filtrelemenin kiracı filtresine **ek olarak** yapıldığını unutmayın. Kiracı duyarlı bir vektör deposunda, yanlışlıkla veri sızıntılarını önlemek için kiracı filtresi zorunludur.
 
-```
+```python
 filters = MetadataFilters(
     filters=[
         MetadataFilter(
-            key="category", operator=FilterOperator.EQ, value="Retail"
+            key="category", operator=FilterOperator.EQ, value="Perakende"
         ),
     ]
 )
@@ -326,31 +303,23 @@ nexiv_query_engine_filtered = index.as_query_engine(
     vector_store_kwargs={"tenant_id": str(tenant_id_nexiv)},
 )
 print(
-    "test query on nexiv with filter on category = Retail (should return empty): ",
-    nexiv_query_engine_filtered.query("What were the customer pain points?"),
+    "Kategori = Perakende filtresiyle nexiv üzerinde test sorgusu (boş dönmeli): ",
+    nexiv_query_engine_filtered.query("Müşterinin sıkıntıları nelerdi?"),
 )
 ```
 
-```
-test query on nexiv with filter on category = Retail (should return empty):  Empty Response
-```
+### Belgeleri Silme
 
-### Deleting Documents
+Belgeleri silmek oldukça önemli olabilir, özellikle bazı kiracılarınız GDPR'nin gerekli olduğu bir bölgedeyse.
 
-Deleting documents can be quite important. Especially if some of your tenants are in a region where GDPR is required.
-
-```
+```python
 ref_doc_id = "nexiv_doc_id_1"
 vector_store.delete(ref_doc_id, tenant_id=tenant_id_nexiv)
 
 
-# Query the data again
+# Veriyi tekrar sorgula
 print(
-    "test query on nexiv after deletion (should return empty): ",
-    nexiv_query_engine.query("What were the customer pain points?"),
+    "Silme işleminden sonra nexiv üzerinde test sorgusu (boş dönmeli): ",
+    nexiv_query_engine.query("Müşterinin sıkıntıları nelerdi?"),
 )
-```
-
-```
-test query on nexiv after deletion (should return empty):  Empty Response
 ```

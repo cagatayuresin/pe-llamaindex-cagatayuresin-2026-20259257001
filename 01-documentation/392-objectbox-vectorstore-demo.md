@@ -1,60 +1,54 @@
-# ObjectBox VectorStore Demo
-
 ---
-title: ObjectBox VectorStore Demo
- | LlamaIndex OSS Documentation
+title: ObjectBox Vektör Deposu Demosu
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook will demonstrate the use of [ObjectBox](https://objectbox.io/) as an efficient, on-device vector-store with LlamaIndex. We will consider a simple RAG use-case where given a document, the user can ask questions and get relevant answers from a LLM in natural language. The RAG pipeline will be configured along the following verticals:
+# ObjectBox Vektör Deposu Demosu
 
-- A builtin [`SimpleDirectoryReader` reader](https://docs.llamaindex.ai/en/stable/examples/data_connectors/simple_directory_reader/) from LlamaIndex
-- A builtin [`SentenceSplitter` node-parser](https://docs.llamaindex.ai/en/stable/api_reference/node_parsers/sentence_splitter/) from LlamaIndex
-- Models from [HuggingFace as embedding providers](https://docs.llamaindex.ai/en/stable/examples/embeddings/huggingface/)
-- [ObjectBox](https://objectbox.io/) as NoSQL and vector datastore
-- Google’s [Gemini](https://docs.llamaindex.ai/en/stable/examples/llm/gemini/) as a remote LLM service
+Bu not defteri, LlamaIndex ile verimli, cihaz içi bir vektör deposu olarak [ObjectBox](https://objectbox.io/)'un kullanımını gösterecektir. Bir belge verildiğinde kullanıcının soru sorabildiği ve bir LLM'den doğal dilde ilgili cevaplar alabildiği basit bir RAG kullanım durumunu ele alacağız. RAG boru hattı (pipeline) aşağıdaki bileşenlerle yapılandırılacaktır:
 
-## 1) Installing dependencies
+- LlamaIndex'ten yerleşik bir [`SimpleDirectoryReader` okuyucusu](https://docs.llamaindex.ai/en/stable/examples/data_connectors/simple_directory_reader/)
+- LlamaIndex'ten yerleşik bir [`SentenceSplitter` düğüm ayrıştırıcısı](https://docs.llamaindex.ai/en/stable/api_reference/node_parsers/sentence_splitter/)
+- Gömme sağlayıcısı olarak [HuggingFace modelleri](https://docs.llamaindex.ai/en/stable/examples/embeddings/huggingface/)
+- NoSQL ve vektör veri deposu olarak [ObjectBox](https://objectbox.io/)
+- Uzak bir LLM hizmeti olarak Google'ın [Gemini](https://docs.llamaindex.ai/en/stable/examples/llm/gemini/) modeli
 
-We install integrations for HuggingFace and Gemini to use along with LlamaIndex
+## 1) Bağımlılıkları Kurma
 
-```
+LlamaIndex ile birlikte kullanmak için HuggingFace ve Gemini entegrasyonlarını kuruyoruz.
+
+```bash
 !pip install llama_index_vector_stores_objectbox --quiet
 !pip install llama-index --quiet
 !pip install llama-index-embeddings-huggingface --quiet
 !pip install llama-index-llms-gemini --quiet
 ```
 
-```
-[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.6 MB[0m [31m?[0m eta [36m-:--:--[0m
-```
+## 2) Belgeleri İndirme
 
-\[2K \[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m\[90m╺\[0m\[90m━━\[0m \[32m1.5/1.6 MB\[0m \[31m40.2 MB/s\[0m eta \[36m0:00:01\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m1.6/1.6 MB\[0m \[31m25.4 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m4.0/4.0 MB\[0m \[31m44.0 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m1.5/1.5 MB\[0m \[31m38.9 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m1.1/1.1 MB\[0m \[31m37.5 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m76.4/76.4 kB\[0m \[31m5.2 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m77.9/77.9 kB\[0m \[31m4.9 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m49.3/49.3 kB\[0m \[31m3.1 MB/s\[0m eta \[36m0:00:00\[0m \[2K \[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\[0m \[32m58.3/58.3 kB\[0m \[31m3.4 MB/s\[0m eta \[36m0:00:00\[0m \[?25h
-
-## 2) Downloading the documents
-
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-## 3) Setup a LLM for RAG (Gemini)
+## 3) RAG için Bir LLM Kurulumu (Gemini)
 
-We use Google Gemini’s cloud-based API as a LLM. You can get an API-key from the [console](https://aistudio.google.com/app/apikey).
+LLM olarak Google Gemini'nin bulut tabanlı API'sini kullanıyoruz. [Konsoldan](https://aistudio.google.com/app/apikey) bir API anahtarı alabilirsiniz.
 
-```
+```python
 from llama_index.llms.gemini import Gemini
 import getpass
 
 
-gemini_key_api = getpass.getpass("Gemini API Key: ")
+gemini_key_api = getpass.getpass("Gemini API Anahtarı: ")
 gemini_llm = Gemini(api_key=gemini_key_api)
 ```
 
-## 4) Setup an embedding model for RAG (HuggingFace `bge-small-en-v1.5`)
+## 4) RAG için Bir Gömme Modeli Kurulumu (HuggingFace `bge-small-en-v1.5`)
 
-HuggingFace hosts a variety of embedding models, which could be observed from the [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard).
+HuggingFace, [MTEB Liderlik Tablosu'ndan](https://huggingface.co/spaces/mteb/leaderboard) gözlemlenebilecek çeşitli gömme modellerine ev sahipliği yapmaktadır.
 
-```
+```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
@@ -62,13 +56,13 @@ hf_embedding = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
 embedding_dim = 384
 ```
 
-## 5) Prepare documents and nodes
+## 5) Belgeleri ve Düğümleri Hazırlama
 
-In a RAG pipeline, the first step is to read the given documents. We use the `SimpleDirectoryReader` that selects the best file reader by checking the file extension from the directory.
+Bir RAG boru hattında ilk adım, verilen belgeleri okumaktır. Dizindeki dosya uzantısını kontrol ederek en iyi dosya okuyucusunu seçen `SimpleDirectoryReader`ı kullanıyoruz.
 
-Next, we produce chunks (text subsequences) from the contents read by the `SimpleDirectoryReader` from the documents. A `SentenceSplitter` is a text-splitter that preserves sentence boundaries while splitting the text into chunks of size `chunk_size`.
+Ardından, `SimpleDirectoryReader` tarafından belgelerden okunan içeriklerden parçalar (metin alt dizileri) üretiyoruz. `SentenceSplitter`, metni `chunk_size` boyutundaki parçalara bölerken cümle sınırlarını koruyan bir metin bölücüdür.
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 
@@ -81,17 +75,17 @@ node_parser = SentenceSplitter(chunk_size=512, chunk_overlap=20)
 nodes = node_parser.get_nodes_from_documents(documents)
 ```
 
-## 6) Configure `ObjectBoxVectorStore`
+## 6) `ObjectBoxVectorStore` Yapılandırması
 
-The `ObjectBoxVectorStore` can be initialized with several options:
+`ObjectBoxVectorStore` birkaç seçenekle başlatılabilir:
 
-- `embedding_dim` (required): The dimensions of the embeddings that the vector DB will hold
-- `distance_type`: Choose from `COSINE`, `DOT_PRODUCT`, `DOT_PRODUCT_NON_NORMALIZED` and `EUCLIDEAN`
-- `db_directory`: The path of the directory where the `.mdb` ObjectBox database file should be created
-- `clear_db`: Deletes the existing database file if it exists on `db_directory`
-- `do_log`: Enables logging from the ObjectBox integration
+- `embedding_dim` (gerekli): Vektör veritabanının tutacağı gömmelerin boyutları
+- `distance_type`: `COSINE`, `DOT_PRODUCT`, `DOT_PRODUCT_NON_NORMALIZED` ve `EUCLIDEAN` arasından seçim yapın
+- `db_directory`: `.mdb` ObjectBox veritabanı dosyasının oluşturulması gereken dizinin yolu
+- `clear_db`: `db_directory` üzerinde mevcut bir veritabanı dosyası varsa onu siler
+- `do_log`: ObjectBox entegrasyonundan günlük kaydını (logging) etkinleştirir
 
-```
+```python
 from llama_index.vector_stores.objectbox import ObjectBoxVectorStore
 from llama_index.core import StorageContext, VectorStoreIndex, Settings
 from objectbox import VectorDistanceType
@@ -116,58 +110,58 @@ Settings.embed_model = hf_embedding
 index = VectorStoreIndex(nodes=nodes, storage_context=storage_context)
 ```
 
-## 7) Chat with the document
+## 7) Belge ile Sohbet Etme
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("Who is Paul Graham?")
+response = query_engine.query("Paul Graham kimdir?")
 print(response)
 ```
 
-## Optional: Configuring `ObjectBoxVectorStore` as a retriever
+## İsteğe Bağlı: `ObjectBoxVectorStore`u Erişici (Retriever) Olarak Yapılandırma
 
-A LlamaIndex [retriever](https://docs.llamaindex.ai/en/stable/module_guides/querying/retriever/) is responsible for fetching similar chunks from a vector DB given a query.
+Bir LlamaIndex [erişicisi (retriever)](https://docs.llamaindex.ai/en/stable/module_guides/querying/retriever/), verilen bir sorguya göre bir vektör veritabanından benzer parçaları getirmekten sorumludur.
 
-```
+```python
 retriever = index.as_retriever()
-response = retriever.retrieve("What did the author do growing up?")
+response = retriever.retrieve("Yazar büyürken neler yaptı?")
 
 
 for node in response:
-    print("Retrieved chunk text:\n", node.node.get_text())
-    print("Retrieved chunk metadata:\n", node.node.get_metadata_str())
+    print("Getirilen parça metni:\n", node.node.get_text())
+    print("Getirilen parça meta verisi:\n", node.node.get_metadata_str())
     print("\n\n\n")
 ```
 
-## Optional: Removing chunks associated with a single query using `delete_nodes`
+## İsteğe Bağlı: `delete_nodes` Kullanarak Tek Bir Sorguyla İlişkili Parçaları Kaldırma
 
-We can use the `ObjectBoxVectorStore.delete_nodes` method to remove chunks (nodes) from the vector DB providing a list containing node IDs as an argument.
+Argüman olarak düğüm kimliklerini (node IDs) içeren bir liste sağlayarak vektör veritabanından parçaları (düğümleri) kaldırmak için `ObjectBoxVectorStore.delete_nodes` yöntemini kullanabiliriz.
 
-```
-response = retriever.retrieve("What did the author do growing up?")
+```python
+response = retriever.retrieve("Yazar büyürken neler yaptı?")
 
 
 node_ids = []
 for node in response:
     node_ids.append(node.node_id)
-print(f"Nodes to be removed: {node_ids}")
+print(f"Kaldırılacak düğümler: {node_ids}")
 
 
-print(f"No. of vectors before deletion: {vector_store.count()}")
+print(f"Silme öncesi vektör sayısı: {vector_store.count()}")
 vector_store.delete_nodes(node_ids)
-print(f"No. of vectors after deletion: {vector_store.count()}")
+print(f"Silme sonrası vektör sayısı: {vector_store.count()}")
 ```
 
-## Optional: Removing a single document from the vector DB
+## İsteğe Bağlı: Vektör Veritabanından Tek Bir Belgeyi Kaldırma
 
-The `ObjectBoxVectorStore.delete` method can be used to remove chunks (nodes) associated with a single document whose `id_` is provided as an argument.
+`ObjectBoxVectorStore.delete` yöntemi, `id_`si argüman olarak sağlanan tek bir belgeyle ilişkili parçaları (düğümleri) kaldırmak için kullanılabilir.
 
-```
+```python
 document = documents[0]
-print(f"Document to be deleted {document.id_}")
+print(f"Silinecek belge: {document.id_}")
 
 
-print(f"No. of vectors before deletion: {vector_store.count()}")
+print(f"Silme öncesi vektör sayısı: {vector_store.count()}")
 vector_store.delete(document.id_)
-print(f"No. of vectors after document deletion: {vector_store.count()}")
+print(f"Belge silme sonrası vektör sayısı: {vector_store.count()}")
 ```

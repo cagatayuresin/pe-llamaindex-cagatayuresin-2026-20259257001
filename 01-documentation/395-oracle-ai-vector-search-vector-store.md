@@ -1,68 +1,66 @@
-# Oracle AI Vector Search: Vector Store
-
 ---
-title: Oracle AI Vector Search: Vector Store
- | LlamaIndex OSS Documentation
+title: Oracle AI Vektör Araması: Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-Oracle AI Vector Search is designed for Artificial Intelligence (AI) workloads that allows you to query data based on semantics, rather than keywords. One of the biggest benefits of Oracle AI Vector Search is that semantic search on unstructured data can be combined with relational search on business data in one single system. This is not only powerful but also significantly more effective because you don’t need to add a specialized vector database, eliminating the pain of data fragmentation between multiple systems.
+# Oracle AI Vektör Araması: Vektör Deposu
 
-In addition, your vectors can benefit from all of Oracle Database’s most powerful features, like the following:
+Oracle AI Vektör Araması (AI Vector Search), anahtar kelimeler yerine anlambilime dayalı olarak veri sorgulamanıza olanak tanıyan Yapay Zeka (AI) iş yükleri için tasarlanmıştır. Oracle AI Vektör Araması'nın en büyük avantajlarından biri, yapılandırılmamış veriler üzerindeki anlamsal (semantik) aramanın, iş verileri üzerindeki ilişkisel arama ile tek bir sistemde birleştirilebilmesidir. Bu sadece güçlü değil, aynı zamanda çok daha etkilidir; çünkü özel bir vektör veritabanı eklemenize gerek kalmaz, böylece birden fazla sistem arasındaki veri parçalanması sorununu ortadan kaldırır.
 
-- [Partitioning Support](https://www.oracle.com/database/technologies/partitioning.html)
-- [Real Application Clusters scalability](https://www.oracle.com/database/real-application-clusters/)
-- [Exadata smart scans](https://www.oracle.com/database/technologies/exadata/software/smartscan/)
-- [Shard processing across geographically distributed databases](https://www.oracle.com/database/distributed-database/)
-- [Transactions](https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/transactions.html)
-- [Parallel SQL](https://docs.oracle.com/en/database/oracle/oracle-database/21/vldbg/parallel-exec-intro.html#GUID-D28717E4-0F77-44F5-BB4E-234C31D4E4BA)
-- [Disaster recovery](https://www.oracle.com/database/data-guard/)
-- [Security](https://www.oracle.com/security/database-security/)
-- [Oracle Machine Learning](https://www.oracle.com/artificial-intelligence/database-machine-learning/)
-- [Oracle Graph Database](https://www.oracle.com/database/integrated-graph-database/)
-- [Oracle Spatial and Graph](https://www.oracle.com/database/spatial/)
-- [Oracle Blockchain](https://docs.oracle.com/en/database/oracle/oracle-database/23/arpls/dbms_blockchain_table.html#GUID-B469E277-978E-4378-A8C1-26D3FF96C9A6)
+Buna ek olarak vektörleriniz, Oracle Database'in aşağıdaki gibi en güçlü özelliklerinden yararlanabilir:
+
+- [Bölümleme Desteği (Partitioning Support)](https://www.oracle.com/database/technologies/partitioning.html)
+- [Gerçek Uygulama Kümeleri (Real Application Clusters - RAC) ölçeklenebilirliği](https://www.oracle.com/database/real-application-clusters/)
+- [Exadata akıllı taramalar (smart scans)](https://www.oracle.com/database/technologies/exadata/software/smartscan/)
+- [Coğrafi olarak dağıtılmış veritabanları arasında Shard işleme](https://www.oracle.com/database/distributed-database/)
+- [İşlemler (Transactions)](https://docs.oracle.com/en/database/oracle/oracle-database/23/cncpt/transactions.html)
+- [Paralel SQL](https://docs.oracle.com/en/database/oracle/oracle-database/21/vldbg/parallel-exec-intro.html#GUID-D28717E4-0F77-44F5-BB4E-234C31D4E4BA)
+- [Olağanüstü Durum Kurtarma (Disaster Recovery)](https://www.oracle.com/database/data-guard/)
+- [Güvenlik (Security)](https://www.oracle.com/security/database-security/)
+- [Oracle Makine Öğrenimi (Machine Learning)](https://www.oracle.com/artificial-intelligence/database-machine-learning/)
+- [Oracle Graf Veritabanı (Graph Database)](https://www.oracle.com/database/integrated-graph-database/)
+- [Oracle Mekansal ve Graf (Spatial and Graph)](https://www.oracle.com/database/spatial/)
+- [Oracle Blok Zinciri (Blockchain)](https://docs.oracle.com/en/database/oracle/oracle-database/23/arpls/dbms_blockchain_table.html#GUID-B469E277-978E-4378-A8C1-26D3FF96C9A6)
 - [JSON](https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json-in-oracle-database.html)
 
-The guide demonstrates how to use Vector Capabilities within Oracle AI Vector Search.
+Bu kılavuz, Oracle AI Vektör Araması içindeki Vektör Yeteneklerinin nasıl kullanılacağını gösterir.
 
-If you are just starting with Oracle Database, consider exploring the [free Oracle 23 AI](https://www.oracle.com/database/free/#resources) which provides a great introduction to setting up your database environment. While working with the database, it is often advisable to avoid using the system user by default; instead, you can create your own user for enhanced security and customization. For detailed steps on user creation, refer to our [end-to-end guide](https://github.com/run-llama/llama_index/blob/main/docs/examples/cookbooks/oracleai_demo.ipynb) which also shows how to set up a user in Oracle. Additionally, understanding user privileges is crucial for managing database security effectively. You can learn more about this topic in the official [Oracle guide](https://docs.oracle.com/en/database/oracle/oracle-database/19/admqs/administering-user-accounts-and-security.html#GUID-36B21D72-1BBB-46C9-A0C9-F0D2A8591B8D) on administering user accounts and security.
+Oracle Database ile yeni başlıyorsanız, veritabanı ortamınızı kurmaya yönelik harika bir giriş sunan [ücretsiz Oracle 23 AI](https://www.oracle.com/database/free/#resources) sürümünü keşfetmeyi düşünün. Veritabanıyla çalışırken, güvenlik ve özelleştirme için varsayılan sistem kullanıcısı yerine kendi kullanıcınızı oluşturmanız tavsiye edilir. Kullanıcı oluşturma adımları için Oracle'da bir kullanıcının nasıl kurulacağını da gösteren [uçtan uca kılavuzumuza](https://github.com/run-llama/llama_index/blob/main/docs/examples/cookbooks/oracleai_demo.ipynb) bakabilirsiniz. Ayrıca kullanıcı ayrıcalıklarını anlamak, veritabanı güvenliğini verimli bir şekilde yönetmek için kritiktir. Kullanıcı hesaplarının yönetimi ve güvenliği hakkındaki resmi [Oracle kılavuzundan](https://docs.oracle.com/en/database/oracle/oracle-database/19/admqs/administering-user-accounts-and-security.html#GUID-36B21D72-1BBB-46C9-A0C9-F0D2A8591B8D) daha fazla bilgi edinebilirsiniz.
 
-### Prerequisites
+### Ön Karşılamalar
 
-Please install Oracle Python Client driver to use Llama Index with Oracle AI Vector Search.
+Llama Index'i Oracle AI Vektör Araması ile kullanmak için lütfen Oracle Python İstemci sürücüsünü kurun.
 
-```
+```bash
 %pip install llama-index-vector-stores-oracledb
 ```
 
-### Connect to Oracle AI Vector Search
+### Oracle AI Vektör Aramasına Bağlanın
 
-The following sample code will show how to connect to Oracle Database. By default, python-oracledb runs in a ‘Thin’ mode which connects directly to Oracle Database. This mode does not need Oracle Client libraries. However, some additional functionality is available when python-oracledb uses them. Python-oracledb is said to be in ‘Thick’ mode when Oracle Client libraries are used. Both modes have comprehensive functionality supporting the Python Database API v2.0 Specification. See the following [guide](https://python-oracledb.readthedocs.io/en/latest/user_guide/appendix_a.html#featuresummary) that talks about features supported in each mode. You might want to switch to thick-mode if you are unable to use thin-mode.
+Aşağıdaki örnek kod, Oracle Database'e nasıl bağlanılacağını gösterir. Varsayılan olarak python-oracledb, doğrudan Oracle Database'e bağlanan bir 'Thin' (İnce) modunda çalışır. Bu mod Oracle İstemci kütüphanelerine ihtiyaç duymaz. Ancak, python-oracledb bunları kullandığında bazı ek işlevler kullanılabilir hale gelir. Oracle İstemci kütüphaneleri kullanıldığında python-oracledb'nin 'Thick' (Kalın) modunda olduğu söylenir. Her iki mod da Python Veritabanı API v2.0 Spesifikasyonunu destekleyen kapsamlı işlevselliğe sahiptir. Her modda desteklenen özellikleri anlatan [kılavuza](https://python-oracledb.readthedocs.io/en/latest/user_guide/appendix_a.html#featuresummary) bakın. Thin modunu kullanamıyorsanız Thick moduna geçmek isteyebilirsiniz.
 
-```
+```python
 import oracledb
 
 
-# please update with your username, password, hostname and service_name
-username = "<username>"
-password = "<password>"
-dsn = "<hostname>/<service_name>"
+# lütfen kullanıcı adınızı, şifrenizi, ana makine adınızı (hostname) ve servis adınızı güncelleyin
+username = "<kullanici_adi>"
+password = "<sifre>"
+dsn = "<ana_makine_adi>/<servis_adi>"
 
 
 try:
     connection = oracledb.connect(user=username, password=password, dsn=dsn)
-    print("Connection successful!")
+    print("Bağlantı başarılı!")
 except Exception as ex:
-    print("Exception occurred while index creation", ex)
+    print("İndeks oluşturma sırasında istisna oluştu:", ex)
 ```
 
-### Import the required dependencies to play with Oracle AI Vector Search
+### Oracle AI Vektör Araması ile Oynamak İçin Gerekli Bağımlılıkları İçe Aktarın
 
-```
+```python
 import sys
 import os
-
-
 
 
 from llama_index.core.schema import NodeRelationship, RelatedNodeInfo, TextNode
@@ -77,15 +75,15 @@ from llama_index.vector_stores.oracledb import base as orallamavs
 from llama_index.vector_stores.oracledb import OraLlamaVS, DistanceStrategy
 ```
 
-### Load Documents
+### Belgeleri Yükleyin
 
-```
-# Define a list of documents (These dummy examples are 4 random documents )
+```python
+# Bir belge listesi tanımlayın (Bu örnekler 4 rastgele belgedir)
 
 
 text_json_list = [
     {
-        "text": "If the answer to any preceding questions is yes, then the database stops the search and allocates space from the specified tablespace; otherwise, space is allocated from the database default shared temporary tablespace.",
+        "text": "Önceki sorulardan herhangi birinin yanıtı evet ise, veritabanı aramayı durdurur ve belirtilen tablo alanından (tablespace) yer ayırır; aksi takdirde yer, veritabanı varsayılan paylaşımlı geçici tablo alanından ayrılır.",
         "id_": "cncpt_15.5.3.2.2_P4",
         "embedding": [1.0, 0.0],
         "relationships": "test-0",
@@ -96,7 +94,7 @@ text_json_list = [
         },
     },
     {
-        "text": "A tablespace can be online (accessible) or offline (not accessible) whenever the database is open.\nA tablespace is usually online so that its data is available to users. The SYSTEM tablespace and temporary tablespaces cannot be taken offline.",
+        "text": "Veritabanı açık olduğu her an bir tablo alanı çevrimiçi (erişilebilir) veya çevrimdışı (erişilemez) olabilir.\nVeriler kullanıcılara sunulsun diye bir tablo alanı genellikle çevrimiçidir. SYSTEM tablo alanı ve geçici tablo alanları çevrimdışına alınamaz.",
         "id_": "cncpt_15.5.5_P1",
         "embedding": [0.0, 1.0],
         "relationships": "test-1",
@@ -107,7 +105,7 @@ text_json_list = [
         },
     },
     {
-        "text": "The database stores LOBs differently from other data types. Creating a LOB column implicitly creates a LOB segment and a LOB index. The tablespace containing the LOB segment and LOB index, which are always stored together, may be different from the tablespace containing the table.\nSometimes the database can store small amounts of LOB data in the table itself rather than in a separate LOB segment.",
+        "text": "Veritabanı, LOB'ları diğer veri türlerinden farklı şekilde saklar. Bir LOB sütunu oluşturmak dolaylı olarak bir LOB segmenti ve bir LOB indeksi oluşturur. Her zaman birlikte saklanan LOB segmentini ve LOB indeksini içeren tablo alanı, tabloyu içeren tablo alanından farklı olabilir.\nBazen veritabanı, küçük miktarlardaki LOB verilerini ayrı bir LOB segmenti yerine tablonun kendisinde saklayabilir.",
         "id_": "cncpt_22.3.4.3.1_P2",
         "embedding": [1.0, 1.0],
         "relationships": "test-2",
@@ -118,7 +116,7 @@ text_json_list = [
         },
     },
     {
-        "text": "The LOB segment stores data in pieces called chunks. A chunk is a logically contiguous set of data blocks and is the smallest unit of allocation for a LOB. A row in the table stores a pointer called a LOB locator, which points to the LOB index. When the table is queried, the database uses the LOB index to quickly locate the LOB chunks.",
+        "text": "LOB segmenti verileri parça (chunk) adı verilen parçalarda saklar. Bir parça, mantıksal olarak bitişik bir veri blokları kümesidir ve bir LOB için ayrılan en küçük birimdir. Tablodaki bir satır, LOB indeksini işaret eden LOB locator adlı bir işaretçi (pointer) saklar. Tablo sorgulandığında, veritabanı LOB parçalarını hızlıca bulmak için LOB indeksini kullanır.",
         "id_": "cncpt_22.3.4.3.1_P3",
         "embedding": [2.0, 1.0],
         "relationships": "test-3",
@@ -131,11 +129,11 @@ text_json_list = [
 ]
 ```
 
-```
-# Create Llama Text Nodes
+```python
+# Llama Metin Düğümleri (Text Nodes) Oluşturun
 text_nodes = []
 for text_json in text_json_list:
-    # Construct the relationships using RelatedNodeInfo
+    # RelatedNodeInfo kullanarak ilişkileri kurun
     relationships = {
         NodeRelationship.SOURCE: RelatedNodeInfo(
             node_id=text_json["relationships"]
@@ -143,14 +141,14 @@ for text_json in text_json_list:
     }
 
 
-    # Prepare the metadata dictionary; you might want to exclude certain metadata fields if necessary
+    # Meta veri sözlüğünü hazırlayın; gerekirse belirli alanları hariç tutabilirsiniz
     metadata = {
         "weight": text_json["metadata"]["weight"],
         "rank": text_json["metadata"]["rank"],
     }
 
 
-    # Create a TextNode instance
+    # Bir TextNode örneği oluşturun
     text_node = TextNode(
         text=text_json["text"],
         id_=text_json["id_"],
@@ -164,18 +162,18 @@ for text_json in text_json_list:
 print(text_nodes)
 ```
 
-### Using AI Vector Search Create a bunch of Vector Stores with different distance strategies
+### AI Vektör Araması Kullanarak Farklı Mesafe Stratejileriyle Bir Dizi Vektör Deposu Oluşturun
 
-First we will create three vector stores each with different distance functions. Since we have not created indices in them yet, they will just create tables for now. Later we will use these vector stores to create HNSW indicies.
+Öncelikle her biri farklı mesafe fonksiyonlarına sahip üç vektör deposu oluşturacağız. Henüz içlerinde indeks oluşturmadığımız için şimdilik sadece tablolar oluşturacaklar. Daha sonra bu vektör depolarını HNSW indeksleri oluşturmak için kullanacağız.
 
-You can manually connect to the Oracle Database and will see three tables Documents\_DOT, Documents\_COSINE and Documents\_EUCLIDEAN.
+Oracle Veritabanına manuel olarak bağlanabilirsiniz ve `Documents_DOT`, `Documents_COSINE` ve `Documents_EUCLIDEAN` adlı üç tablo göreceksiniz.
 
-We will then create three additional tables Documents\_DOT\_IVF, Documents\_COSINE\_IVF and Documents\_EUCLIDEAN\_IVF which will be used to create IVF indicies on the tables instead of HNSW indices.
+Ardından, tablolar üzerinde HNSW indeksleri yerine IVF indeksleri oluşturmak için kullanılacak `Documents_DOT_IVF`, `Documents_COSINE_IVF` ve `Documents_EUCLIDEAN_IVF` adlı üç ek tablo daha oluşturacağız.
 
-To understand more about the different types of indices Oracle AI Vector Search supports, refer to the following [guide](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/manage-different-categories-vector-indexes.html)
+Oracle AI Vektör Araması'nın desteklediği farklı indeks türleri hakkında daha fazla bilgi edinmek için [bu kılavuza](https://docs.oracle.com/en/database/oracle/oracle-database/23/vecse/manage-different-categories-vector-indexes.html) bakın.
 
-```
-# Ingest documents into Oracle Vector Store using different distance strategies
+```python
+# Farklı mesafe stratejilerini kullanarak belgeleri Oracle Vektör Deposuna aktarın
 
 
 vector_store_dot = OraLlamaVS.from_documents(
@@ -198,7 +196,7 @@ vector_store_euclidean = OraLlamaVS.from_documents(
 )
 
 
-# Ingest documents into Oracle Vector Store using different distance strategies
+# Farklı mesafe stratejilerini kullanarak belgeleri Oracle Vektör Deposuna aktarın
 vector_store_dot_ivf = OraLlamaVS.from_documents(
     text_nodes,
     table_name="Documents_DOT_IVF",
@@ -219,34 +217,33 @@ vector_store_euclidean_ivf = OraLlamaVS.from_documents(
 )
 ```
 
-### Demonstrating add, delete operations for texts, and basic similarity search
+### Metinler İçin Ekleme, Silme İşlemlerini ve Temel Benzerlik Aramasını Gösterme
 
-```
+```python
 def manage_texts(vector_stores):
     """
-    Adds texts to each vector store, demonstrates error handling for duplicate additions,
-    and performs deletion of texts. Showcases similarity searches and index creation for each vector store.
+    Her vektör deposuna metinler ekler, dublike eklemeler için hata yönetimini gösterir
+    ve metinlerin silinmesini gerçekleştirir. Her vektör deposu için benzerlik aramalarını
+    ve indeks oluşturmayı sergiler.
 
 
     Args:
-    - vector_stores (list): A list of OracleVS instances.
+    - vector_stores (list): OracleVS örneklerinin bir listesi.
     """
     for i, vs in enumerate(vector_stores, start=1):
-        # Deleting texts using the value of 'id'
+        # 'id' değerini kullanarak metinleri silme
         vs.delete("test-1")
-        print(f"\n\n\nDelete texts complete for vector store {i}\n\n\n")
+        print(f"\n\n\nVektör deposu {i} için metinleri silme tamamlandı\n\n\n")
 
 
-        # Similarity search
+        # Benzerlik araması
         query = VectorStoreQuery(
             query_embedding=[1.0, 1.0], similarity_top_k=3
         )
         results = vs.query(query=query)
         print(
-            f"\n\n\nSimilarity search results for vector store {i}: {results}\n\n\n"
+            f"\n\n\nVektör deposu {i} için benzerlik araması sonuçları: {results}\n\n\n"
         )
-
-
 
 
 vector_store_list = [
@@ -260,16 +257,18 @@ vector_store_list = [
 manage_texts(vector_store_list)
 ```
 
-### Demonstrating index creation with specific parameters for each distance strategy
+### Her Mesafe Stratejisi İçin Belirli Parametrelerle İndeks Oluşturmayı Gösterme
 
-```
+```python
 def create_search_indices(connection):
     """
-    Creates search indices for the vector stores, each with specific parameters tailored to their distance strategy.
+    Vektör depoları için, her biri kendi mesafe stratejisine göre uyarlanmış
+    belirli parametrelerle arama indeksleri oluşturur.
     """
-    # Index for DOT_PRODUCT strategy
-    # Notice we are creating a HNSW index with default parameters
-    # This will default to creating a HNSW index with 8 Parallel Workers and use the Default Accuracy used by Oracle AI Vector Search
+    # DOT_PRODUCT stratejisi için indeks
+    # Varsayılan parametrelerle bir HNSW indeksi oluşturuyoruz
+    # Bu, varsayılan olarak 8 Paralel İşçi ile bir HNSW indeksi oluşturacak ve
+    # Oracle AI Vektör Araması tarafından kullanılan Varsayılan Doğruluğu kullanacaktır.
     orallamavs.create_index(
         connection,
         vector_store_dot,
@@ -277,8 +276,8 @@ def create_search_indices(connection):
     )
 
 
-    # Index for COSINE strategy with specific parameters
-    # Notice we are creating a HNSW index with parallel 16 and Target Accuracy Specification as 97 percent
+    # Belirli parametrelerle COSINE stratejisi için indeks
+    # 16 paralellik ve %97 Hedef Doğruluğu Spesifikasyonu ile bir HNSW indeksi oluşturuyoruz
     orallamavs.create_index(
         connection,
         vector_store_max,
@@ -291,8 +290,9 @@ def create_search_indices(connection):
     )
 
 
-    # Index for EUCLIDEAN_DISTANCE strategy with specific parameters
-    # Notice we are creating a HNSW index by specifying Power User Parameters which are neighbors = 64 and efConstruction = 100
+    # Belirli parametrelerle EUCLIDEAN_DISTANCE stratejisi için indeks
+    # neighbors = 64 ve efConstruction = 100 olarak İleri Düzey Kullanıcı Parametrelerini 
+    # belirterek bir HNSW indeksi oluşturuyoruz
     orallamavs.create_index(
         connection,
         vector_store_euclidean,
@@ -305,9 +305,10 @@ def create_search_indices(connection):
     )
 
 
-    # Index for DOT_PRODUCT strategy with specific parameters
-    # Notice we are creating an IVF index with default parameters
-    # This will default to creating an IVF index with 8 Parallel Workers and use the Default Accuracy used by Oracle AI Vector Search
+    # Belirli parametrelerle DOT_PRODUCT stratejisi için indeks
+    # Varsayılan parametrelerle bir IVF indeksi oluşturuyoruz
+    # Bu, varsayılan olarak 8 Paralel İşçi ile bir IVF indeksi oluşturacak ve 
+    # Oracle AI Vektör Araması tarafından kullanılan Varsayılan Doğruluğu kullanacaktır.
     orallamavs.create_index(
         connection,
         vector_store_dot_ivf,
@@ -318,8 +319,8 @@ def create_search_indices(connection):
     )
 
 
-    # Index for COSINE strategy with specific parameters
-    # Notice we are creating an IVF index with parallel 32 and Target Accuracy Specification as 90 percent
+    # Belirli parametrelerle COSINE stratejisi için indeks
+    # 32 paralellik ve %90 Hedef Doğruluğu Spesifikasyonu ile bir IVF indeksi oluşturuyoruz
     orallamavs.create_index(
         connection,
         vector_store_max_ivf,
@@ -332,8 +333,9 @@ def create_search_indices(connection):
     )
 
 
-    # Index for EUCLIDEAN_DISTANCE strategy with specific parameters
-    # Notice we are creating an IVF index by specifying Power User Parameters which is neighbor_part = 64
+    # Belirli parametrelerle EUCLIDEAN_DISTANCE stratejisi için indeks
+    # neighbor_part = 64 olarak İleri Düzey Kullanıcı Parametresini belirterek 
+    # bir IVF indeksi oluşturuyoruz
     orallamavs.create_index(
         connection,
         vector_store_euclidean_ivf,
@@ -345,30 +347,28 @@ def create_search_indices(connection):
     )
 
 
-    print("Index creation complete.")
-
-
+    print("İndeks oluşturma tamamlandı.")
 
 
 create_search_indices(connection)
 ```
 
-### Now we will conduct a bunch of advanced searches on all six vector stores. Each of these three searches have a with and without filter version. The filter only selects the document with id 101 out and filters out everything else
+### Şimdi altı vektör deposunun tamamında bir dizi gelişmiş arama yapacağız. Bu üç aramanın her birinin filtreli ve filtresiz versiyonu vardır. Filtre sadece id'si 'c' olan belgeyi seçer ve diğer her şeyi eler.
 
-```
-# Conduct advanced searches after creating the indices
+```python
+# İndeksleri oluşturduktan sonra gelişmiş aramalar yapın
 def conduct_advanced_searches(vector_stores):
-    # Constructing a filter for direct comparison against document metadata
-    # This filter aims to include documents whose metadata 'id' is exactly '2'
+    # Belge meta verilerine karşı doğrudan karşılaştırma için bir filtre oluşturma
+    # Bu filtre, meta veri 'rank' değeri tam olarak 'c' olan belgeleri dahil etmeyi amaçlar
 
 
     for i, vs in enumerate(vector_stores, start=1):
 
 
         def query_without_filters_returns_all_rows_sorted_by_similarity():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search without a filter
-            print("\nSimilarity search results without filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtresiz benzerlik araması
+            print("\nFiltresiz benzerlik araması sonuçları:")
             query = VectorStoreQuery(
                 query_embedding=[1.0, 1.0], similarity_top_k=3
             )
@@ -379,9 +379,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filters_returns_multiple_matches():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with filter
-            print("\nSimilarity search results without filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nFiltreli benzerlik araması sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -396,9 +396,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_applies_top_k():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nFiltreyle arama sonuçları (top_k uygulanmış):")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -413,9 +413,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_applies_node_id_filter():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nDüğüm Kimliği (node_id) filtresi uygulanmış sonuçlar:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="rank", value="c")]
             )
@@ -433,13 +433,13 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_exact_filters_returns_single_match():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Filtreli benzerlik araması
+            print("\nKesin (exact) filtrelerle arama sonuçları:")
             filters = MetadataFilters(
                 filters=[
                     ExactMatchFilter(key="rank", value="c"),
-                    ExactMatchFilter(key="weight", value=2),
+                    ExactMatchFilter(key="weight", value=2.0),
                 ]
             )
             query = VectorStoreQuery(
@@ -453,10 +453,11 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_contradictive_filter_returns_no_matches():
+            # Çelişkili filtrelerle arama
             filters = MetadataFilters(
                 filters=[
-                    ExactMatchFilter(key="weight", value=2),
-                    ExactMatchFilter(key="weight", value=3),
+                    ExactMatchFilter(key="weight", value=2.0),
+                    ExactMatchFilter(key="weight", value=3.0),
                 ]
             )
             query = VectorStoreQuery(
@@ -470,9 +471,9 @@ def conduct_advanced_searches(vector_stores):
 
 
         def query_with_filter_on_unknown_field_returns_no_matches():
-            print(f"\n--- Vector Store {i} Advanced Searches ---")
-            # Similarity search with a filter
-            print("\nSimilarity search results with filter:")
+            print(f"\n--- Vektör Deposu {i} Gelişmiş Aramalar ---")
+            # Bilinmeyen alan üzerinde filtreyle arama
+            print("\nBilinmeyen alan üzerinde filtreyle arama sonuçları:")
             filters = MetadataFilters(
                 filters=[ExactMatchFilter(key="unknown_field", value="c")]
             )
@@ -487,6 +488,7 @@ def conduct_advanced_searches(vector_stores):
 
 
         def delete_removes_document_from_query_results():
+            # Silme işleminin sonuçlardan belgeyi kaldırdığını doğrulama
             vs.delete("test-1")
             query = VectorStoreQuery(
                 query_embedding=[1.0, 1.0], similarity_top_k=2
@@ -498,11 +500,9 @@ def conduct_advanced_searches(vector_stores):
         delete_removes_document_from_query_results()
 
 
-
-
 conduct_advanced_searches(vector_store_list)
 ```
 
-### End to End Demo
+### Uçtan Uca Demo
 
-Please refer to our complete demo guide [Oracle AI Vector Search End-to-End Demo Guide](https://github.com/run-llama/llama_index/blob/main/docs/examples/cookbooks/oracleai_demo.ipynb) to build an end to end RAG pipeline with the help of Oracle AI Vector Search.
+Oracle AI Vektör Araması yardımıyla uçtan uca bir RAG boru hattı oluşturmak için lütfen tam demo kılavuzumuza [Oracle AI Vektör Araması Uçtan Uca Demo Kılavuzu](https://github.com/run-llama/llama_index/blob/main/docs/examples/cookbooks/oracleai_demo.ipynb) bakın.

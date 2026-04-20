@@ -1,26 +1,28 @@
-# MongoDB Atlas + Fireworks AI RAG Example
-
 ---
-title: MongoDB Atlas + Fireworks AI RAG Example
- | LlamaIndex OSS Documentation
+title: MongoDB Atlas + Fireworks AI RAG Örneği
+ | LlamaIndex OSS Belgeleri
 ---
 
-```
+# MongoDB Atlas + Fireworks AI RAG Örneği
+
+Bu örnek, MongoDB Atlas'ı vektör deposu olarak ve Fireworks AI'yi LLM ve gömme (embedding) sağlayıcısı olarak kullanarak bir Erişim Destekli Nesil (Retrieval-Augmented Generation - RAG) sisteminin nasıl kurulacağını göstermektedir.
+
+```bash
 !pip install -q llama-index llama-index-vector-stores-mongodb llama-index-embeddings-fireworks==0.1.2 llama-index-llms-fireworks
 !pip install -q pymongo datasets pandas
 ```
 
-```
-# set up Fireworks.ai Key
+```python
+# Fireworks.ai Anahtarını Ayarla
 import os
 import getpass
 
 
-fw_api_key = getpass.getpass("Fireworks API Key:")
+fw_api_key = getpass.getpass("Fireworks API Anahtarı:")
 os.environ["FIREWORKS_API_KEY"] = fw_api_key
 ```
 
-```
+```python
 from datasets import load_dataset
 import pandas as pd
 
@@ -29,27 +31,11 @@ import pandas as pd
 dataset = load_dataset("AIatMongoDB/whatscooking.restaurants")
 
 
-# Convert the dataset to a pandas dataframe
+# Veri setini bir pandas dataframe'ine dönüştür
 dataset_df = pd.DataFrame(dataset["train"])
 
 
 dataset_df.head(5)
-```
-
-```
-/mnt/disks/data/llama_index/.venv/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-```
-
-```
-.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-
-.dataframe thead th {
-    text-align: right;
-}
 ```
 
 |   | restaurant\_id | attributes                                          | cuisine  | DogsAllowed | embedding                                          | OutdoorSeating | borough       | address                                            | \_id                                 | name                   | menu                                               | TakeOut | location                                           | PriceRange | HappyHour | review\_count | sponsored | stars |
@@ -60,7 +46,7 @@ dataset_df.head(5)
 | 3 | 40365288       | {'Alcohol': None, 'Ambience': '{'touristy': Fa...   | American | None        | \[-0.11735515, -0.0397448, -0.0072645755, -0.09... | True           | Manhattan     | {'building': '842', 'coord': \[-73.970637000000... | {'$oid': '6095a34a7c34416a90d32017'} | Keats Restaurant       | \[French fries, Chicken pot pie, Mac & cheese, ... | True    | {'coordinates': \[-73.97063700000001, 40.751495... | 2.0        | True      | 149           | NaN       | 4.0   |
 | 4 | 40363151       | {'Alcohol': None, 'Ambience': None, 'BYOB': No...   | Bakery   | None        | \[-0.096541286, -0.009661355, 0.04402167, -0.12... | True           | Manhattan     | {'building': '120', 'coord': \[-73.9998042, 40.... | {'$oid': '6095a34a7c34416a90d31fbd'} | Olive'S                | \[doughnuts, chocolate chip cookies, chocolate ... | True    | {'coordinates': \[-73.9998042, 40.7251256], 'ty... | 1.0        | None      | 7             | NaN       | 5.0   |
 
-```
+```python
 from llama_index.core.settings import Settings
 from llama_index.llms.fireworks import Fireworks
 from llama_index.embeddings.fireworks import FireworksEmbedding
@@ -82,15 +68,15 @@ Settings.llm = llm
 Settings.embed_model = embed_model
 ```
 
-```
+```python
 import json
 from llama_index.core import Document
 from llama_index.core.schema import MetadataMode
 
 
-# Convert the DataFrame to a JSON string representation
+# DataFrame'i bir JSON dizesi gösterimine dönüştür
 documents_json = dataset_df.to_json(orient="records")
-# Load the JSON string into a Python list of dictionaries
+# JSON dizesini bir Python sözlük listesine yükle
 documents_list = json.loads(documents_json)
 
 
@@ -98,7 +84,7 @@ llama_documents = []
 
 
 for document in documents_list:
-    # Value for metadata must be one of (str, int, float, None)
+    # Meta veri değeri (str, int, float, None) tiplerinden biri olmalıdır
     document["name"] = json.dumps(document["name"])
     document["cuisine"] = json.dumps(document["cuisine"])
     document["attributes"] = json.dumps(document["attributes"])
@@ -109,130 +95,75 @@ for document in documents_list:
     document["HappyHour"] = json.dumps(document["HappyHour"])
     document["review_count"] = json.dumps(document["review_count"])
     document["TakeOut"] = json.dumps(document["TakeOut"])
-    # these two fields are not relevant to the question we want to answer,
-    # so I will skip it for now
+    # bu iki alan cevaplamak istediğimiz soruyla ilgili değil,
+    # bu yüzden şimdilik atlıyorum
     del document["embedding"]
     del document["location"]
 
 
-    # Create a Document object with the text and excluded metadata for llm and embedding models
+    # Metin ve llm/gömme modelleri için hariç tutulan meta verilerle bir Belge (Document) nesnesi oluşturun
     llama_document = Document(
         text=json.dumps(document),
         metadata=document,
         metadata_template="{key}=>{value}",
-        text_template="Metadata: {metadata_str}\n-----\nContent: {content}",
+        text_template="Meta Veri: {metadata_str}\n-----\nİçerik: {content}",
     )
 
 
     llama_documents.append(llama_document)
 
 
-# Observing an example of what the LLM and Embedding model receive as input
+# LLM ve Gömme modelinin girdi olarak ne aldığını gözlemleyelim
 print(
-    "\nThe LLM sees this: \n",
+    "\nLLM bunu görür: \n",
     llama_documents[0].get_content(metadata_mode=MetadataMode.LLM),
 )
 print(
-    "\nThe Embedding model sees this: \n",
+    "\nGömme modeli bunu görür: \n",
     llama_documents[0].get_content(metadata_mode=MetadataMode.EMBED),
 )
 ```
 
-```
-The LLM sees this:
- Metadata: restaurant_id=>40366661
-attributes=>{"Alcohol": "'none'", "Ambience": "{'romantic': False, 'intimate': False, 'classy': False, 'hipster': False, 'divey': False, 'touristy': False, 'trendy': False, 'upscale': False, 'casual': False}", "BYOB": null, "BestNights": null, "BikeParking": null, "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": null, "BusinessParking": "None", "Caters": "True", "DriveThru": null, "GoodForDancing": null, "GoodForKids": "True", "GoodForMeal": null, "HasTV": "True", "Music": null, "NoiseLevel": "'average'", "RestaurantsAttire": "'casual'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "True", "RestaurantsTableService": "False", "WheelchairAccessible": "True", "WiFi": "'free'"}
-cuisine=>"Tex-Mex"
-DogsAllowed=>None
-OutdoorSeating=>True
-borough=>"Manhattan"
-address=>{"building": "627", "coord": [-73.975981, 40.745132], "street": "2 Avenue", "zipcode": "10016"}
-_id=>{'$oid': '6095a34a7c34416a90d3206b'}
-name=>"Baby Bo'S Burritos"
-menu=>null
-TakeOut=>true
-PriceRange=>1.0
-HappyHour=>null
-review_count=>10
-sponsored=>None
-stars=>2.5
------
-Content: {"restaurant_id": "40366661", "attributes": "{\"Alcohol\": \"'none'\", \"Ambience\": \"{'romantic': False, 'intimate': False, 'classy': False, 'hipster': False, 'divey': False, 'touristy': False, 'trendy': False, 'upscale': False, 'casual': False}\", \"BYOB\": null, \"BestNights\": null, \"BikeParking\": null, \"BusinessAcceptsBitcoin\": null, \"BusinessAcceptsCreditCards\": null, \"BusinessParking\": \"None\", \"Caters\": \"True\", \"DriveThru\": null, \"GoodForDancing\": null, \"GoodForKids\": \"True\", \"GoodForMeal\": null, \"HasTV\": \"True\", \"Music\": null, \"NoiseLevel\": \"'average'\", \"RestaurantsAttire\": \"'casual'\", \"RestaurantsDelivery\": \"True\", \"RestaurantsGoodForGroups\": \"True\", \"RestaurantsReservations\": \"True\", \"RestaurantsTableService\": \"False\", \"WheelchairAccessible\": \"True\", \"WiFi\": \"'free'\"}", "cuisine": "\"Tex-Mex\"", "DogsAllowed": null, "OutdoorSeating": true, "borough": "\"Manhattan\"", "address": "{\"building\": \"627\", \"coord\": [-73.975981, 40.745132], \"street\": \"2 Avenue\", \"zipcode\": \"10016\"}", "_id": {"$oid": "6095a34a7c34416a90d3206b"}, "name": "\"Baby Bo'S Burritos\"", "menu": "null", "TakeOut": "true", "PriceRange": "1.0", "HappyHour": "null", "review_count": "10", "sponsored": null, "stars": 2.5}
-
-
-The Embedding model sees this:
- Metadata: restaurant_id=>40366661
-attributes=>{"Alcohol": "'none'", "Ambience": "{'romantic': False, 'intimate': False, 'classy': False, 'hipster': False, 'divey': False, 'touristy': False, 'trendy': False, 'upscale': False, 'casual': False}", "BYOB": null, "BestNights": null, "BikeParking": null, "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": null, "BusinessParking": "None", "Caters": "True", "DriveThru": null, "GoodForDancing": null, "GoodForKids": "True", "GoodForMeal": null, "HasTV": "True", "Music": null, "NoiseLevel": "'average'", "RestaurantsAttire": "'casual'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "True", "RestaurantsTableService": "False", "WheelchairAccessible": "True", "WiFi": "'free'"}
-cuisine=>"Tex-Mex"
-DogsAllowed=>None
-OutdoorSeating=>True
-borough=>"Manhattan"
-address=>{"building": "627", "coord": [-73.975981, 40.745132], "street": "2 Avenue", "zipcode": "10016"}
-_id=>{'$oid': '6095a34a7c34416a90d3206b'}
-name=>"Baby Bo'S Burritos"
-menu=>null
-TakeOut=>true
-PriceRange=>1.0
-HappyHour=>null
-review_count=>10
-sponsored=>None
-stars=>2.5
------
-Content: {"restaurant_id": "40366661", "attributes": "{\"Alcohol\": \"'none'\", \"Ambience\": \"{'romantic': False, 'intimate': False, 'classy': False, 'hipster': False, 'divey': False, 'touristy': False, 'trendy': False, 'upscale': False, 'casual': False}\", \"BYOB\": null, \"BestNights\": null, \"BikeParking\": null, \"BusinessAcceptsBitcoin\": null, \"BusinessAcceptsCreditCards\": null, \"BusinessParking\": \"None\", \"Caters\": \"True\", \"DriveThru\": null, \"GoodForDancing\": null, \"GoodForKids\": \"True\", \"GoodForMeal\": null, \"HasTV\": \"True\", \"Music\": null, \"NoiseLevel\": \"'average'\", \"RestaurantsAttire\": \"'casual'\", \"RestaurantsDelivery\": \"True\", \"RestaurantsGoodForGroups\": \"True\", \"RestaurantsReservations\": \"True\", \"RestaurantsTableService\": \"False\", \"WheelchairAccessible\": \"True\", \"WiFi\": \"'free'\"}", "cuisine": "\"Tex-Mex\"", "DogsAllowed": null, "OutdoorSeating": true, "borough": "\"Manhattan\"", "address": "{\"building\": \"627\", \"coord\": [-73.975981, 40.745132], \"street\": \"2 Avenue\", \"zipcode\": \"10016\"}", "_id": {"$oid": "6095a34a7c34416a90d3206b"}, "name": "\"Baby Bo'S Burritos\"", "menu": "null", "TakeOut": "true", "PriceRange": "1.0", "HappyHour": "null", "review_count": "10", "sponsored": null, "stars": 2.5}
-```
-
-```
-llama_documents[0]
-```
-
-```
-Document(id_='93d3f08d-85f3-494d-a057-19bc834abc29', embedding=None, metadata={'restaurant_id': '40366661', 'attributes': '{"Alcohol": "\'none\'", "Ambience": "{\'romantic\': False, \'intimate\': False, \'classy\': False, \'hipster\': False, \'divey\': False, \'touristy\': False, \'trendy\': False, \'upscale\': False, \'casual\': False}", "BYOB": null, "BestNights": null, "BikeParking": null, "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": null, "BusinessParking": "None", "Caters": "True", "DriveThru": null, "GoodForDancing": null, "GoodForKids": "True", "GoodForMeal": null, "HasTV": "True", "Music": null, "NoiseLevel": "\'average\'", "RestaurantsAttire": "\'casual\'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "True", "RestaurantsTableService": "False", "WheelchairAccessible": "True", "WiFi": "\'free\'"}', 'cuisine': '"Tex-Mex"', 'DogsAllowed': None, 'OutdoorSeating': True, 'borough': '"Manhattan"', 'address': '{"building": "627", "coord": [-73.975981, 40.745132], "street": "2 Avenue", "zipcode": "10016"}', '_id': {'$oid': '6095a34a7c34416a90d3206b'}, 'name': '"Baby Bo\'S Burritos"', 'menu': 'null', 'TakeOut': 'true', 'PriceRange': '1.0', 'HappyHour': 'null', 'review_count': '10', 'sponsored': None, 'stars': 2.5}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='{"restaurant_id": "40366661", "attributes": "{\\"Alcohol\\": \\"\'none\'\\", \\"Ambience\\": \\"{\'romantic\': False, \'intimate\': False, \'classy\': False, \'hipster\': False, \'divey\': False, \'touristy\': False, \'trendy\': False, \'upscale\': False, \'casual\': False}\\", \\"BYOB\\": null, \\"BestNights\\": null, \\"BikeParking\\": null, \\"BusinessAcceptsBitcoin\\": null, \\"BusinessAcceptsCreditCards\\": null, \\"BusinessParking\\": \\"None\\", \\"Caters\\": \\"True\\", \\"DriveThru\\": null, \\"GoodForDancing\\": null, \\"GoodForKids\\": \\"True\\", \\"GoodForMeal\\": null, \\"HasTV\\": \\"True\\", \\"Music\\": null, \\"NoiseLevel\\": \\"\'average\'\\", \\"RestaurantsAttire\\": \\"\'casual\'\\", \\"RestaurantsDelivery\\": \\"True\\", \\"RestaurantsGoodForGroups\\": \\"True\\", \\"RestaurantsReservations\\": \\"True\\", \\"RestaurantsTableService\\": \\"False\\", \\"WheelchairAccessible\\": \\"True\\", \\"WiFi\\": \\"\'free\'\\"}", "cuisine": "\\"Tex-Mex\\"", "DogsAllowed": null, "OutdoorSeating": true, "borough": "\\"Manhattan\\"", "address": "{\\"building\\": \\"627\\", \\"coord\\": [-73.975981, 40.745132], \\"street\\": \\"2 Avenue\\", \\"zipcode\\": \\"10016\\"}", "_id": {"$oid": "6095a34a7c34416a90d3206b"}, "name": "\\"Baby Bo\'S Burritos\\"", "menu": "null", "TakeOut": "true", "PriceRange": "1.0", "HappyHour": "null", "review_count": "10", "sponsored": null, "stars": 2.5}', start_char_idx=None, end_char_idx=None, text_template='Metadata: {metadata_str}\n-----\nContent: {content}', metadata_template='{key}=>{value}', metadata_seperator='\n')
-```
-
-```
+```python
 from llama_index.core.node_parser import SentenceSplitter
 
 
 parser = SentenceSplitter()
 nodes = parser.get_nodes_from_documents(llama_documents)
-# 25k nodes takes about 10 minutes, will trim it down to 2.5k
+# 25 bin düğüm yaklaşık 10 dakika sürer, bunu 2.5 bine indirgeyeceğiz
 new_nodes = nodes[:2500]
 
 
-# There are 25k documents, so we need to do batching. Fortunately LlamaIndex provides good batching
-# for embedding models, and we are going to rely on the __call__ method for the model to handle this
+# 25 bin belge olduğu için toplu işlem (batching) yapmamız gerekiyor.
+# Neyse ki LlamaIndex gömme modelleri için iyi bir toplu işlem sunuyor
 node_embeddings = embed_model(new_nodes)
 ```
 
-```
+```python
 for idx, n in enumerate(new_nodes):
     n.embedding = node_embeddings[idx].embedding
     if "_id" in n.metadata:
         del n.metadata["_id"]
 ```
 
-Ensure your database, collection and vector store index is setup on MongoDB Atlas for the collection or the following step won’t work appropriately on MongoDB.
+MongoDB Atlas üzerinde veritabanınızın, koleksiyonunuzun ve vektör arama indeksinizin kurulu olduğundan emin olun, aksi takdirde aşağıdaki adım MongoDB üzerinde düzgün çalışmaz.
 
-- For assistance with database cluster setup and obtaining the URI, refer to this [guide](https://www.mongodb.com/docs/guides/atlas/cluster/) for setting up a MongoDB cluster, and this [guide](https://www.mongodb.com/docs/guides/atlas/connection-string/) to get your connection string.
+- Veritabanı kümesi (cluster) kurulumu ve URI alma konusunda yardım için, bir MongoDB kümesi kurmak üzere [bu kılavuza](https://www.mongodb.com/docs/guides/atlas/cluster/) ve bağlantı dizginizi almak için [bu kılavuza](https://www.mongodb.com/docs/guides/atlas/connection-string/) bakın.
 
-- Once you have successfully created a cluster, create the database and collection within the MongoDB Atlas cluster by clicking “+ Create Database”. The database will be named movies, and the collection will be named movies\_records.
+- Başarılı bir şekilde bir küme oluşturduktan sonra, MongoDB Atlas kümesi içinde "+ Create Database" seçeneğine tıklayarak veritabanını ve koleksiyonu oluşturun. Veritabanı `whatscooking` ve koleksiyon `restaurants` olarak adlandırılacaktır.
 
-- Creating a vector search index within the movies\_records collection is essential for efficient document retrieval from MongoDB into our development environment. To achieve this, refer to the official [guide](https://www.mongodb.com/docs/atlas/atlas-vector-search/create-index/) on vector search index creation.
+- MongoDB'den geliştirme ortamımıza verimli belge erişimi sağlamak için `restaurants` koleksiyonu içinde bir vektör arama indeksi oluşturmak şarttır. Bunun için vektör arama indeksi oluşturma hakkındaki resmi [kılavuza](https://www.mongodb.com/docs/atlas/atlas-vector-search/create-index/) bakın.
 
-```
+```python
 import pymongo
-
-
-
-
-# set up Fireworks.ai Key
 import os
 import getpass
 
 
+# MongoDB URI ayarla
 mongo_uri = getpass.getpass("MONGO_URI:")
 if not mongo_uri:
-    print("MONGO_URI not set")
+    print("MONGO_URI ayarlanmadı")
 
 
 mongo_client = pymongo.MongoClient(mongo_uri)
@@ -247,21 +178,13 @@ db = mongo_client[DB_NAME]
 collection = db[COLLECTION_NAME]
 ```
 
-```
-Connection to MongoDB successful
-```
-
-```
-# To ensure we are working with a fresh collection
-# delete any existing records in the collection
+```python
+# Taze bir koleksiyonla çalıştığımızdan emin olmak için
+# koleksiyondaki mevcut kayıtları silin
 collection.delete_many({})
 ```
 
-```
-DeleteResult({'n': 0, 'electionId': ObjectId('7fffffff00000000000001ce'), 'opTime': {'ts': Timestamp(1708970193, 3), 't': 462}, 'ok': 1.0, '$clusterTime': {'clusterTime': Timestamp(1708970193, 3), 'signature': {'hash': b'\x9a3H8\xa1\x1b\xb6\xbb\xa9\xc3x\x17\x1c\xeb\xe9\x03\xaa\xf8\xf17', 'keyId': 7294687148333072386}}, 'operationTime': Timestamp(1708970193, 3)}, acknowledged=True)
-```
-
-```
+```python
 from llama_index.vector_stores.mongodb import MongoDBAtlasVectorSearch
 
 
@@ -275,24 +198,20 @@ vector_store = MongoDBAtlasVectorSearch(
 vector_store.add(new_nodes)
 ```
 
-now make sure you create the search index with the right name here
+Şimdi burada arama indeksini doğru isimle oluşturduğunuzdan emin olun.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 
 
 index = VectorStoreIndex.from_vector_store(vector_store)
 ```
 
-```
+```bash
 %pip install -q matplotlib
 ```
 
-```
-Note: you may need to restart the kernel to use updated packages.
-```
-
-```
+```python
 import pprint
 from llama_index.core.response.notebook_utils import display_response
 
@@ -300,7 +219,7 @@ from llama_index.core.response.notebook_utils import display_response
 query_engine = index.as_query_engine()
 
 
-query = "search query: Anything that doesn't have alcohol in it"
+query = "arama sorgusu: İçinde alkol olmayan her şey"
 
 
 response = query_engine.query(query)
@@ -308,15 +227,10 @@ display_response(response)
 pprint.pprint(response.source_nodes)
 ```
 
-**`Final Response:`** Based on the context provided, two restaurant options that don’t serve alcohol are:
+**`Final Yanıtı:`** Sağlanan bağlama dayanarak, alkol servisi yapmayan iki restoran seçeneği şunlardır:
 
-1. “Academy Restauraunt” in Brooklyn, which serves American cuisine and has a variety of dishes such as Mozzarella sticks, Cheeseburger, Baked potato, Breadsticks, Caesar salad, Chicken parmesan, Pigs in a blanket, Chicken soup, Mac & cheese, Mushroom swiss burger, Spaghetti with meatballs, and Mashed potatoes.
+1. Brooklyn'deki "Academy Restauraunt"; Amerikan mutfağı sunmaktadır ve Mozzarella sticks, Cheeseburger, fırınlanmış patates, ekmek çubukları, Sezar salatası, tavuklu parmesan, Pigs in a blanket (milföyde sosis), tavuk çorbası, Mac & cheese, mantarlı İsviçre burgeri, köfteli spagetti ve patates püresi gibi çeşitli yemeklere sahiptir.
 
-2. “Gabriel’S Bar & Grill” in Manhattan, which specializes in Italian cuisine and offers dishes like Cheese Ravioli, Neapolitan Pizza, assorted gelato, Vegetarian Baked Ziti, Vegetarian Broccoli Pizza, Lasagna, Buca Trio Platter, Spinach Ravioli, Pasta with ricotta cheese, Spaghetti, Fried calamari, and Alfredo Pizza.
+2. Manhattan'daki "Gabriel’S Bar & Grill"; İtalyan mutfağında uzmanlaşmıştır ve Peynirli Ravioli, Napoliten Pizza, çeşitli gelatolar, vejetaryen fırın ziti, vejetaryen brokoli pizzası, Lazanya, Buca Trio Platter, ıspanaklı ravioli, lor peynirli makarna, Spagetti, kızarmış kalamar ve Alfredo Pizza gibi yemekler sunmaktadır.
 
-Both restaurants offer outdoor seating, are kid-friendly, and have a casual dress code. They also provide take-out service and have happy hour promotions.
-
-```
-[NodeWithScore(node=TextNode(id_='5405e68c-19f2-4a65-95d7-f880fa6a8deb', embedding=None, metadata={'restaurant_id': '40385767', 'attributes': '{"Alcohol": "u\'beer_and_wine\'", "Ambience": "{\'touristy\': False, \'hipster\': False, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': None, \'upscale\': False, \'classy\': False, \'casual\': True}", "BYOB": null, "BestNights": "{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': True}", "BikeParking": "True", "BusinessAcceptsBitcoin": "False", "BusinessAcceptsCreditCards": "True", "BusinessParking": "{\'garage\': False, \'street\': False, \'validated\': False, \'lot\': True, \'valet\': False}", "Caters": "True", "DriveThru": null, "GoodForDancing": "False", "GoodForKids": "True", "GoodForMeal": "{\'dessert\': False, \'latenight\': False, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}", "HasTV": "True", "Music": "{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}", "NoiseLevel": "u\'average\'", "RestaurantsAttire": "u\'casual\'", "RestaurantsDelivery": "None", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "True", "RestaurantsTableService": "True", "WheelchairAccessible": "True", "WiFi": "u\'free\'"}', 'cuisine': '"American"', 'DogsAllowed': True, 'OutdoorSeating': True, 'borough': '"Brooklyn"', 'address': '{"building": "69", "coord": [-73.9757464, 40.687295], "street": "Lafayette Avenue", "zipcode": "11217"}', 'name': '"Academy Restauraunt"', 'menu': '["Mozzarella sticks", "Cheeseburger", "Baked potato", "Breadsticks", "Caesar salad", "Chicken parmesan", "Pigs in a blanket", "Chicken soup", "Mac & cheese", "Mushroom swiss burger", "Spaghetti with meatballs", "Mashed potatoes"]', 'TakeOut': 'true', 'PriceRange': '2.0', 'HappyHour': 'true', 'review_count': '173', 'sponsored': None, 'stars': 4.5}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={<NodeRelationship.SOURCE: '1'>: RelatedNodeInfo(node_id='bbfc4bf5-d9c3-4f3b-8c1f-ddcf94f3b5df', node_type=<ObjectType.DOCUMENT: '4'>, metadata={'restaurant_id': '40385767', 'attributes': '{"Alcohol": "u\'beer_and_wine\'", "Ambience": "{\'touristy\': False, \'hipster\': False, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': None, \'upscale\': False, \'classy\': False, \'casual\': True}", "BYOB": null, "BestNights": "{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': True}", "BikeParking": "True", "BusinessAcceptsBitcoin": "False", "BusinessAcceptsCreditCards": "True", "BusinessParking": "{\'garage\': False, \'street\': False, \'validated\': False, \'lot\': True, \'valet\': False}", "Caters": "True", "DriveThru": null, "GoodForDancing": "False", "GoodForKids": "True", "GoodForMeal": "{\'dessert\': False, \'latenight\': False, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}", "HasTV": "True", "Music": "{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}", "NoiseLevel": "u\'average\'", "RestaurantsAttire": "u\'casual\'", "RestaurantsDelivery": "None", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "True", "RestaurantsTableService": "True", "WheelchairAccessible": "True", "WiFi": "u\'free\'"}', 'cuisine': '"American"', 'DogsAllowed': True, 'OutdoorSeating': True, 'borough': '"Brooklyn"', 'address': '{"building": "69", "coord": [-73.9757464, 40.687295], "street": "Lafayette Avenue", "zipcode": "11217"}', '_id': {'$oid': '6095a34a7c34416a90d322d1'}, 'name': '"Academy Restauraunt"', 'menu': '["Mozzarella sticks", "Cheeseburger", "Baked potato", "Breadsticks", "Caesar salad", "Chicken parmesan", "Pigs in a blanket", "Chicken soup", "Mac & cheese", "Mushroom swiss burger", "Spaghetti with meatballs", "Mashed potatoes"]', 'TakeOut': 'true', 'PriceRange': '2.0', 'HappyHour': 'true', 'review_count': '173', 'sponsored': None, 'stars': 4.5}, hash='df7870b3103572b05e98091e4d4b52b238175eb08558831b621b6832c0472c2e'), <NodeRelationship.PREVIOUS: '2'>: RelatedNodeInfo(node_id='5fbb14fe-c8a8-4c4c-930d-2e07e4f77b47', node_type=<ObjectType.TEXT: '1'>, metadata={'restaurant_id': '40377111', 'attributes': '{"Alcohol": null, "Ambience": null, "BYOB": null, "BestNights": null, "BikeParking": "True", "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": "False", "BusinessParking": "{\'garage\': False, \'street\': True, \'validated\': False, \'lot\': False, \'valet\': False}", "Caters": null, "DriveThru": "True", "GoodForDancing": null, "GoodForKids": null, "GoodForMeal": null, "HasTV": null, "Music": null, "NoiseLevel": null, "RestaurantsAttire": null, "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": null, "RestaurantsReservations": null, "RestaurantsTableService": null, "WheelchairAccessible": null, "WiFi": null}', 'cuisine': '"American"', 'DogsAllowed': None, 'OutdoorSeating': None, 'borough': '"Manhattan"', 'address': '{"building": "1207", "coord": [-73.9592644, 40.8088612], "street": "Amsterdam Avenue", "zipcode": "10027"}', '_id': {'$oid': '6095a34a7c34416a90d321d6'}, 'name': '"Amsterdam Restaurant & Tapas Lounge"', 'menu': '["Green salad", "Cheddar Biscuits", "Lasagna", "Chicken parmesan", "Chicken soup", "Pigs in a blanket", "Caesar salad", "French fries", "Baked potato", "Mushroom swiss burger", "Grilled cheese sandwich", "Fried chicken"]', 'TakeOut': 'true', 'PriceRange': '1.0', 'HappyHour': 'null', 'review_count': '6', 'sponsored': None, 'stars': 5.0}, hash='1261332dd67be495d0639f41b5f6462f87a41aabe20367502ef28074bf13e561'), <NodeRelationship.NEXT: '3'>: RelatedNodeInfo(node_id='10ad1a23-3237-4b68-808d-58fd7b7e5cb6', node_type=<ObjectType.TEXT: '1'>, metadata={}, hash='bc64dca2f9210693c3d5174aec305f25b68d080be65a0ae52f9a560f99992bb0')}, text='{"restaurant_id": "40385767", "attributes": "{\\"Alcohol\\": \\"u\'beer_and_wine\'\\", \\"Ambience\\": \\"{\'touristy\': False, \'hipster\': False, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': None, \'upscale\': False, \'classy\': False, \'casual\': True}\\", \\"BYOB\\": null, \\"BestNights\\": \\"{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': True}\\", \\"BikeParking\\": \\"True\\", \\"BusinessAcceptsBitcoin\\": \\"False\\", \\"BusinessAcceptsCreditCards\\": \\"True\\", \\"BusinessParking\\": \\"{\'garage\': False, \'street\': False, \'validated\': False, \'lot\': True, \'valet\': False}\\", \\"Caters\\": \\"True\\", \\"DriveThru\\": null, \\"GoodForDancing\\": \\"False\\", \\"GoodForKids\\": \\"True\\", \\"GoodForMeal\\": \\"{\'dessert\': False, \'latenight\': False, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}\\", \\"HasTV\\": \\"True\\", \\"Music\\": \\"{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}\\", \\"NoiseLevel\\": \\"u\'average\'\\", \\"RestaurantsAttire\\": \\"u\'casual\'\\", \\"RestaurantsDelivery\\": \\"None\\", \\"RestaurantsGoodForGroups\\": \\"True\\", \\"RestaurantsReservations\\": \\"True\\", \\"RestaurantsTableService\\": \\"True\\", \\"WheelchairAccessible\\": \\"True\\", \\"WiFi\\": \\"u\'free\'\\"}", "cuisine": "\\"American\\"", "DogsAllowed": true, "OutdoorSeating": true, "borough": "\\"Brooklyn\\"",', start_char_idx=0, end_char_idx=1415, text_template='Metadata: {metadata_str}\n-----\nContent: {content}', metadata_template='{key}=>{value}', metadata_seperator='\n'), score=0.7296431064605713),
- NodeWithScore(node=TextNode(id_='9cd153ba-2ab8-40aa-90f0-9da5ae24c632', embedding=None, metadata={'restaurant_id': '40392690', 'attributes': '{"Alcohol": "u\'full_bar\'", "Ambience": "{\'touristy\': None, \'hipster\': True, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': True, \'upscale\': None, \'classy\': True, \'casual\': True}", "BYOB": "False", "BestNights": "{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': False}", "BikeParking": "True", "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": "True", "BusinessParking": "{\'garage\': False, \'street\': True, \'validated\': False, \'lot\': False, \'valet\': False}", "Caters": "True", "DriveThru": "False", "GoodForDancing": "False", "GoodForKids": "True", "GoodForMeal": "{\'dessert\': None, \'latenight\': None, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}", "HasTV": "False", "Music": "{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}", "NoiseLevel": "u\'average\'", "RestaurantsAttire": "\'casual\'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "False", "RestaurantsTableService": "True", "WheelchairAccessible": "True", "WiFi": "\'free\'"}', 'cuisine': '"Italian"', 'DogsAllowed': True, 'OutdoorSeating': True, 'borough': '"Manhattan"', 'address': '{"building": "11", "coord": [-73.9828696, 40.7693649], "street": "West   60 Street", "zipcode": "10023"}', 'name': '"Gabriel\'S Bar & Grill"', 'menu': '["Cheese Ravioli", "Neapolitan Pizza", "assorted gelato", "Vegetarian Baked Ziti", "Vegetarian Broccoli Pizza", "Lasagna", "Buca Trio Platter", "Spinach Ravioli", "Pasta with ricotta cheese", "Spaghetti", "Fried calimari", "Alfredo Pizza"]', 'TakeOut': 'true', 'PriceRange': '2.0', 'HappyHour': 'true', 'review_count': '333', 'sponsored': None, 'stars': 4.0}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={<NodeRelationship.SOURCE: '1'>: RelatedNodeInfo(node_id='77584933-8286-4277-bc56-bed76adcfd37', node_type=<ObjectType.DOCUMENT: '4'>, metadata={'restaurant_id': '40392690', 'attributes': '{"Alcohol": "u\'full_bar\'", "Ambience": "{\'touristy\': None, \'hipster\': True, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': True, \'upscale\': None, \'classy\': True, \'casual\': True}", "BYOB": "False", "BestNights": "{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': False}", "BikeParking": "True", "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": "True", "BusinessParking": "{\'garage\': False, \'street\': True, \'validated\': False, \'lot\': False, \'valet\': False}", "Caters": "True", "DriveThru": "False", "GoodForDancing": "False", "GoodForKids": "True", "GoodForMeal": "{\'dessert\': None, \'latenight\': None, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}", "HasTV": "False", "Music": "{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}", "NoiseLevel": "u\'average\'", "RestaurantsAttire": "\'casual\'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "True", "RestaurantsReservations": "False", "RestaurantsTableService": "True", "WheelchairAccessible": "True", "WiFi": "\'free\'"}', 'cuisine': '"Italian"', 'DogsAllowed': True, 'OutdoorSeating': True, 'borough': '"Manhattan"', 'address': '{"building": "11", "coord": [-73.9828696, 40.7693649], "street": "West   60 Street", "zipcode": "10023"}', '_id': {'$oid': '6095a34b7c34416a90d3243a'}, 'name': '"Gabriel\'S Bar & Grill"', 'menu': '["Cheese Ravioli", "Neapolitan Pizza", "assorted gelato", "Vegetarian Baked Ziti", "Vegetarian Broccoli Pizza", "Lasagna", "Buca Trio Platter", "Spinach Ravioli", "Pasta with ricotta cheese", "Spaghetti", "Fried calimari", "Alfredo Pizza"]', 'TakeOut': 'true', 'PriceRange': '2.0', 'HappyHour': 'true', 'review_count': '333', 'sponsored': None, 'stars': 4.0}, hash='c4dcc57a697cd2fe3047a280573c0f54bc5236e1d5af2228737af77613c9dbf7'), <NodeRelationship.PREVIOUS: '2'>: RelatedNodeInfo(node_id='6e1ead27-3679-48fb-b160-b47db523a3ce', node_type=<ObjectType.TEXT: '1'>, metadata={'restaurant_id': '40392496', 'attributes': '{"Alcohol": "u\'none\'", "Ambience": "{\'touristy\': False, \'hipster\': False, \'romantic\': False, \'intimate\': None, \'trendy\': False, \'upscale\': False, \'classy\': False, \'casual\': True}", "BYOB": null, "BestNights": null, "BikeParking": "True", "BusinessAcceptsBitcoin": null, "BusinessAcceptsCreditCards": null, "BusinessParking": "{\'garage\': False, \'street\': True, \'validated\': False, \'lot\': False, \'valet\': False}", "Caters": "False", "DriveThru": null, "GoodForDancing": null, "GoodForKids": "True", "GoodForMeal": "{\'dessert\': False, \'latenight\': False, \'lunch\': True, \'dinner\': True, \'brunch\': None, \'breakfast\': False}", "HasTV": "True", "Music": null, "NoiseLevel": "u\'average\'", "RestaurantsAttire": "u\'casual\'", "RestaurantsDelivery": "True", "RestaurantsGoodForGroups": "False", "RestaurantsReservations": "False", "RestaurantsTableService": "True", "WheelchairAccessible": null, "WiFi": "\'free\'"}', 'cuisine': '"English"', 'DogsAllowed': True, 'OutdoorSeating': True, 'borough': '"Manhattan"', 'address': '{"building": "253", "coord": [-74.0034571, 40.736351], "street": "West   11 Street", "zipcode": "10014"}', '_id': {'$oid': '6095a34b7c34416a90d32435'}, 'name': '"Tartine"', 'menu': 'null', 'TakeOut': 'true', 'PriceRange': '2.0', 'HappyHour': 'true', 'review_count': '436', 'sponsored': None, 'stars': 4.5}, hash='146bffad5c816926ec1008d966caab7c0df675251ccca5de860f8a2160bb7a34'), <NodeRelationship.NEXT: '3'>: RelatedNodeInfo(node_id='6640911b-3d8e-4bad-a016-4c3d91444b0c', node_type=<ObjectType.TEXT: '1'>, metadata={}, hash='39984a7534d6755344f0887e0d6a200eaab562a7dc492afe292040c0022282bd')}, text='{"restaurant_id": "40392690", "attributes": "{\\"Alcohol\\": \\"u\'full_bar\'\\", \\"Ambience\\": \\"{\'touristy\': None, \'hipster\': True, \'romantic\': False, \'divey\': False, \'intimate\': None, \'trendy\': True, \'upscale\': None, \'classy\': True, \'casual\': True}\\", \\"BYOB\\": \\"False\\", \\"BestNights\\": \\"{\'monday\': False, \'tuesday\': False, \'friday\': True, \'wednesday\': False, \'thursday\': False, \'sunday\': False, \'saturday\': False}\\", \\"BikeParking\\": \\"True\\", \\"BusinessAcceptsBitcoin\\": null, \\"BusinessAcceptsCreditCards\\": \\"True\\", \\"BusinessParking\\": \\"{\'garage\': False, \'street\': True, \'validated\': False, \'lot\': False, \'valet\': False}\\", \\"Caters\\": \\"True\\", \\"DriveThru\\": \\"False\\", \\"GoodForDancing\\": \\"False\\", \\"GoodForKids\\": \\"True\\", \\"GoodForMeal\\": \\"{\'dessert\': None, \'latenight\': None, \'lunch\': True, \'dinner\': True, \'brunch\': False, \'breakfast\': False}\\", \\"HasTV\\": \\"False\\", \\"Music\\": \\"{\'dj\': False, \'background_music\': False, \'no_music\': False, \'jukebox\': False, \'live\': False, \'video\': False, \'karaoke\': False}\\", \\"NoiseLevel\\": \\"u\'average\'\\", \\"RestaurantsAttire\\": \\"\'casual\'\\", \\"RestaurantsDelivery\\": \\"True\\", \\"RestaurantsGoodForGroups\\": \\"True\\", \\"RestaurantsReservations\\": \\"False\\", \\"RestaurantsTableService\\": \\"True\\", \\"WheelchairAccessible\\": \\"True\\", \\"WiFi\\": \\"\'free\'\\"}", "cuisine": "\\"Italian\\"", "DogsAllowed": true, "OutdoorSeating": true,', start_char_idx=0, end_char_idx=1382, text_template='Metadata: {metadata_str}\n-----\nContent: {content}', metadata_template='{key}=>{value}', metadata_seperator='\n'), score=0.7284677028656006)]
-```
+Her iki restoran da dış mekan oturma alanına sahiptir, çocuk dostudur ve gündelik kıyafet kuralına sahiptir. Ayrıca paket servis hizmeti sunarlar ve mutlu saatler (happy hour) promosyonları vardır.

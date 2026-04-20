@@ -1,23 +1,23 @@
-# Pinecone Vector Store - Hybrid Search
-
 ---
-title: Pinecone Vector Store - Hybrid Search
- | LlamaIndex OSS Documentation
+title: Pinecone Vektör Deposu - Hibrit Arama
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Pinecone Vektör Deposu - Hibrit Arama
 
-```
+Bu not defterini Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-pinecone "transformers[torch]"
 ```
 
-#### Creating a Pinecone Index
+#### Bir Pinecone İndeksi Oluşturma
 
-```
+```python
 from pinecone import Pinecone, ServerlessSpec
 ```
 
-```
+```python
 import os
 
 
@@ -31,14 +31,14 @@ api_key = os.environ["PINECONE_API_KEY"]
 pc = Pinecone(api_key=api_key)
 ```
 
-```
-# delete if needed
+```python
+# gerekirse silin
 pc.delete_index("quickstart")
 ```
 
-```
-# dimensions are for text-embedding-ada-002
-# NOTE: needs dotproduct for hybrid search
+```python
+# boyutlar text-embedding-ada-002 içindir
+# NOT: hibrit arama için dotproduct metriğine ihtiyaç duyar
 
 
 pc.create_index(
@@ -49,7 +49,7 @@ pc.create_index(
 )
 
 
-# If you need to create a PodBased Pinecone index, you could alternatively do this:
+# Pod Tabanlı bir Pinecone indeksi oluşturmanız gerekiyorsa, alternatif olarak şunu yapabilirsiniz:
 #
 # from pinecone import Pinecone, PodSpec
 #
@@ -65,44 +65,43 @@ pc.create_index(
 #      pods=1
 #    )
 # )
-#
 ```
 
-```
+```python
 pinecone_index = pc.Index("quickstart")
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-#### Load documents, build the PineconeVectorStore
+#### Belgeleri yükleyin, PineconeVectorStore'u oluşturun
 
-When `add_sparse_vector=True`, the `PineconeVectorStore` will compute sparse vectors for each document.
+`add_sparse_vector=True` olduğunda, `PineconeVectorStore` her belge için seyrek vektörleri (sparse vectors) hesaplayacaktır.
 
-By default, it is using simple token frequency for the sparse vectors. But, you can also specify a custom sparse embedding model.
+Varsayılan olarak, seyrek vektörler için basit belirteç (token) frekansını kullanır. Ancak, özel bir seyrek gömme (sparse embedding) modeli de belirtebilirsiniz.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from IPython.display import Markdown, display
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
-# set add_sparse_vector=True to compute sparse vectors during upsert
+```python
+# veri yükleme (upsert) sırasında seyrek vektörleri hesaplamak için add_sparse_vector=True olarak ayarlayın
 from llama_index.core import StorageContext
 
 
 if "OPENAI_API_KEY" not in os.environ:
-    raise EnvironmentError(f"Environment variable OPENAI_API_KEY is not set")
+    raise EnvironmentError(f"OPENAI_API_KEY ortam değişkeni ayarlanmamış")
 
 
 vector_store = PineconeVectorStore(
@@ -115,48 +114,44 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-```
-huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
-To disable this warning, you can either:
-  - Avoid using `tokenizers` before the fork if possible
-  - Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
-
-
-
-
+```bash
+huggingface/tokenizers: Mevcut süreç (process), paralellik zaten kullanıldıktan sonra çatallandı (fork). Kilitlenmeleri (deadlock) önlemek için paralellik devre dışı bırakılıyor...
+Bu uyarıyı devre dışı bırakmak için şunlardan birini yapabilirsiniz:
+  - Mümkünse çatallanmadan (fork) önce `tokenizers` kullanmaktan kaçının
+  - TOKENIZERS_PARALLELISM=(true | false) ortam değişkenini açıkça ayarlayın
 
 
 Upserted vectors:   0%|          | 0/22 [00:00<?, ?it/s]
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-May need to wait a minute or two for the index to be ready
+İndeksin hazır olması için bir veya iki dakika beklemeniz gerekebilir.
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(vector_store_query_mode="hybrid")
-response = query_engine.query("What happened at Viaweb?")
+response = query_engine.query("Viaweb'de ne oldu?")
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**Paul Graham started Viaweb because he needed money. As the company grew, he realized he didn’t want to run a big company and decided to build a subset of the vision as an open source project. Eventually, Viaweb was bought by Yahoo in the summer of 1998, which was a huge relief for Paul Graham.**
+**"Paul Graham, paraya ihtiyacı olduğu için Viaweb'i kurdu. Şirket büyüdükçe büyük bir şirketi yönetmek istemediğini fark etti ve vizyonun bir alt kümesini açık kaynaklı bir proje olarak oluşturmaya karar verdi. Sonunda Viaweb, 1998 yazında Yahoo tarafından satın alındı; bu durum Paul Graham için büyük bir rahatlama oldu."**
 
-## Changing the sparse embedding model
+## Seyrek gömme modelini değiştirme
 
-```
+```bash
 %pip install llama-index-sparse-embeddings-fastembed
 ```
 
-```
-# Clear the vector store
+```python
+# Vektör deposunu temizle
 vector_store.clear()
 ```
 
-```
+```python
 from llama_index.sparse_embeddings.fastembed import FastEmbedSparseEmbedding
 
 
@@ -172,25 +167,25 @@ vector_store = PineconeVectorStore(
 )
 ```
 
-```
+```bash
 Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]
 ```
 
-```
+```python
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-```
+```bash
 Upserted vectors:   0%|          | 0/22 [00:00<?, ?it/s]
 ```
 
-Wait a mininute for things to upload..
+Yükleme işlemleri için bir dakika bekleyin...
 
-```
-response = query_engine.query("What happened at Viaweb?")
+```python
+response = query_engine.query("Viaweb'de ne oldu?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**Paul Graham started Viaweb because he needed money. He recruited a team to work on building software and services, with a focus on creating an application builder and network infrastructure. However, halfway through the summer, Paul realized he didn’t want to run a big company and decided to shift his focus to building a subset of the project as an open source project. This led to the development of a new dialect of Lisp called Arc. Ultimately, Viaweb was sold to Yahoo in the summer of 1998, providing relief to Paul Graham and allowing him to transition to a new phase in his life.**
+**"Paul Graham, paraya ihtiyacı olduğu için Viaweb'i başlattı. Bir uygulama oluşturucu ve ağ altyapısı oluşturmaya odaklanarak, yazılım ve hizmetler oluşturmak üzerine bir ekip topladı. Ancak yazın ortasında Paul, büyük bir şirketi yönetmek istemediğini fark etti ve odağını projenin bir alt kümesini açık kaynaklı bir proje olarak inşa etmeye kaydırmaya karar verdi. Bu durum, Arc adlı yeni bir Lisp lehçesinin geliştirilmesine yol açtı. Nihayetinde Viaweb, 1998 yazında Yahoo'ya satıldı; bu da Paul Graham'a rahatlık sağladı ve hayatının yeni bir evresine geçmesine izin verdi."**

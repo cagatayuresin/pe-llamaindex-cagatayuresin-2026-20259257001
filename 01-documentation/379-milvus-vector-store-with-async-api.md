@@ -1,59 +1,59 @@
-# Milvus Vector Store with Async API
-
 ---
-title: Milvus Vector Store with Async API
- | LlamaIndex OSS Documentation
+title: Asenkron (Async) API ile Milvus Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-This tutorial demonstrates how to use [LlamaIndex](https://www.llamaindex.ai/) with [Milvus](https://milvus.io/) to build asynchronous document processing pipeline for RAG. LlamaIndex provides a way to process documents and store in vector db like Milvus. By leveraging the async API of LlamaIndex and Milvus Python client library, we can increase the throughput of the pipeline to efficiently process and index large volumes of data.
+# Asenkron (Async) API ile Milvus Vektör Deposu
 
-In this tutorial, we will first introduce the use of asynchronous methods to build a RAG with LlamaIndex and Milvus from a high level, and then introduce the use of low level methods and the performance comparison of synchronous and asynchronous.
+Bu eğitim, RAG için asenkron belge işleme boru hattı (pipeline) oluşturmak amacıyla [LlamaIndex](https://www.llamaindex.ai/)'in [Milvus](https://milvus.io/) ile nasıl kullanılacağını göstermektedir. LlamaIndex, belgeleri işlemek ve Milvus gibi vektör veritabanlarında saklamak için bir yol sağlar. LlamaIndex ve Milvus Python istemci kütüphanesinin asenkron API'lerinden yararlanarak, büyük hacimli verileri verimli bir şekilde işlemek ve indekslemek için boru hattının verimini (throughput) artırabiliriz.
 
-## Before you begin
+Bu eğitimde, önce LlamaIndex ve Milvus ile asenkron yöntemleri kullanarak yüksek düzeyde (high-level) bir RAG oluşturmayı, ardından düşük düzeyli (low-level) yöntemlerin kullanımını ve senkron ile asenkron işlemlerin performans karşılaştırmasını tanıtacağız.
 
-Code snippets on this page require pymilvus and llamaindex dependencies. You can install them using the following commands:
+## Başlamadan Önce
 
-```
+Bu sayfadaki kod parçacıkları `pymilvus` ve `llamaindex` bağımlılıklarını gerektirir. Bunları aşağıdaki komutları kullanarak kurabilirsiniz:
+
+```bash
 ! pip install -U pymilvus llama-index-vector-stores-milvus llama-index nest-asyncio
 ```
 
-> If you are using Google Colab, to enable dependencies just installed, you may need to **restart the runtime** (click on the “Runtime” menu at the top of the screen, and select “Restart session” from the dropdown menu).
+> Google Colab kullanıyorsanız, yeni kurulan bağımlılıkları etkinleştirmek için **çalışma zamanını yeniden başlatmanız** gerekebilir (ekranın üst kısmındaki "Runtime" menüsüne tıklayın ve açılır menüden "Restart session" seçeneğini seçin).
 
-We will use the models from OpenAI. You should prepare the [api key](https://platform.openai.com/docs/quickstart) `OPENAI_API_KEY` as an environment variable.
+OpenAI modellerini kullanacağız. `OPENAI_API_KEY` [api anahtarını](https://platform.openai.com/docs/quickstart) bir ortam değişkeni olarak hazırlamalısınız.
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-***********"
 ```
 
-If you are using Jupyter Notebook, you need to run this line of code before running the asynchronous code.
+Jupyter Notebook kullanıyorsanız, asenkron kodu çalıştırmadan önce bu kod satırını çalıştırmanız gerekir.
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-### Prepare data
+### Verileri Hazırlayın
 
-You can download sample data with the following commands:
+Örnek verileri aşağıdaki komutlarla indirebilirsiniz:
 
-```
+```bash
 ! mkdir -p 'data/'
 ! wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham_essay.txt'
 ! wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/10k/uber_2021.pdf' -O 'data/uber_2021.pdf'
 ```
 
-## Build RAG with Asynchronous Processing
+## Asenkron İşleme ile RAG Oluşturma
 
-This section show how to build a RAG system that can process docs in asynchronous manner.
+Bu bölüm, belgeleri asenkron bir şekilde işleyebilen bir RAG sisteminin nasıl oluşturulacağını gösterir.
 
-Import the necessary libraries and define Milvus URI and the dimension of the embedding.
+Gerekli kütüphaneleri içe aktarın ve Milvus URI'sini ve gömme (embedding) boyutunu tanımlayın.
 
-```
+```python
 import asyncio
 import random
 import time
@@ -68,13 +68,13 @@ URI = "http://localhost:19530"
 DIM = 768
 ```
 
-> - If you have large scale of data, you can set up a performant Milvus server on [docker or kubernetes](https://milvus.io/docs/quickstart.md). In this setup, please use the server uri, e.g.`http://localhost:19530`, as your `uri`.
-> - If you want to use [Zilliz Cloud](https://zilliz.com/cloud), the fully managed cloud service for Milvus, adjust the `uri` and `token`, which correspond to the [Public Endpoint and Api key](https://docs.zilliz.com/docs/on-zilliz-cloud-console#free-cluster-details) in Zilliz Cloud.
-> - In the case of complex systems (such as network communication), asynchronous processing can bring performance improvement compared to synchronization. So we think Milvus-Lite is not suitable for using asynchronous interfaces because the scenarios used are not suitable.
+> - Büyük ölçekli verileriniz varsa, [docker veya kubernetes](https://milvus.io/docs/quickstart.md) üzerinde performanslı bir Milvus sunucusu kurabilirsiniz. Bu kurulumda, lütfen sunucu uri'sini (örneğin `http://localhost:19530`) `uri` olarak kullanın.
+> - Milvus için tamamen yönetilen bulut hizmeti olan [Zilliz Cloud](https://zilliz.com/cloud)'u kullanmak istiyorsanız, Zilliz Cloud'daki [Public Endpoint ve Api key](https://docs.zilliz.com/docs/on-zilliz-cloud-console#free-cluster-details) bilgilerine karşılık gelen `uri` ve `token` bilgilerini ayarlayın.
+> - Karmaşık sistemlerde (ağ iletişimi gibi), asenkron işleme senkronizasyona kıyasla performans iyileştirmesi getirebilir. Bu nedenle Milvus-Lite'ın asenkron arayüzler kullanmak için pek uygun olmadığını düşünüyoruz çünkü kullanım senaryoları buna uygun değildir.
 
-Define an initialization function that we can use again to rebuild the Milvus collection.
+Milvus koleksiyonunu yeniden oluşturmak için tekrar kullanabileceğimiz bir başlatma işlevi tanımlayın.
 
-```
+```python
 def init_vector_store():
     return MilvusVectorStore(
         uri=URI,
@@ -85,7 +85,7 @@ def init_vector_store():
         id_field="id",
         similarity_metric="COSINE",
         consistency_level="Strong",
-        overwrite=True,  # To overwrite the collection if it already exists
+        overwrite=True,  # Koleksiyon zaten varsa üzerine yazmak için
     )
 
 
@@ -94,32 +94,24 @@ def init_vector_store():
 vector_store = init_vector_store()
 ```
 
-```
-2025-01-24 20:04:39,414 [DEBUG][_create_connection]: Created new connection using: faa8be8753f74288bffc7e6d38942f8a (async_milvus_client.py:600)
-```
+`paul_graham_essay.txt` dosyasından bir LlamaIndex belge nesnesi sarmalamak için `SimpleDirectoryReader` kullanın.
 
-Use SimpleDirectoryReader to wrap a LlamaIndex document object from the file `paul_graham_essay.txt`.
-
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
-# load documents
+# belgeleri yükle
 documents = SimpleDirectoryReader(
     input_files=["./data/paul_graham_essay.txt"]
 ).load_data()
 
 
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği:", documents[0].doc_id)
 ```
 
-```
-Document ID: 41a6f99c-489f-49ff-9821-14e2561140eb
-```
+Yerel olarak bir Hugging Face gömme (embedding) modeli örneği oluşturun. Yerel bir model kullanmak, asenkron veri ekleme sırasında API hız sınırlarına (rate limits) ulaşma riskini önler; çünkü eşzamanlı API istekleri hızla birikebilir ve genel API'deki bütçenizi tüketebilir. Ancak, yüksek bir hız sınırınız varsa, bunun yerine uzak bir model servisi kullanmayı tercih edebilirsiniz.
 
-Instantiate a Hugging Face embedding model locally. Using a local model avoids the risk of reaching API rate limits during asynchronous data insertion, as concurrent API requests can quickly add up and use up your budget in public API. However, if you have a high rate limit, you may opt to use a remote model service instead.
-
-```
+```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
@@ -128,12 +120,12 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
 ```
 
-Create an index and insert the document.
+Bir indeks oluşturun ve belgeyi ekleyin.
 
-We set the `use_async` to `True` to enable async insert mode.
+Asenkron ekleme modunu etkinleştirmek için `use_async` parametresini `True` olarak ayarlıyoruz.
 
-```
-# Create an index over the documents
+```python
+# Belgeler üzerinde bir indeks oluşturun
 from llama_index.core import VectorStoreIndex, StorageContext
 
 
@@ -146,49 +138,43 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-Initialize the LLM.
+LLM'yi başlatın.
 
-```
+```python
 from llama_index.llms.openai import OpenAI
 
 
 llm = OpenAI(model="gpt-3.5-turbo")
 ```
 
-When building the query engine, you can also set the `use_async` parameter to `True` to enable asynchronous search.
+Sorgu motorunu oluştururken, asenkron aramayı etkinleştirmek için `use_async` parametresini `True` olarak da ayarlayabilirsiniz.
 
-```
+```python
 query_engine = index.as_query_engine(use_async=True, llm=llm)
-response = await query_engine.aquery("What did the author learn?")
+response = await query_engine.aquery("Yazar ne öğrendi?")
 ```
 
-```
+```python
 print(response)
 ```
 
-```
-The author learned that the field of artificial intelligence, as practiced at the time, was not as promising as initially believed. The approach of using explicit data structures to represent concepts in AI was not effective in achieving true understanding of natural language. This realization led the author to shift his focus towards Lisp and eventually towards exploring the field of art.
-```
+**"Yazar, o dönemde uygulandığı şekliyle yapay zeka alanının başlangıçta inanıldığı kadar umut verici olmadığını öğrendi. YZ'de kavramları temsil etmek için açık veri yapılarını kullanma yaklaşımı, doğal dilin gerçek anlamda anlaşılmasını sağlamada etkili değildi. Bu farkındalık, yazarı odağını Lisp'e ve sonunda sanat alanını keşfetmeye kaydırmaya yöneltti."**
 
-## Explore the Async API
+## Asenkron API'yi Keşfedin
 
-In this section, we’ll introduce lower level API usage and compare the performance of synchronous and asynchronous runs.
+Bu bölümde, daha düşük düzeyli (low level) API kullanımını tanıtacağız ve senkron ile asenkron çalışmaların performansını karşılaştıracağız.
 
-### Async add
+### Asenkron ekleme (Async add)
 
-Re-initialize the vector store.
+Vektör deposunu yeniden başlatın.
 
-```
+```python
 vector_store = init_vector_store()
 ```
 
-```
-2025-01-24 20:07:38,727 [DEBUG][_create_connection]: Created new connection using: 5e0d130f3b644555ad7ea6b8df5f1fc2 (async_milvus_client.py:600)
-```
+İndeks için çok sayıda test düğümü (node) oluşturmak üzere kullanılacak bir düğüm üretme işlevi tanımlayalım.
 
-Let’s define a node producing function, which will be used to generate large number of test nodes for the index.
-
-```
+```python
 def random_id():
     random_num_str = ""
     for _ in range(16):
@@ -204,7 +190,7 @@ def produce_nodes(num_adding):
     for i in range(num_adding):
         node = TextNode(
             id_=random_id(),
-            text=f"n{i}_text",
+            text=f"n{i}_metin",
             embedding=[0.5] * (DIM - 1) + [random.random()],
             relationships={
                 NodeRelationship.SOURCE: RelatedNodeInfo(node_id=f"n{i+1}")
@@ -214,66 +200,62 @@ def produce_nodes(num_adding):
     return node_list
 ```
 
-Define a aync function to add documents to the vector store. We use the `async_add()` function in Milvus vector store instance.
+Vektör deposuna belge eklemek için asenkron bir işlev tanımlayın. Milvus vektör deposu örneğindeki `async_add()` işlevini kullanıyoruz.
 
-```
+```python
 async def async_add(num_adding):
     node_list = produce_nodes(num_adding)
     start_time = time.time()
     tasks = []
     for i in range(num_adding):
         sub_nodes = node_list[i]
-        task = vector_store.async_add([sub_nodes])  # use async_add()
+        task = vector_store.async_add([sub_nodes])  # async_add() kullan
         tasks.append(task)
     results = await asyncio.gather(*tasks)
     end_time = time.time()
     return end_time - start_time
 ```
 
-```
+```python
 add_counts = [10, 100, 1000]
 ```
 
-Get the event loop.
+Olay döngüsünü (event loop) alın.
 
-```
+```python
 loop = asyncio.get_event_loop()
 ```
 
-Asynchronously add documents to the vector store.
+Belgeleri vektör deposuna asenkron olarak ekleyin.
 
-```
+```python
 for count in add_counts:
 
 
     async def measure_async_add():
         async_time = await async_add(count)
-        print(f"Async add for {count} took {async_time:.2f} seconds")
+        print(f"{count} öğe için asenkron ekleme {async_time:.2f} saniye sürdü")
         return async_time
 
 
     loop.run_until_complete(measure_async_add())
 ```
 
-```
-Async add for 10 took 0.19 seconds
-Async add for 100 took 0.48 seconds
-Async add for 1000 took 3.22 seconds
+```text
+10 öğe için asenkron ekleme 0.19 saniye sürdü
+100 öğe için asenkron ekleme 0.48 saniye sürdü
+1000 öğe için asenkron ekleme 3.22 saniye sürdü
 ```
 
-```
+```python
 vector_store = init_vector_store()
 ```
 
-```
-2025-01-24 20:07:45,554 [DEBUG][_create_connection]: Created new connection using: b14dde8d6d24489bba26a907593f692d (async_milvus_client.py:600)
-```
+#### Senkron ekleme ile karşılaştırın
 
-#### Compare with synchronous add
+Senkron bir ekleme işlevi tanımlayın. Ardından aynı koşul altında çalışma süresini ölçün.
 
-Define a sync add function. Then measure the running time under the same condition.
-
-```
+```python
 def sync_add(num_adding):
     node_list = produce_nodes(num_adding)
     start_time = time.time()
@@ -283,37 +265,33 @@ def sync_add(num_adding):
     return end_time - start_time
 ```
 
-```
+```python
 for count in add_counts:
     sync_time = sync_add(count)
-    print(f"Sync add for {count} took {sync_time:.2f} seconds")
+    print(f"{count} öğe için senkron ekleme {sync_time:.2f} saniye sürdü")
 ```
 
+```text
+10 öğe için senkron ekleme 0.56 saniye sürdü
+100 öğe için senkron ekleme 5.85 saniye sürdü
+1000 öğe için senkron ekleme 62.91 saniye sürdü
 ```
-Sync add for 10 took 0.56 seconds
-Sync add for 100 took 5.85 seconds
-Sync add for 1000 took 62.91 seconds
-```
 
-The result shows that the sync adding process is much slower than the async one.
+Sonuç, senkron ekleme işleminin asenkron olandan çok daha yavaş olduğunu göstermektedir.
 
-### Async search
+### Asenkron arama (Async search)
 
-Re-initialize the vector store and add some documents before running the search.
+Vektör deposunu yeniden başlatın ve aramayı çalıştırmadan önce bazı belgeler ekleyin.
 
-```
+```python
 vector_store = init_vector_store()
 node_list = produce_nodes(num_adding=1000)
 inserted_ids = vector_store.add(node_list)
 ```
 
-```
-2025-01-24 20:08:57,982 [DEBUG][_create_connection]: Created new connection using: 351dc7ea4fb14d4386cfab02621ab7d1 (async_milvus_client.py:600)
-```
+Asenkron bir arama işlevi tanımlayın. Milvus vektör deposu örneğindeki `aquery()` işlevini kullanıyoruz.
 
-Define an async search function. We use the `aquery()` function in Milvus vector store instance.
-
-```
+```python
 async def async_search(num_queries):
     start_time = time.time()
     tasks = []
@@ -321,27 +299,27 @@ async def async_search(num_queries):
         query = VectorStoreQuery(
             query_embedding=[0.5] * (DIM - 1) + [0.6], similarity_top_k=3
         )
-        task = vector_store.aquery(query=query)  # use aquery()
+        task = vector_store.aquery(query=query)  # aquery() kullan
         tasks.append(task)
     results = await asyncio.gather(*tasks)
     end_time = time.time()
     return end_time - start_time
 ```
 
-```
+```python
 query_counts = [10, 100, 1000]
 ```
 
-Asynchronously search from Milvus store.
+Milvus deposundan asenkron olarak arama yapın.
 
-```
+```python
 for count in query_counts:
 
 
     async def measure_async_search():
         async_time = await async_search(count)
         print(
-            f"Async search for {count} queries took {async_time:.2f} seconds"
+            f"{count} sorgu için asenkron arama {async_time:.2f} saniye sürdü"
         )
         return async_time
 
@@ -349,17 +327,17 @@ for count in query_counts:
     loop.run_until_complete(measure_async_search())
 ```
 
-```
-Async search for 10 queries took 0.55 seconds
-Async search for 100 queries took 1.39 seconds
-Async search for 1000 queries took 8.81 seconds
+```text
+10 sorgu için asenkron arama 0.55 saniye sürdü
+100 sorgu için asenkron arama 1.39 saniye sürdü
+1000 sorgu için asenkron arama 8.81 saniye sürdü
 ```
 
-#### Compare with synchronous search
+#### Senkron arama ile karşılaştırın
 
-Define a sync search function. Then measure the running time under the same condition.
+Senkron bir arama işlevi tanımlayın. Ardından aynı koşul altında çalışma süresini ölçün.
 
-```
+```python
 def sync_search(num_queries):
     start_time = time.time()
     for _ in range(num_queries):
@@ -371,16 +349,16 @@ def sync_search(num_queries):
     return end_time - start_time
 ```
 
-```
+```python
 for count in query_counts:
     sync_time = sync_search(count)
-    print(f"Sync search for {count} queries took {sync_time:.2f} seconds")
+    print(f"{count} sorgu için senkron arama {sync_time:.2f} saniye sürdü")
 ```
 
-```
-Sync search for 10 queries took 3.29 seconds
-Sync search for 100 queries took 30.80 seconds
-Sync search for 1000 queries took 308.80 seconds
+```text
+10 sorgu için senkron arama 3.29 saniye sürdü
+100 sorgu için senkron arama 30.80 saniye sürdü
+1000 sorgu için senkron arama 308.80 saniye sürdü
 ```
 
-The result shows that the sync search process is much slower than the async one.
+Sonuç, senkron arama işleminin asenkron olandan çok daha yavaş olduğunu göstermektedir.

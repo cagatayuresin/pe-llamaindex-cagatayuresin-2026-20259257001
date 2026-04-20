@@ -1,31 +1,31 @@
-# pgvecto.rs
-
 ---
 title: pgvecto.rs
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
+
+# pgvecto.rs
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/vector_stores/PGVectoRsDemo.ipynb)
 
-Firstly, you will probably need to install dependencies :
+Öncelikle, muhtemelen bağımlılıkları yüklemeniz gerekecektir:
 
-```
+```bash
 %pip install llama-index-vector-stores-pgvecto-rs
 ```
 
-```
+```bash
 %pip install llama-index "pgvecto_rs[sdk]"
 ```
 
-Then start the pgvecto.rs server as the [official document suggests](https://github.com/tensorchord/pgvecto.rs#installation):
+Ardından, [resmi belgenin önerdiği gibi](https://github.com/tensorchord/pgvecto.rs#installation) pgvecto.rs sunucusunu başlatın:
 
-```
+```bash
 !docker run --name pgvecto-rs-demo -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d tensorchord/pgvecto-rs:latest
 ```
 
-Setup the logger.
+Günlükçüyü (logger) kurun.
 
-```
+```python
 import logging
 import os
 import sys
@@ -35,9 +35,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Creating a pgvecto\_rs client
+#### Bir pgvecto_rs istemcisi oluşturma
 
-```
+```python
 from pgvecto_rs.sdk import PGVectoRs
 
 
@@ -53,22 +53,22 @@ URL = "postgresql+psycopg://{username}:{password}@{host}:{port}/{db_name}".forma
 client = PGVectoRs(
     db_url=URL,
     collection_name="example",
-    dimension=1536,  # Using OpenAI’s text-embedding-ada-002
+    dimension=1536,  # OpenAI’nın text-embedding-ada-002 modelini kullanırken
 )
 ```
 
-#### Setup OpenAI
+#### OpenAI Kurulumu
 
-```
+```python
 import os
 
 
 os.environ["OPENAI_API_KEY"] = "sk-..."
 ```
 
-#### Load documents, build the PGVectoRsStore and VectorStoreIndex
+#### Belgeleri yükleyin, PGVectoRsStore ve VectorStoreIndex'i oluşturun
 
-```
+```python
 from IPython.display import Markdown, display
 
 
@@ -76,20 +76,20 @@ from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 from llama_index.vector_stores.pgvecto_rs import PGVectoRsStore
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 ```
 
-```
-# initialize without metadata filter
+```python
+# meta veri filtresi olmadan başlat
 from llama_index.core import StorageContext
 
 
@@ -100,23 +100,23 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```bash
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author, growing up, worked on writing and programming. They wrote short stories and also tried writing programs on an IBM 1401 computer. They later got a microcomputer and started programming more extensively, writing simple games and a word processor.**
+**"Yazar büyürken yazma ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve ayrıca bir IBM 1401 bilgisayarında programlar yazmayı denedi. Daha sonra bir mikro bilgisayar edindi ve daha kapsamlı bir şekilde programlama yapmaya başlayarak basit oyunlar ve bir kelime işlemci yazdı."**

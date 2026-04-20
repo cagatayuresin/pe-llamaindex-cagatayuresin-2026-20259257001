@@ -1,24 +1,24 @@
-# Moorcheh Vector Store Demo
-
 ---
-title: Moorcheh Vector Store Demo
- | LlamaIndex OSS Documentation
+title: Moorcheh Vektör Deposu Demosu
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Install Required Packages
+# Moorcheh Vektör Deposu Demosu
 
-```
+## Gerekli Paketleri Kurun
+
+```bash
 !pip install llama_index
 !pip install moorcheh_sdk
 ```
 
-## Import Required Libraries
+## Gerekli Kütüphaneleri İçe Aktarın
 
 demo.py
 
-```
-# --- Welcome to the Demo of the Moorcheh Vector Store ---
-# --- Import the following packages --
+```python
+# --- Moorcheh Vektör Deposu Demosuna Hoş Geldiniz ---
+# --- Aşağıdaki paketleri içe aktarın ---
 import logging
 import sys
 import os
@@ -55,18 +55,18 @@ from llama_index.core.vector_stores.types import (
 )
 ```
 
-## Configure Logging
+## Günlüğü (Logging) Yapılandırın
 
-```
-# --- Logging Setup ---
+```python
+# --- Günlük Kurulumu ---
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-## Load Moorcheh API Key
+## Moorcheh API Anahtarını Yükleyin
 
-```
-# --- Set the values of the API Keys in your Environment Variables ---
+```python
+# --- API Anahtarlarının değerlerini Ortam Değişkenlerinize ayarlayın ---
 from google.colab import userdata
 
 
@@ -74,31 +74,31 @@ api_key = os.environ["MOORCHEH_API_KEY"] = userdata.get("MOORCHEH_API_KEY")
 
 
 if "MOORCHEH_API_KEY" not in os.environ:
-    raise EnvironmentError(f"Environment variable MOORCHEH_API_KEY is not set")
+    raise EnvironmentError("MOORCHEH_API_KEY ortam değişkeni ayarlanmadı")
 ```
 
-## Load and Chunk Documents
+## Belgeleri Yükleyin ve Parçalayın
 
-```
-# --- Load Documents ---
+```python
+# --- Belgeleri Yükle ---
 documents = SimpleDirectoryReader("./documents").load_data()
 
 
-# --- Set chunk size and overlap ---
+# --- Parça boyutunu ve çakışmayı (overlap) ayarla ---
 Settings.chunk_size = 1024
 Settings.chunk_overlap = 20
 ```
 
-## Initialize Vector Store and Create Index
+## Vektör Deposunu Başlatın ve İndeks Oluşturun
 
-```
-# --- Initialize the Moorcheh Vector Store ---
+```python
+# --- Moorcheh Vektör Deposunu Başlatın ---
 __all__ = ["MoorchehVectorStore"]
 
 
-# Creates a Moorcheh Vector Store with the following parameters
-# For text-based namespaces, set namespace_type to "text" and vector_dimension to None
-# For vector-based namespaces, set namespace_type to "vector" and vector_dimension to the dimension of your uploaded vectors
+# Aşağıdaki parametrelerle bir Moorcheh Vektör Deposu oluşturur
+# Metin tabanlı ad alanları (namespaces) için namespace_type'ı "text" ve vector_dimension'ı None olarak ayarlayın
+# Vektör tabanlı ad alanları için namespace_type'ı "vector" ve vector_dimension'ı yüklediğiniz vektörlerin boyutuna ayarlayın
 vector_store = MoorchehVectorStore(
     api_key=api_key,
     namespace="llamaindex_moorcheh",
@@ -109,24 +109,24 @@ vector_store = MoorchehVectorStore(
 )
 
 
-# --- Create a Vector Store Index using the Vector Store and given Documents ---
+# --- Vektör Deposunu ve verilen Belgeleri kullanarak bir Vektör Depo İndeksi oluşturun ---
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context
 )
 ```
 
-## Query the Vector Store
+## Vektör Deposunu Sorgulayın
 
-```
-# --- Generate Response ---
-# --- Set Logging to DEBUG for more Detailed Outputs ---
+```python
+# --- Yanıt Oluştur ---
+# --- Daha Detaylı Çıktılar için Günlük Kaydını DEBUG olarak ayarlayın ---
 query_engine = index.as_query_engine()
 response = vector_store.generate_answer(
-    query="Which company has had the highest revenue in 2025 and why?"
+    query="2025'te hangi şirket en yüksek gelire sahip oldu ve neden?"
 )
 moorcheh_response = vector_store.get_generative_answer(
-    query="Which company has had the highest revenue in 2025 and why?",
+    query="2025'te hangi şirket en yüksek gelire sahip oldu ve neden?",
     ai_model="anthropic.claude-3-7-sonnet-20250219-v1:0",
 )
 
@@ -144,12 +144,12 @@ print(
 )
 
 
-# --- Filters for Metadata ---
+# --- Meta Veri Filtreleri ---
 filter = MetadataFilters(
     filters=[
         MetadataFilter(
             key="file_path",
-            value="insert the file path to the document here",
+            value="buraya belgenin dosya yolunu ekleyin",
             operator=FilterOperator.EQ,
         )
     ],

@@ -1,15 +1,17 @@
 ---
-title: Pinecone Vector Store
- | LlamaIndex OSS Documentation
+title: Pinecone Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Pinecone Vektör Deposu
 
-```
+Bu not defterini Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index llama-index-vector-stores-pinecone
 ```
 
-```
+```python
 import logging
 import sys
 import os
@@ -19,13 +21,13 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-#### Creating a Pinecone Index
+#### Bir Pinecone İndeksi Oluşturma
 
-```
+```python
 from pinecone import Pinecone, ServerlessSpec
 ```
 
-```
+```python
 os.environ["PINECONE_API_KEY"] = "..."
 os.environ["OPENAI_API_KEY"] = "sk-proj-..."
 
@@ -36,13 +38,13 @@ api_key = os.environ["PINECONE_API_KEY"]
 pc = Pinecone(api_key=api_key)
 ```
 
-```
-# delete if needed
+```python
+# gerekirse silin
 # pc.delete_index("quickstart")
 ```
 
-```
-# dimensions are for text-embedding-ada-002
+```python
+# boyutlar text-embedding-ada-002 içindir
 
 
 pc.create_index(
@@ -53,7 +55,7 @@ pc.create_index(
 )
 
 
-# If you need to create a PodBased Pinecone index, you could alternatively do this:
+# Pod Tabanlı bir Pinecone indeksi oluşturmanız gerekiyorsa, alternatif olarak şunu yapabilirsiniz:
 #
 # from pinecone import Pinecone, PodSpec
 #
@@ -69,40 +71,39 @@ pc.create_index(
 #      pods=1
 #    )
 # )
-#
 ```
 
-```
+```python
 pinecone_index = pc.Index("quickstart")
 ```
 
-#### Load documents, build the PineconeVectorStore and VectorStoreIndex
+#### Belgeleri yükleyin, PineconeVectorStore ve VectorStoreIndex'i oluşturun
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from IPython.display import Markdown, display
 ```
 
-Download Data
+Veriyi İndir
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 ```
 
-```
-# initialize without metadata filter
+```python
+# meta veri filtresi olmadan başlat
 from llama_index.core import StorageContext
 
 
 if "OPENAI_API_KEY" not in os.environ:
-    raise EnvironmentError(f"Environment variable OPENAI_API_KEY is not set")
+    raise EnvironmentError(f"OPENAI_API_KEY ortam değişkeni ayarlanmamış")
 
 
 vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
@@ -112,34 +113,34 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-May take a minute or so for the index to be ready!
+İndeksin hazır olması bir dakika kadar sürebilir!
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 ```
 
-```
+```bash
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 ```
 
-```
+```python
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author, growing up, worked on writing and programming. They wrote short stories and tried writing programs on an IBM 1401 computer. They later got a microcomputer and started programming more extensively, writing simple games and a word processor.**
+**"Yazar büyürken yazma ve programlama üzerine çalıştı. Kısa hikayeler yazdı ve ayrıca bir IBM 1401 bilgisayarında programlar yazmayı denedi. Daha sonra bir mikro bilgisayar edindi ve daha kapsamlı bir şekilde programlama yapmaya başlayarak basit oyunlar ve bir kelime işlemci yazdı."**
 
-## Filtering
+## Filtreleme
 
-You can also fetch a list of nodes directly with filters.
+Ayrıca filtreler kullanarak doğrudan düğüm (node) listesi alabilirsiniz.
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
@@ -160,26 +161,24 @@ filter = MetadataFilters(
 )
 ```
 
-You can fetch nodes directly with the filters. The below will return all nodes that match the filter.
+Düğümleri doğrudan filtrelerle alabilirsiniz. Aşağıdaki işlem, filtreyle eşleşen tüm düğümleri döndürecektir.
 
-```
+```python
 nodes = vector_store.get_nodes(filters=filter, limit=100)
 print(len(nodes))
 ```
 
-```
-22
-```
+**22**
 
-You can also fetch using top-k and filters.
+Filtreler ve top-k kullanarak da veri getirebilirsiniz.
 
-```
+```python
 query_engine = index.as_query_engine(similarity_top_k=2, filters=filter)
-response = query_engine.query("What did the author do growing up?")
+response = query_engine.query("Yazar büyürken neler yaptı?")
 print(len(response.source_nodes))
 ```
 
-```
+```bash
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"

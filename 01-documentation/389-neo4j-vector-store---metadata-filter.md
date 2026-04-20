@@ -1,21 +1,21 @@
-# Neo4j Vector Store - Metadata Filter
-
 ---
-title: Neo4j Vector Store - Metadata Filter
- | LlamaIndex OSS Documentation
+title: Neo4j Vektör Deposu - Meta Veri Filtreleme
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+# Neo4j Vektör Deposu - Meta Veri Filtreleme
 
-```
+Eğer bu Not Defterini colab'de açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
+
+```bash
 %pip install llama-index-vector-stores-neo4jvector
 ```
 
-```
+```bash
 # !pip install llama-index>=0.9.31 neo4j
 ```
 
-```
+```python
 import logging
 import sys
 import os
@@ -25,9 +25,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-Build a Neo4j vector Index and connect to it
+Bir Neo4j vektör İndeksi oluşturun ve ona bağlanın
 
-```
+```python
 import os
 from llama_index.vector_stores.neo4jvector import Neo4jVectorStore
 
@@ -36,31 +36,24 @@ os.environ["OPENAI_API_KEY"] = "sk-..."
 
 
 username = "neo4j"
-password = "password"
+password = "sifre"
 url = "bolt://localhost:7687"
-embed_dim = 1536  # Dimensions are for text-embedding-ada-002
+embed_dim = 1536  # Boyutlar text-embedding-ada-002 içindir
 
 
 vector_store = Neo4jVectorStore(username, password, url, embed_dim)
 ```
 
-```
-INFO:numexpr.utils:Note: NumExpr detected 16 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-Note: NumExpr detected 16 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
-INFO:numexpr.utils:NumExpr defaulting to 8 threads.
-NumExpr defaulting to 8 threads.
-```
+VectorStoreIndex'i Oluşturun
 
-Build the VectorStoreIndex
-
-```
+```python
 from llama_index.core import VectorStoreIndex, StorageContext
 from llama_index.core.schema import TextNode
 
 
 nodes = [
     TextNode(
-        text="The Shawshank Redemption",
+        text="The Shawshank Redemption (Esaretin Bedeli)",
         metadata={
             "author": "Stephen King",
             "theme": "Friendship",
@@ -68,7 +61,7 @@ nodes = [
         },
     ),
     TextNode(
-        text="The Godfather",
+        text="The Godfather (Baba)",
         metadata={
             "director": "Francis Ford Coppola",
             "theme": "Mafia",
@@ -76,7 +69,7 @@ nodes = [
         },
     ),
     TextNode(
-        text="Inception",
+        text="Inception (Başlangıç)",
         metadata={
             "director": "Christopher Nolan",
             "theme": "Fiction",
@@ -84,7 +77,7 @@ nodes = [
         },
     ),
     TextNode(
-        text="To Kill a Mockingbird",
+        text="To Kill a Mockingbird (Bülbülü Öldürmek)",
         metadata={
             "author": "Harper Lee",
             "theme": "Mafia",
@@ -100,7 +93,7 @@ nodes = [
         },
     ),
     TextNode(
-        text="The Great Gatsby",
+        text="The Great Gatsby (Muhteşem Gatsby)",
         metadata={
             "author": "F. Scott Fitzgerald",
             "theme": "The American Dream",
@@ -108,7 +101,7 @@ nodes = [
         },
     ),
     TextNode(
-        text="Harry Potter and the Sorcerer's Stone",
+        text="Harry Potter and the Sorcerer's Stone (Harry Potter ve Felsefe Taşı)",
         metadata={
             "author": "J.K. Rowling",
             "theme": "Fiction",
@@ -118,19 +111,14 @@ nodes = [
 ]
 ```
 
-```
+```python
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-```
+Meta veri filtrelerini tanımlayın
 
-Define metadata filters
-
-```
+```python
 from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
@@ -147,33 +135,21 @@ filters = MetadataFilters(
 )
 ```
 
-Retrieve from vector store with filters
+Filtrelerle vektör deposundan veri getirin
 
-```
+```python
 retriever = index.as_retriever(filters=filters)
-retriever.retrieve("What is inception about?")
+retriever.retrieve("Inception (Başlangıç) ne hakkındadır?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-
-
-
-
-
-
-
-
-
-
-[NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Inception', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.9202238321304321),
- NodeWithScore(node=TextNode(id_='fc1df8cc-f1d3-4a7b-8c21-f83b18463758', embedding=None, metadata={'author': 'J.K. Rowling', 'theme': 'Fiction', 'year': 1997}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text="Harry Potter and the Sorcerer's Stone", start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.8823964595794678)]
+```python
+# [NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, text='Inception'), score=0.9202238321304321),
+#  NodeWithScore(node=TextNode(id_='fc1df8cc-f1d3-4a7b-8c21-f83b18463758', embedding=None, metadata={'author': 'J.K. Rowling', 'theme': 'Fiction', 'year': 1997}, text="Harry Potter and the Sorcerer's Stone"), score=0.8823964595794678)]
 ```
 
-Multiple Metadata Filters with `AND` condition
+`AND` koşulu ile çoklu Meta Veri Filtreleri
 
-```
+```python
 from llama_index.core.vector_stores import FilterOperator, FilterCondition
 
 
@@ -190,28 +166,14 @@ retriever = index.as_retriever(filters=filters)
 retriever.retrieve("Harry Potter?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-
-
-
-
-
-
-
-
-
-
-[NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Inception', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.8818434476852417)]
+```python
+# [NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, text='Inception'), score=0.8818434476852417)]
 ```
 
-Multiple Metadata Filters with `OR` condition
+`OR` koşulu ile çoklu Meta Veri Filtreleri
 
-```
+```python
 from llama_index.core.vector_stores import FilterOperator, FilterCondition
-
-
 
 
 filters = MetadataFilters(
@@ -227,19 +189,7 @@ retriever = index.as_retriever(filters=filters)
 retriever.retrieve("Harry Potter?")
 ```
 
-```
-INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
-
-
-
-
-
-
-
-
-
-
-[NodeWithScore(node=TextNode(id_='fc1df8cc-f1d3-4a7b-8c21-f83b18463758', embedding=None, metadata={'author': 'J.K. Rowling', 'theme': 'Fiction', 'year': 1997}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text="Harry Potter and the Sorcerer's Stone", start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.9242331385612488),
- NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, excluded_embed_metadata_keys=[], excluded_llm_metadata_keys=[], relationships={}, text='Inception', start_char_idx=None, end_char_idx=None, text_template='{metadata_str}\n\n{content}', metadata_template='{key}: {value}', metadata_seperator='\n'), score=0.8818434476852417)]
+```python
+# [NodeWithScore(node=TextNode(id_='fc1df8cc-f1d3-4a7b-8c21-f83b18463758', embedding=None, metadata={'author': 'J.K. Rowling', 'theme': 'Fiction', 'year': 1997}, text="Harry Potter and the Sorcerer's Stone"), score=0.9242331385612488),
+#  NodeWithScore(node=TextNode(id_='814e5f2a-2150-4bae-8a59-fa728379e978', embedding=None, metadata={'director': 'Christopher Nolan', 'theme': 'Fiction', 'year': 2010}, text='Inception'), score=0.8818434476852417)]
 ```

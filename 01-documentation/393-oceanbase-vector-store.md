@@ -1,33 +1,33 @@
-# OceanBase Vector Store
-
 ---
-title: OceanBase Vector Store
- | LlamaIndex OSS Documentation
+title: OceanBase Vektör Deposu
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [OceanBase Database](https://github.com/oceanbase/oceanbase) is a distributed relational database. It is developed entirely by Ant Group. The OceanBase Database is built on a common server cluster. Based on the Paxos protocol and its distributed structure, the OceanBase Database provides high availability and linear scalability. The OceanBase Database is not dependent on specific hardware architectures.
+# OceanBase Vektör Deposu
 
-This notebook describes in detail how to use the OceanBase vector store functionality in LlamaIndex.
+> [OceanBase Veritabanı](https://github.com/oceanbase/oceanbase), dağıtık bir ilişkisel veritabanıdır. Tamamen Ant Group tarafından geliştirilmiştir. OceanBase Veritabanı, ortak bir sunucu kümesi üzerine inşa edilmiştir. Paxos protokolü ve dağıtık yapısı sayesinde yüksek kullanılabilirlik ve doğrusal ölçeklenebilirlik sağlar. Belirli donanım mimarilerine bağımlı değildir.
 
-#### Setup
+Bu not defteri, LlamaIndex'te OceanBase vektör deposu işlevselliğinin nasıl kullanılacağını ayrıntılı olarak açıklamaktadır.
 
-```
+#### Kurulum
+
+```bash
 %pip install llama-index-vector-stores-oceanbase
 %pip install llama-index
-# choose dashscope as embedding and llm model, your can also use default openai or other model to test
+# Gömme ve LLM modeli olarak dashscope'u seçin; test etmek için varsayılan openai veya diğer modelleri de kullanabilirsiniz
 %pip install llama-index-embeddings-dashscope
 %pip install llama-index-llms-dashscope
 ```
 
-#### Deploy a standalone OceanBase server with docker
+#### Docker ile Bağımsız (Standalone) Bir OceanBase Sunucusu Dağıtın
 
-```
+```bash
 %docker run --name=ob433 -e MODE=slim -p 2881:2881 -d oceanbase/oceanbase-ce:4.3.3.0-100000142024101215
 ```
 
-#### Creating ObVecClient
+#### ObVecClient Oluşturma
 
-```
+```python
 from pyobvector import ObVecClient
 
 
@@ -37,20 +37,20 @@ client.perform_raw_text_sql(
 )
 ```
 
-Config dashscope embedding model and LLM.
+DashScope gömme modelini ve LLM'yi yapılandırın.
 
-```
-# set Embbeding model
+```python
+# Gömme modelini ayarla
 import os
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
 
-# Global Settings
+# Küresel Ayarlar
 Settings.embed_model = DashScopeEmbedding()
 
 
-# config llm model
+# LLM modelini yapılandır
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 
 
@@ -60,9 +60,9 @@ dashscope_llm = DashScope(
 )
 ```
 
-#### Load documents
+#### Belgeleri Yükleme
 
-```
+```python
 from llama_index.core import (
     SimpleDirectoryReader,
     load_index_from_storage,
@@ -72,19 +72,19 @@ from llama_index.core import (
 from llama_index.vector_stores.oceanbase import OceanBaseVectorStore
 ```
 
-Download Data & Load Data
+Veriyi İndirme ve Yükleme
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-```
-# load documents
+```python
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-```
+```python
 oceanbase = OceanBaseVectorStore(
     client=client,
     dim=1536,
@@ -99,24 +99,22 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
-```
-# set Logging to DEBUG for more detailed outputs
+```python
+# daha detaylı çıktılar için Günlük Kaydını (Logging) DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(llm=dashscope_llm)
-res = query_engine.query("What did the author do growing up?")
-res.response
+res = query_engine.query("Yazar büyürken neler yaptı?")
+print(res.response)
 ```
 
-```
-'Growing up, the author worked on two main activities outside of school: writing and programming. They wrote short stories, which they admits were not particularly good, lacking plot but containing characters with strong emotions. They also started programming at a young age, initially on an IBM 1401 computer using an early version of Fortran, though they found it challenging due to the limitations of punch card input and their lack of data to process. Their programming journey真正 took off when microcomputers became available, allowing them to write more interactive programs such as games, a rocket flight predictor, and a simple word processor.'
-```
+**"Yazar büyürken okul dışında iki ana aktivite üzerinde çalıştı: yazma ve programlama. Özellikle olay örgüsünden yoksun ama güçlü duygulara sahip karakterler içeren kısa öyküler yazdı. Ayrıca genç yaşta, başlangıçta bir IBM 1401 bilgisayarında Fortran'ın erken bir sürümünü kullanarak programlamaya başladı; ancak delikli kart girişinin sınırlamaları ve işlenecek veri eksikliği nedeniyle bunu zorlayıcı buldu. Programlama yolculuğu, mikro bilgisayarların erişilebilir hale gelmesiyle gerçekten hız kazandı ve oyunlar, bir roket uçuş tahmincisi ve basit bir kelime işlemci gibi daha etkileşimli programlar yazmasına olanak tanıdı."**
 
-#### Metadata Filtering
+#### Meta Veri Filtreleme
 
-OceanBase Vector Store supports metadata filtering in the form of `=`、 `>`、`<`、`!=`、`>=`、`<=`、`in`、`not in`、`like`、`IS NULL` at query time.
+OceanBase Vektör Deposu, sorgu sırasında `=`, `>`, `<`, `!=`, `>=`, `<=`, `in`, `not in`, `like`, `IS NULL` formundaki meta veri filtrelemeyi destekler.
 
-```
+```python
 from llama_index.core.vector_stores import (
     MetadataFilters,
     MetadataFilter,
@@ -134,25 +132,21 @@ query_engine = index.as_query_engine(
 )
 
 
-res = query_engine.query("What did the author learn?")
-res.response
+res = query_engine.query("Yazar ne öğrendi?")
+print(res.response)
 ```
 
-```
-'Empty Response'
-```
+**'Empty Response' (Boş Yanıt)**
 
-#### Delete Documents
+#### Belgeleri Silme
 
-```
+```python
 oceanbase.delete(documents[0].doc_id)
 
 
 query_engine = index.as_query_engine(llm=dashscope_llm)
-res = query_engine.query("What did the author do growing up?")
-res.response
+res = query_engine.query("Yazar büyürken neler yaptı?")
+print(res.response)
 ```
 
-```
-'Empty Response'
-```
+**'Empty Response' (Boş Yanıt)**

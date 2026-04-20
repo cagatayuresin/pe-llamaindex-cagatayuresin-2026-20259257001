@@ -1,49 +1,49 @@
-# Milvus Vector Store - Metadata Filter
-
 ---
-title: Milvus Vector Store - Metadata Filter
- | LlamaIndex OSS Documentation
+title: Milvus Vektör Deposu - Meta Veri Filtreleme
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook illustrates the use of the Milvus vector store in LlamaIndex, focusing on metadata filtering capabilities. You will learn how to index documents with metadata, perform vector searches with LlamaIndex’s built-in metadata filters, and apply Milvus’s native filtering expressions to the vector store.
+# Milvus Vektör Deposu - Meta Veri Filtreleme
 
-By the end of this notebook, you will understand how to utilize Milvus’s filtering features to narrow down search results based on document metadata.
+Bu not defteri, LlamaIndex'te Milvus vektör deposunun kullanımını, meta veri filtreleme yeteneklerine odaklanarak açıklamaktadır. Belgeleri meta verilerle nasıl indeksleyeceğinizi, LlamaIndex'in yerleşik meta veri filtreleriyle vektör aramalarını nasıl gerçekleştireceğinizi ve Milvus'un yerel filtreleme ifadelerini vektör deposuna nasıl uygulayacağınızı öğreneceksiniz.
 
-## Prerequisites
+Bu not defterinin sonunda, arama sonuçlarını belge meta verilerine göre daraltmak için Milvus'un filtreleme özelliklerinden nasıl yararlanacağınızı anlamış olacaksınız.
 
-**Install dependencies**
+## Ön Koşullar
 
-Before getting started, make sure you have the following dependencies installed:
+**Bağımlılıkları kurun**
 
-```
+Başlamadan önce aşağıdaki bağımlılıkların kurulu olduğundan emin olun:
+
+```bash
 ! pip install llama-index-vector-stores-milvus llama-index
 ```
 
-> If you’re using Google Colab, you may need to **restart the runtime** (Navigate to the “Runtime” menu at the top of the interface, and select “Restart session” from the dropdown menu.)
+> Google Colab kullanıyorsanız, **çalışma zamanını yeniden başlatmanız** gerekebilir (Arayüzün üst kısmındaki "Runtime" menüsüne gidin ve açılır menüden "Restart session" seçeneğini seçin.)
 
-**Set up accounts**
+**Hesapları ayarlayın**
 
-This tutorial uses OpenAI for text embeddings and answer generation. You need to prepare the [OpenAI API key](https://platform.openai.com/api-keys).
+Bu eğitim; metin gömmeleri ve cevap oluşturma için OpenAI kullanır. [OpenAI API anahtarını](https://platform.openai.com/api-keys) hazırlamanız gerekir.
 
-```
+```python
 import openai
 
 
 openai.api_key = "sk-"
 ```
 
-To use the Milvus vector store, specify your Milvus server `URI` (and optionally with the `TOKEN`). To start a Milvus server, you can set up a Milvus server by following the [Milvus installation guide](https://milvus.io/docs/install-overview.md) or simply trying [Zilliz Cloud](https://docs.zilliz.com/docs/register-with-zilliz-cloud) for free.
+Milvus vektör deposunu kullanmak için Milvus sunucu `URI` (ve isteğe bağlı olarak `TOKEN`) bilginizi belirtin. Bir Milvus sunucusu başlatmak için [Milvus kurulum kılavuzunu](https://milvus.io/docs/install-overview.md) takip ederek bir Milvus sunucusu kurabilir veya ücretsiz olarak [Zilliz Cloud](https://docs.zilliz.com/docs/register-with-zilliz-cloud)'u deneyebilirsiniz.
 
-```
-URI = "./milvus_filter_demo.db"  # Use Milvus-Lite for demo purpose
+```python
+URI = "./milvus_filter_demo.db"  # Demo amacıyla Milvus-Lite kullanın
 # TOKEN = ""
 ```
 
-**Prepare data**
+**Verileri hazırlayın**
 
-For this example, we’ll use a few books with similar or identical titles but different metadata (author, genre, and publication year) as the sample data. This will help demonstrate how Milvus can filter and retrieve documents based on both vector similarity and metadata attributes.
+Bu örnek için, örnek veri olarak benzer veya aynı başlıklara ancak farklı meta verilere (yazar, tür ve yayın yılı) sahip birkaç kitabı kullanacağız. Bu, Milvus'un belgeleri hem vektör benzerliği hem de meta veri niteliklerine göre nasıl filtreleyebileceğini ve getirebileceğini göstermeye yardımcı olacaktır.
 
-```
+```python
 from llama_index.core.schema import TextNode
 
 
@@ -83,39 +83,33 @@ nodes = [
 ]
 ```
 
-## Build Index
+## İndeks Oluşturma
 
-In this section, we will store sample data in Milvus using the default embedding model (OpenAI’s `text-embedding-ada-002`). Titles will be converted into text embeddings and stored in a dense embedding field, while all metadata will be stored in scalar fields.
+Bu bölümde, örnek verileri varsayılan gömme modelini (OpenAI'nin `text-embedding-ada-002` modeli) kullanarak Milvus'ta saklayacağız. Başlıklar metin gömmelerine dönüştürülecek ve yoğun bir gömme alanında saklanacak, tüm meta veriler ise skaler alanlarda saklanacaktır.
 
-```
+```python
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from llama_index.core import StorageContext, VectorStoreIndex
-
-
 
 
 vector_store = MilvusVectorStore(
     uri=URI,
     # token=TOKEN,
-    collection_name="test_filter_collection",  # Change collection name here
-    dim=1536,  # Vector dimension depends on the embedding model
-    overwrite=True,  # Drop collection if exists
+    collection_name="test_filter_collection",  # Koleksiyon adını buradan değiştirebilirsiniz
+    dim=1536,  # Vektör boyutu gömme modeline bağlıdır
+    overwrite=True,  # Varsa koleksiyonu sil
 )
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-```
-2025-04-22 08:31:09,871 [DEBUG][_create_connection]: Created new connection using: 19675caa8f894772b3db175b65d0063a (async_milvus_client.py:547)
-```
+## Meta Veri Filtreleri (Metadata Filters)
 
-## Metadata Filters
+Bu bölümde, LlamaIndex'in yerleşik meta veri filtrelerini ve koşullarını Milvus aramasına uygulayacağız.
 
-In this section, we will apply LlamaIndex’s built-in metadata filters and conditions to Milvus search.
+**Meta veri filtrelerini tanımlayın**
 
-**Define metadata filters**
-
-```
+```python
 from llama_index.core.vector_stores import (
     MetadataFilter,
     MetadataFilters,
@@ -127,42 +121,40 @@ filters = MetadataFilters(
     filters=[
         MetadataFilter(
             key="year", value=2000, operator=FilterOperator.GT
-        )  # year > 2000
+        )  # yıl > 2000
     ]
 )
 ```
 
-**Retrieve from vector store with filters**
+**Filtrelerle vektör deposundan veri getirin**
 
-```
+```python
 retriever = index.as_retriever(filters=filters, similarity_top_k=5)
-result_nodes = retriever.retrieve("Books about life")
+result_nodes = retriever.retrieve("Yaşam hakkında kitaplar")
 for node in result_nodes:
     print(node.text)
     print(node.metadata)
     print("\n")
 ```
 
-```
+```text
 The Life
 {'author': 'Malcolm Knox', 'genre': 'Literary Fiction', 'year': 2011}
-
-
 
 
 Life
 {'author': 'Keith Richards', 'genre': 'Memoir', 'year': 2010}
 ```
 
-### Multiple Metdata Filters
+### Çoklu Meta Veri Filtreleri
 
-You can also combine multiple metadata filters to create more complex queries. LlamaIndex supports both `AND` and `OR` conditions to combine filters. This allows for more precise and flexible retrieval of documents based on their metadata attributes.
+Daha karmaşık sorgular oluşturmak için birden fazla meta veri filtresini de birleştirebilirsiniz. LlamaIndex, filtreleri birleştirmek için hem `AND` hem de `OR` koşullarını destekler. Bu, belgelerin meta veri niteliklerine göre daha kesin ve esnek bir şekilde getirilmesine olanak tanır.
 
-**Condition `AND`**
+**`AND` Koşulu**
 
-Try an example filtering for books published between 1979 and 2010 (specifically, where 1979 < year ≤ 2010):
+1979 ile 2010 yılları arasında yayınlanan kitapları filtreleyen bir örneği deneyin (özel olarak; 1979 < yıl ≤ 2010):
 
-```
+```python
 from llama_index.core.vector_stores import FilterCondition
 
 
@@ -170,108 +162,100 @@ filters = MetadataFilters(
     filters=[
         MetadataFilter(
             key="year", value=1979, operator=FilterOperator.GT
-        ),  # year > 1979
+        ),  # yıl > 1979
         MetadataFilter(
             key="year", value=2010, operator=FilterOperator.LTE
-        ),  # year <= 2010
+        ),  # yıl <= 2010
     ],
     condition=FilterCondition.AND,
 )
 
 
 retriever = index.as_retriever(filters=filters, similarity_top_k=5)
-result_nodes = retriever.retrieve("Books about life")
+result_nodes = retriever.retrieve("Yaşam hakkında kitaplar")
 for node in result_nodes:
     print(node.text)
     print(node.metadata)
     print("\n")
 ```
 
-```
+```text
 Life and Fate
 {'author': 'Vasily Grossman', 'genre': 'Historical Fiction', 'year': 1980}
-
-
 
 
 Life
 {'author': 'Keith Richards', 'genre': 'Memoir', 'year': 2010}
 ```
 
-**Condition `OR`**
+**`OR` Koşulu**
 
-Try another example that filters books written by either Georges Perec or Keith Richards:
+Georges Perec veya Keith Richards tarafından yazılan kitapları filtreleyen başka bir örneği deneyin:
 
-```
+```python
 filters = MetadataFilters(
     filters=[
         MetadataFilter(
             key="author", value="Georges Perec", operator=FilterOperator.EQ
-        ),  # author is Georges Perec
+        ),  # yazar Georges Perec
         MetadataFilter(
             key="author", value="Keith Richards", operator=FilterOperator.EQ
-        ),  # author is Keith Richards
+        ),  # yazar Keith Richards
     ],
     condition=FilterCondition.OR,
 )
 
 
 retriever = index.as_retriever(filters=filters, similarity_top_k=5)
-result_nodes = retriever.retrieve("Books about life")
+result_nodes = retriever.retrieve("Yaşam hakkında kitaplar")
 for node in result_nodes:
     print(node.text)
     print(node.metadata)
     print("\n")
 ```
 
-```
+```text
 Life
 {'author': 'Keith Richards', 'genre': 'Memoir', 'year': 2010}
-
-
 
 
 Life: A User's Manual
 {'author': 'Georges Perec', 'genre': 'Postmodern Fiction', 'year': 1978}
 ```
 
-## Use Milvus’s Keyword Arguments
+## Milvus’un Anahtar Kelime Argümanlarını (Keyword Arguments) Kullanma
 
-In addition to the built-in filtering capabilities, you can use Milvus’s native filtering expressions by the `string_expr` keyword argument. This allows you to pass specific filter expressions directly to Milvus during search operations, extending beyond the standard metadata filtering to access Milvus’s advanced filtering capabilities.
+Yerleşik filtreleme özelliklerine ek olarak, `string_expr` anahtar kelime argümanı ile Milvus'un yerel filtreleme ifadelerini de kullanabilirsiniz. Bu, arama işlemleri sırasında belirli filtre ifadelerini doğrudan Milvus'a iletmenize olanak tanıyarak Milvus'un gelişmiş filtreleme yeteneklerine erişmek için standart meta veri filtrelemesinin ötesine geçer.
 
-Milvus provides powerful and flexible filtering options that enable precise querying of your vector data:
+Milvus, vektör verilerinizin kesin bir şekilde sorgulanmasını sağlayan güçlü ve esnek filtreleme seçenekleri sunar:
 
-- Basic Operators: Comparison operators, range filters, arithmetic operators, and logical operators
-- Filter Expression Templates: Predefined patterns for common filtering scenarios
-- Specialized Operators: Data type-specific operators for JSON or array fields
+- Temel Operatörler: Karşılaştırma operatörleri, aralık filtreleri, aritmetik operatörler ve mantıksal operatörler.
+- Filtre İfadesi Şablonları: Yaygın filtreleme senaryoları için önceden tanımlanmış desenler.
+- Özelleşmiş Operatörler: JSON veya dizi alanları için veri tipine özel operatörler.
 
-For comprehensive documentation and examples of Milvus filtering expressions, refer to the official documentation of [Milvus Filtering](https://milvus.io/docs/boolean.md).
+Milvus filtreleme ifadelerinin kapsamlı dokümantasyonu ve örnekleri için [Milvus Filtreleme](https://milvus.io/docs/boolean.md) resmi kılavuzuna bakın.
 
-```
+```python
 retriever = index.as_retriever(
     vector_store_kwargs={
         "string_expr": "genre like '%Fiction'",
     },
     similarity_top_k=5,
 )
-result_nodes = retriever.retrieve("Books about life")
+result_nodes = retriever.retrieve("Yaşam hakkında kitaplar")
 for node in result_nodes:
     print(node.text)
     print(node.metadata)
     print("\n")
 ```
 
-```
+```text
 The Life
 {'author': 'Malcolm Knox', 'genre': 'Literary Fiction', 'year': 2011}
 
 
-
-
 Life and Fate
 {'author': 'Vasily Grossman', 'genre': 'Historical Fiction', 'year': 1980}
-
-
 
 
 Life: A User's Manual
