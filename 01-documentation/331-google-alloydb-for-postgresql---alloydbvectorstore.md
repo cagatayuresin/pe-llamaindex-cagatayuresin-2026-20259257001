@@ -2,39 +2,39 @@
 
 ---
 title: Google AlloyDB for PostgreSQL - `AlloyDBVectorStore`
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [AlloyDB](https://cloud.google.com/alloydb) is a fully managed relational database service that offers high performance, seamless integration, and impressive scalability. AlloyDB is 100% compatible with PostgreSQL. Extend your database application to build AI-powered experiences leveraging AlloyDB’s LlamaIndex integrations.
+> [AlloyDB](https://cloud.google.com/alloydb), yüksek performans, sorunsuz entegrasyon ve etkileyici ölçeklenebilirlik sunan, tam olarak yönetilen bir ilişkisel veritabanı hizmetidir. AlloyDB, PostgreSQL ile %100 uyumludur. AlloyDB'nin LlamaIndex entegrasyonlarından yararlanarak yapay zeka destekli deneyimler oluşturmak için veritabanı uygulamanızı genişletin.
 
-This notebook goes over how to use `AlloyDB for PostgreSQL` to store vector embeddings with the `AlloyDBVectorStore` class.
+Bu not defteri, vektör gömmelerini (vector embeddings) `AlloyDBVectorStore` sınıfı ile saklamak için `AlloyDB for PostgreSQL`ün nasıl kullanılacağını kapsar.
 
-Learn more about the package on [GitHub](https://github.com/googleapis/llama-index-alloydb-pg-python/).
+Paket hakkında daha fazla bilgiyi [GitHub](https://github.com/googleapis/llama-index-alloydb-pg-python/) üzerinden edinebilirsiniz.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/googleapis/llama-index-alloydb-pg-python/blob/main/samples/llama_index_vector_store.ipynb)
 
-## Before you begin
+## Başlamadan önce (Before you begin)
 
-To run this notebook, you will need to do the following:
+Bu not defterini çalıştırmak için aşağıdakileri yapmanız gerekecektir:
 
-- [Create a Google Cloud Project](https://developers.google.com/workspace/guides/create-project)
-- [Enable the AlloyDB API](https://console.cloud.google.com/flows/enableapi?apiid=alloydb.googleapis.com)
-- [Create a AlloyDB cluster and instance.](https://cloud.google.com/alloydb/docs/cluster-create)
-- [Create a AlloyDB database.](https://cloud.google.com/alloydb/docs/quickstart/create-and-connect)
-- [Add a User to the database.](https://cloud.google.com/alloydb/docs/database-users/about)
+- [Bir Google Cloud Projesi oluşturun](https://developers.google.com/workspace/guides/create-project)
+- [AlloyDB API'sini etkinleştirin](https://console.cloud.google.com/flows/enableapi?apiid=alloydb.googleapis.com)
+- [Bir AlloyDB kümesi (cluster) ve örneği (instance) oluşturun.](https://cloud.google.com/alloydb/docs/cluster-create)
+- [Bir AlloyDB veritabanı oluşturun.](https://cloud.google.com/alloydb/docs/quickstart/create-and-connect)
+- [Veritabanına bir Kullanıcı ekleyin.](https://cloud.google.com/alloydb/docs/database-users/about)
 
-### 🦙 Library Installation
+### 🦙 Kütüphane Kurulumu (Library Installation)
 
-Install the integration library, `llama-index-alloydb-pg`, and the library for the embedding service, `llama-index-embeddings-vertex`.
+Entegrasyon kütüphanesi olan `llama-index-alloydb-pg`yi ve gömme hizmeti kütüphanesi olan `llama-index-embeddings-vertex`i kurun.
 
-```
+```bash
 %pip install --upgrade --quiet llama-index-alloydb-pg llama-index-embeddings-vertex llama-index-llms-vertex llama-index
 ```
 
-**Colab only:** Uncomment the following cell to restart the kernel or use the button to restart the kernel. For Vertex AI Workbench you can restart the terminal using the button on top.
+**Yalnızca Colab:** Çalışma zamanını (kernel) yeniden başlatmak için aşağıdaki hücrenin yorumunu kaldırın veya düğmeyi kullanın. Vertex AI Workbench için üstteki düğmeyi kullanarak terminali yeniden başlatabilirsiniz.
 
-```
-# # Automatically restart kernel after installs so that your environment can access the new packages
+```python
+# # Ortamınızın yeni paketlere erişebilmesi için kurulumlardan sonra çalışma zamanını otomatik olarak yeniden başlatın
 # import IPython
 
 
@@ -42,80 +42,80 @@ Install the integration library, `llama-index-alloydb-pg`, and the library for t
 # app.kernel.do_shutdown(True)
 ```
 
-### 🔐 Authentication
+### 🔐 Kimlik Doğrulama (Authentication)
 
-Authenticate to Google Cloud as the IAM user logged into this notebook in order to access your Google Cloud Project.
+Google Cloud Projenize erişmek için bu not defterinde oturum açmış IAM kullanıcısı olarak Google Cloud'da kimlik doğrulaması yapın.
 
-- If you are using Colab to run this notebook, use the cell below and continue.
-- If you are using Vertex AI Workbench, check out the setup instructions [here](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env).
+- Bu not defterini çalıştırmak için Colab kullanıyorsanız, aşağıdaki hücreyi kullanın ve devam edin.
+- Vertex AI Workbench kullanıyorsanız, kurulum talimatlarına [buradan](https://github.com/GoogleCloudPlatform/generative-ai/tree/main/setup-env) göz atın.
 
-```
+```python
 from google.colab import auth
 
 
 auth.authenticate_user()
 ```
 
-### ☁ Set Your Google Cloud Project
+### ☁ Google Cloud Projenizi Ayarlayın (Set Your Google Cloud Project)
 
-Set your Google Cloud project so that you can leverage Google Cloud resources within this notebook.
+Bu not defteri içinde Google Cloud kaynaklarından yararlanabilmek için Google Cloud projenizi ayarlayın.
 
-If you don’t know your project ID, try the following:
+Proje kimliğinizi (project ID) bilmiyorsanız aşağıdakileri deneyin:
 
-- Run `gcloud config list`.
-- Run `gcloud projects list`.
-- See the support page: [Locate the project ID](https://support.google.com/googleapi/answer/7014113).
+- `gcloud config list` komutunu çalıştırın.
+- `gcloud projects list` komutunu çalıştırın.
+- Destek sayfasına bakın: [Proje kimliğini bulma](https://support.google.com/googleapi/answer/7014113).
 
-```
-# @markdown Please fill in the value below with your Google Cloud project ID and then run the cell.
-
-
-PROJECT_ID = "my-project-id"  # @param {type:"string"}
+```python
+# @markdown Lütfen aşağıdaki değeri Google Cloud proje kimliğinizle doldurun ve ardından hücreyi çalıştırın.
 
 
-# Set the project id
+PROJECT_ID = "proje-kimliginiz"  # @param {type:"string"}
+
+
+# Proje kimliğini ayarla
 !gcloud config set project {PROJECT_ID}
 ```
 
-## Basic Usage
+## Temel Kullanım (Basic Usage)
 
-### Set AlloyDB database values
+### AlloyDB veritabanı değerlerini ayarlayın
 
-Find your database values, in the [AlloyDB Instances page](https://console.cloud.google.com/alloydb/clusters).
+Veritabanı değerlerinizi [AlloyDB Örnekleri sayfasında](https://console.cloud.google.com/alloydb/clusters) bulabilirsiniz.
 
-```
-# @title Set Your Values Here { display-mode: "form" }
+```python
+# @title Değerlerinizi Buraya Girin { display-mode: "form" }
 REGION = "us-central1"  # @param {type: "string"}
-CLUSTER = "my-cluster"  # @param {type: "string"}
-INSTANCE = "my-primary"  # @param {type: "string"}
-DATABASE = "my-database"  # @param {type: "string"}
+CLUSTER = "benim-kumem"  # @param {type: "string"}
+INSTANCE = "benim-orneğim"  # @param {type: "string"}
+DATABASE = "benim-veritabanim"  # @param {type: "string"}
 TABLE_NAME = "vector_store"  # @param {type: "string"}
 USER = "postgres"  # @param {type: "string"}
-PASSWORD = "my-password"  # @param {type: "string"}
+PASSWORD = "benim-sifrem"  # @param {type: "string"}
 ```
 
-### AlloyDBEngine Connection Pool
+### AlloyDBEngine Bağlantı Havuzu (AlloyDBEngine Connection Pool)
 
-One of the requirements and arguments to establish AlloyDB as a vector store is a `AlloyDBEngine` object. The `AlloyDBEngine` configures a connection pool to your AlloyDB database, enabling successful connections from your application and following industry best practices.
+AlloyDB'yi bir vektör deposu olarak kurmak için gerekenlerden ve argümanlardan biri bir `AlloyDBEngine` nesnesidir. `AlloyDBEngine`, AlloyDB veritabanınıza bir bağlantı havuzu (connection pool) yapılandırarak uygulamanızdan başarılı bağlantılar kurulmasını sağlar ve sektördeki en iyi uygulamaları takip eder.
 
-To create a `AlloyDBEngine` using `AlloyDBEngine.from_instance()` you need to provide only 5 things:
+`AlloyDBEngine.from_instance()` kullanarak bir `AlloyDBEngine` oluşturmak için yalnızca 5 şey sağlamanız gerekir:
 
-1. `project_id` : Project ID of the Google Cloud Project where the AlloyDB instance is located.
-2. `region` : Region where the AlloyDB instance is located.
-3. `cluster`: The name of the AlloyDB cluster.
-4. `instance` : The name of the AlloyDB instance.
-5. `database` : The name of the database to connect to on the AlloyDB instance.
+1. `project_id`: AlloyDB örneğinin bulunduğu Google Cloud Projesinin proje kimliği.
+2. `region`: AlloyDB örneğinin bulunduğu bölge (region).
+3. `cluster`: AlloyDB kümesinin adı.
+4. `instance`: AlloyDB örneğinin adı.
+5. `database`: AlloyDB örneğinde bağlanılacak veritabanının adı.
 
-By default, [IAM database authentication](https://cloud.google.com/alloydb/docs/connect-iam) will be used as the method of database authentication. This library uses the IAM principal belonging to the [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) sourced from the environment.
+Varsayılan olarak, veritabanı kimlik doğrulama yöntemi olarak [IAM veritabanı kimlik doğrulaması](https://cloud.google.com/alloydb/docs/connect-iam) kullanılacaktır. Bu kütüphane, ortamdan temin edilen [Uygulama Varsayılan Kimlik Bilgilerine (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) ait IAM asıl kişisini (principal) kullanır.
 
-Optionally, [built-in database authentication](https://cloud.google.com/alloydb/docs/database-users/about) using a username and password to access the AlloyDB database can also be used. Just provide the optional `user` and `password` arguments to `AlloyDBEngine.from_instance()`:
+İsteğe bağlı olarak, AlloyDB veritabanına erişmek için kullanıcı adı ve şifre kullanan [yerleşik veritabanı kimlik doğrulaması](https://cloud.google.com/alloydb/docs/database-users/about) da kullanılabilir. `AlloyDBEngine.from_instance()` metoduna isteğe bağlı `user` ve `password` argümanlarını sağlamanız yeterlidir:
 
-- `user` : Database user to use for built-in database authentication and login
-- `password` : Database password to use for built-in database authentication and login.
+- `user`: Yerleşik veritabanı kimlik doğrulaması ve oturum açma için kullanılacak veritabanı kullanıcısı.
+- `password`: Yerleşik veritabanı kimlik doğrulaması ve oturum açma için kullanılacak veritabanı şifresi.
 
-**Note:** This tutorial demonstrates the async interface. All async methods have corresponding sync methods.
+**Not:** Bu eğitim asenkron (async) arayüzü göstermektedir. Tüm asenkron metotların karşılık gelen senkron (sync) metotları vardır.
 
-```
+```python
 from llama_index_alloydb_pg import AlloyDBEngine
 
 
@@ -130,40 +130,40 @@ engine = await AlloyDBEngine.afrom_instance(
 )
 ```
 
-### AlloyDBEngine for AlloyDB Omni
+### AlloyDB Omni için AlloyDBEngine
 
-To create an `AlloyDBEngine` for AlloyDB Omni, you will need a connection url. `AlloyDBEngine.from_connection_string` first creates an async engine and then turns it into an `AlloyDBEngine`. Here is an example connection with the `asyncpg` driver:
+AlloyDB Omni için bir `AlloyDBEngine` oluşturmak üzere bir bağlantı URL'sine ihtiyacınız olacaktır. `AlloyDBEngine.from_connection_string` önce asenkron bir motor oluşturur ve ardından bunu bir `AlloyDBEngine`e dönüştürür. İşte `asyncpg` sürücüsü ile bir örnek bağlantı:
 
-```
-# Replace with your own AlloyDB Omni info
-OMNI_USER = "my-omni-user"
+```python
+# Kendi AlloyDB Omni bilgilerinizle değiştirin
+OMNI_USER = "benim-omni-kullanicim"
 OMNI_PASSWORD = ""
 OMNI_HOST = "127.0.0.1"
 OMNI_PORT = "5432"
-OMNI_DATABASE = "my-omni-db"
+OMNI_DATABASE = "benim-omni-db"
 
 
 connstring = f"postgresql+asyncpg://{OMNI_USER}:{OMNI_PASSWORD}@{OMNI_HOST}:{OMNI_PORT}/{OMNI_DATABASE}"
 engine = AlloyDBEngine.from_connection_string(connstring)
 ```
 
-### Initialize a table
+### Bir tabloyu başlatma (Initialize a table)
 
-The `AlloyDBVectorStore` class requires a database table. The `AlloyDBEngine` engine has a helper method `init_vector_store_table()` that can be used to create a table with the proper schema for you.
+`AlloyDBVectorStore` sınıfı bir veritabanı tablosu gerektirir. `AlloyDBEngine` motoru, sizin için uygun şemaya sahip bir tablo oluşturmak üzere kullanılabilecek `init_vector_store_table()` yardımcı metoduna sahiptir.
 
-```
+```python
 await engine.ainit_vector_store_table(
     table_name=TABLE_NAME,
-    vector_size=768,  # Vector size for VertexAI model(textembedding-gecko@latest)
+    vector_size=768,  # VertexAI modeli (textembedding-gecko@latest) için vektör boyutu
 )
 ```
 
-#### Optional Tip: 💡
+#### İsteğe Bağlı İpucu: 💡
 
-You can also specify a schema name by passing `schema_name` wherever you pass `table_name`.
+`table_name`i ilettiğiniz her yerde `schema_name`i de ileterek bir şema adı belirtebilirsiniz.
 
-```
-SCHEMA_NAME = "my_schema"
+```python
+SCHEMA_NAME = "benim_semam"
 
 
 await engine.ainit_vector_store_table(
@@ -173,16 +173,16 @@ await engine.ainit_vector_store_table(
 )
 ```
 
-### Create an embedding class instance
+### Bir gömme (embedding) sınıf örneği oluşturun
 
-You can use any [Llama Index embeddings model](https://docs.llamaindex.ai/en/stable/module_guides/models/embeddings/). You may need to enable Vertex AI API to use `VertexTextEmbeddings`. We recommend setting the embedding model’s version for production, learn more about the [Text embeddings models](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings).
+Herhangi bir [Llama Index gömme modelini](https://docs.llamaindex.ai/en/stable/module_guides/models/embeddings/) kullanabilirsiniz. `VertexTextEmbeddings`i kullanmak için Vertex AI API'sini etkinleştirmeniz gerekebilir. Üretim (production) için gömme modelinin sürümünü ayarlamanızı öneririz; [Metin gömme modelleri](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings) hakkında daha fazla bilgi edinin.
 
-```
-# enable Vertex AI API
+```bash
+# Vertex AI API'sini etkinleştir
 !gcloud services enable aiplatform.googleapis.com
 ```
 
-```
+```python
 from llama_index.core import Settings
 from llama_index.embeddings.vertex import VertexTextEmbedding
 from llama_index.llms.vertex import Vertex
@@ -200,9 +200,9 @@ Settings.embed_model = VertexTextEmbedding(
 Settings.llm = Vertex(model="gemini-1.5-flash-002", project=PROJECT_ID)
 ```
 
-### Initialize a default AlloyDBVectorStore
+### Varsayılan bir AlloyDBVectorStore başlatın
 
-```
+```python
 from llama_index_alloydb_pg import AlloyDBVectorStore
 
 
@@ -213,32 +213,32 @@ vector_store = await AlloyDBVectorStore.create(
 )
 ```
 
-### Download data
+### Veriyi indir (Download data)
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-### Load documents
+### Belgeleri yükle (Load documents)
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
-print("Document ID:", documents[0].doc_id)
+print("Belge Kimliği (Document ID):", documents[0].doc_id)
 ```
 
-## Use with VectorStoreIndex
+## VectorStoreIndex ile Kullanım (Use with VectorStoreIndex)
 
-Create an index from the vector store by using [`VectorStoreIndex`](https://docs.llamaindex.ai/en/stable/module_guides/indexing/vector_store_index/).
+[`VectorStoreIndex`](https://docs.llamaindex.ai/en/stable/module_guides/indexing/vector_store_index/) kullanarak vektör deposundan bir indeks oluşturun.
 
-#### Initialize Vector Store with documents
+#### Vektör Deposunu belgelerle başlatın
 
-The simplest way to use a Vector Store is to load a set of documents and build an index from them using `from_documents`.
+Bir Vektör Deposunu kullanmanın en basit yolu, bir dizi belgeyi yüklemek ve `from_documents` kullanarak bunlardan bir indeks oluşturmaktır.
 
-```
+```python
 from llama_index.core import StorageContext, VectorStoreIndex
 
 
@@ -248,40 +248,40 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Query the index
+### İndeksi sorgulayın (Query the index)
 
-```
+```python
 query_engine = index.as_query_engine()
-response = query_engine.query("What did the author do?")
+response = query_engine.query("Yazar ne yaptı?")
 print(response)
 ```
 
-## Create a custom Vector Store
+## Özel bir Vektör Deposu Oluşturma (Create a custom Vector Store)
 
-A Vector Store can take advantage of relational data to filter similarity searches.
+Bir Vektör Deposu, benzerlik aramalarını filtrelemek için ilişkisel verilerden yararlanabilir.
 
-Create a new table with custom metadata columns. You can also re-use an existing table which already has custom columns for a Document’s id, content, embedding, and/or metadata.
+Özel metaveri sütunlarına sahip yeni bir tablo oluşturun. Bir Belgenin kimliği (id), içeriği (content), gömmesi (embedding) ve/veya metaverisi (metadata) için halihazırda özel sütunlara sahip olan mevcut bir tabloyu da yeniden kullanabilirsiniz.
 
-```
+```python
 from llama_index_alloydb_pg import Column
 
 
-# Set table name
+# Tablo adını ayarla
 TABLE_NAME = "vectorstore_custom"
-# SCHEMA_NAME = "my_schema"
+# SCHEMA_NAME = "benim_semam"
 
 
 await engine.ainit_vector_store_table(
     table_name=TABLE_NAME,
     # schema_name=SCHEMA_NAME,
-    vector_size=768,  # VertexAI model: textembedding-gecko@003
+    vector_size=768,  # VertexAI modeli: textembedding-gecko@003
     metadata_columns=[Column("len", "INTEGER")],
 )
 
 
 
 
-# Initialize AlloyDBVectorStore
+# AlloyDBVectorStore'u başlat
 custom_store = await AlloyDBVectorStore.create(
     engine=engine,
     table_name=TABLE_NAME,
@@ -290,15 +290,15 @@ custom_store = await AlloyDBVectorStore.create(
 )
 ```
 
-### Add documents with metadata
+### Metaverili belgeler ekleyin (Add documents with metadata)
 
-[Document `metadata`](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_documents/) can provide the LLM and retrieval process with more information. Learn more about different approaches for [extracting and adding metadata](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_metadata_extractor/).
+[Belge `metadata`sı (metaverisi)](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_documents/), LLM'e ve erişim sürecine daha fazla bilgi sağlayabilir. [Metaveri çıkarma ve ekleme](https://docs.llamaindex.ai/en/stable/module_guides/loading/documents_and_nodes/usage_metadata_extractor/) için farklı yaklaşımlar hakkında daha fazla bilgi edinin.
 
-```
+```python
 from llama_index.core import Document
 
 
-fruits = ["apple", "pear", "orange", "strawberry", "banana", "kiwi"]
+fruits = ["elma", "armut", "portakal", "çilek", "muz", "kivi"]
 documents = [
     Document(text=fruit, metadata={"len": len(fruit)}) for fruit in fruits
 ]
@@ -310,11 +310,11 @@ custom_doc_index = VectorStoreIndex.from_documents(
 )
 ```
 
-### Search for documents with metadata filter
+### Metaveri filtresi ile belgeleri arayın (Search for documents with metadata filter)
 
-You can apply pre-filtering to the search results by specifying a `filters` argument
+Bir `filters` argümanı belirterek arama sonuçlarına ön filtreleme uygulayabilirsiniz.
 
-```
+```python
 from llama_index.core.vector_stores.types import (
     MetadataFilter,
     MetadataFilters,
@@ -330,15 +330,15 @@ filters = MetadataFilters(
 
 
 query_engine = custom_doc_index.as_query_engine(filters=filters)
-res = query_engine.query("List some fruits")
+res = query_engine.query("Bazı meyveleri listele")
 print(str(res.source_nodes[0].text))
 ```
 
-## Add a Index
+## Dizin (Index) Ekleme (Add a Index)
 
-Speed up vector search queries by applying a vector index. Learn more about [vector indexes](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes).
+Bir vektör dizini (vector index) uygulayarak vektör arama sorgularını hızlandırın. [Vektör dizinleri](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes) hakkında daha fazla bilgi edinin.
 
-```
+```python
 from llama_index_alloydb_pg.indexes import IVFFlatIndex
 
 
@@ -346,26 +346,26 @@ index = IVFFlatIndex()
 await vector_store.aapply_vector_index(index)
 ```
 
-The `ScaNN` index creation (only available in AlloyDB Omni) requires sufficient maintenance work memory. You need to set the database flag `maintenance_work_mem` by calling `set_maintenance_work_mem` before applying the index.
+`ScaNN` dizini oluşturma (yalnızca AlloyDB Omni'de mevcuttur), yeterli bakım çalışma belleği (maintenance work memory) gerektirir. Dizini uygulamadan önce `set_maintenance_work_mem` fonksiyonunu çağırarak `maintenance_work_mem` veritabanı bayrağını ayarlamanız gerekir.
 
-```
+```python
 from llama_index_alloydb_pg.indexes import ScaNNIndex
 
 
-VECTOR_SIZE = 768  # Replace with the vector size of your embedding model
-index = ScaNNIndex(name="my_scann_index")
+VECTOR_SIZE = 768  # Gömme modelinizin vektör boyutuyla değiştirin
+index = ScaNNIndex(name="benim_scann_dizinim")
 await vector_store.aset_maintenance_work_mem(index.num_leaves, VECTOR_SIZE)
 await vector_store.aapply_vector_index(index)
 ```
 
-### Re-index
+### Yeniden dizinleme (Re-index)
 
-```
-await vector_store.areindex()  # Re-index using default index name
+```python
+await vector_store.areindex()  # Varsayılan dizin adını kullanarak yeniden dizinle
 ```
 
-### Remove an index
+### Bir dizini kaldırın (Remove an index)
 
-```
-await vector_store.adrop_vector_index()  # Delete index using default name
+```python
+await vector_store.adrop_vector_index()  # Varsayılan adı kullanarak dizini sil
 ```

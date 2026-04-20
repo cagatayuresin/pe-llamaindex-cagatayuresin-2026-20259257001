@@ -2,53 +2,53 @@
 
 ---
 title: Alibaba Cloud MySQL
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-> Alibaba Cloud MySQL, also named as [ApsaraDB RDS for MySQL](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/overview-3). ApsaraDB RDS for MySQL is an online database service that is based on a branch of MySQL source code and offers high performance. ApsaraDB RDS for MySQL is a proven solution that has handled large volumes of concurrent traffic during Double 11. ApsaraDB RDS for MySQL provides basic features such as whitelist configuration, backup and recovery, Transparent Data Encryption (TDE), data migration, and management of instances, accounts, and databases. For more information, see [RDS MySQL Feature Overview](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/features).
+> Alibaba Cloud MySQL, [ApsaraDB RDS for MySQL](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/overview-3) olarak da adlandırılır. ApsaraDB RDS for MySQL, MySQL kaynak kodunun bir dalına (branch) dayanan ve yüksek performans sunan çevrimiçi bir veritabanı hizmetidir. ApsaraDB RDS for MySQL, Double 11 (Bekarlar Günü) sırasında büyük hacimli eşzamanlı trafiği yönetmiş olan kanıtlanmış bir çözümdür. ApsaraDB RDS for MySQL; beyaz liste (whitelist) yapılandırması, yedekleme ve kurtarma, Şeffaf Veri Şifreleme (TDE), veri taşıma ve örnek (instance), hesap ve veritabanı yönetimi gibi temel özellikler sunar. Daha fazla bilgi için bkz. [RDS MySQL Özelliklerine Genel Bakış](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/features).
 
-To run this notebook you need a ApsaraDB RDS MySQL instance running in the cloud, create an account and create needed databases. You can refer to [this link](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/step-1-create-an-apsaradb-rds-for-mysql-instance-and-configure-databases).
+Bu not defterini çalıştırmak için bulutta çalışan bir ApsaraDB RDS MySQL örneğine sahip olmanız, bir hesap oluşturmanız ve gerekli veritabanlarını oluşturmanız gerekir. [Bu bağlantıya](https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-mysql/step-1-create-an-apsaradb-rds-for-mysql-instance-and-configure-databases) başvurabilirsiniz.
 
-In this notebook, we need to create databases called `llama_index_test` and `llama_index_meta_test` in your ApsaraDB RDS MySQL instance.
+Bu not defterinde, ApsaraDB RDS MySQL örneğinizde `llama_index_test` ve `llama_index_meta_test` adında veritabanları oluşturmamız gerekiyor.
 
-## Setup
+## Kurulum (Setup)
 
-If you’re opening this Notebook on colab, you will probably need to ensure you have `llama-index` installed:
+Eğer bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen `llama-index`in kurulu olduğundan emin olmanız gerekecektir:
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```bash
 %pip install llama-index-vector-stores-alibabacloud-mysql
 ```
 
-```
-# choose dashscope as embedding and llm model, your can also use default openai or other model to test
+```bash
+# gömme (embedding) ve llm modeli olarak dashscope'u seçin; test etmek için varsayılan openai veya diğer modelleri de kullanabilirsiniz
 %pip install llama-index-embeddings-dashscope
 %pip install llama-index-llms-dashscope
 ```
 
-Config dashscope embedding and llm model, your can also use default openai or other model to test. If you choose to use dashscope model, you can get your api key [here](https://modelstudio.console.aliyun.com/?tab=dashboard#/api-key), and set it in the following code:
+Dashscope gömme ve llm modelini yapılandırın; test etmek için varsayılan openai veya diğer modelleri de kullanabilirsiniz. Dashscope modelini kullanmayı seçerseniz, API anahtarınızı [buradan](https://modelstudio.console.aliyun.com/?tab=dashboard#/api-key) alabilir ve aşağıdaki kodda ayarlayabilirsiniz:
 
-```
-!export DASHSCOPE_API_KEY="your_api_key"
+```bash
+!export DASHSCOPE_API_KEY="api_anahtarınız"
 ```
 
-## Download example data
+## Örnek Veriyi İndir (Download example data)
 
-```
+```bash
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-## RAG Demo using Alibaba Cloud MySQL
+## Alibaba Cloud MySQL kullanarak RAG Demosu (RAG Demo using Alibaba Cloud MySQL)
 
-### Simple Query
+### Basit Sorgu (Simple Query)
 
-#### Load Data for Simple Query
+#### Basit Sorgu için Veri Yükleme (Load Data for Simple Query)
 
-```
+```python
 import os
 
 
@@ -65,7 +65,7 @@ from llama_index.vector_stores.alibabacloud_mysql.base import (
 )
 
 
-# set Embbeding model
+# Gömme (Embedding) modelini ayarla
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
@@ -73,7 +73,7 @@ from llama_index.embeddings.dashscope import DashScopeEmbedding
 Settings.embed_model = DashScopeEmbedding(api_key=DASHSCOPE_API_KEY)
 
 
-# config llm model
+# llm modelini yapılandır
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 
 
@@ -83,26 +83,25 @@ dashscope_llm = DashScope(
 
 
 documents = SimpleDirectoryReader("data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge: {len(documents)}")
+print(f"İlk belge, kimlik: {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    f"İlk belge, metin ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 
 
 print(
     """
 #################
-# simple generate vector
+# basit vektör üretimi
 #################"""
 )
 client = AlibabaCloudMySQLVectorStore.from_params(
     host="rm-***.mysql.***.rds.aliyuncs.com",
     port=3306,
-    user="user",
-    password="password",
+    user="kullanici",
+    password="sifre",
     database="llama_index_test",
     distance_method="COSINE",
 )
@@ -112,9 +111,9 @@ VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query using AlibabaCloudMySQL with Search Test
+#### Arama Testi ile AlibabaCloudMySQL Kullanarak Sorgulama (Query using AlibabaCloudMySQL with Search Test)
 
-```
+```python
 import os
 
 
@@ -127,17 +126,17 @@ from llama_index.vector_stores.alibabacloud_mysql.base import (
 )
 
 
-# set Embbeding model
+# Gömme modelini ayarla
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
 
 embed_model = DashScopeEmbedding(api_key=DASHSCOPE_API_KEY)
-# Global Settings
+# Küresel Ayarlar (Global Settings)
 Settings.embed_model = embed_model
 
 
-# config llm model
+# llm modelini yapılandır
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 
 
@@ -149,15 +148,15 @@ dashscope_llm = DashScope(
 print(
     """
 #################
-# Basic Querying including Search Test
+# Arama Testi dahil Temel Sorgulama
 #################
 """
 )
 client = AlibabaCloudMySQLVectorStore.from_params(
     host="rm-***.mysql.eu-west-1.rds.***.com",
     port=3306,
-    user="user",
-    password="password",
+    user="kullanici",
+    password="sifre",
     database="llama_index_test",
     distance_method="COSINE",
 )
@@ -166,34 +165,34 @@ index = VectorStoreIndex.from_vector_store(
 )
 
 
-QUESTION = "What did the author do growing up?"
-# Set Retriever
+QUESTION = "Yazar büyürken neler yaptı?"
+# Erişiciyi (Retriever) Ayarla
 vector_retriever = index.as_retriever()
-# search
+# arama
 source_nodes = vector_retriever.retrieve(QUESTION)
-# check source_nodes
-print(f"Question: {QUESTION}")
+# kaynak düğümleri kontrol et
+print(f"Soru: {QUESTION}")
 for node in source_nodes:
     print(f"---------------------------------------------")
-    print("Search Test")
+    print("Arama Testi (Search Test)")
     print(f"---------------------------------------------")
-    print(f"Score: {node.score:.3f}")
+    print(f"Puan (Score): {node.score:.3f}")
     print(node.get_content())
     print(f"---------------------------------------------")
 
 
-# run query
+# sorguyu çalıştır
 query_engine = index.as_query_engine(llm=dashscope_llm)
 res = query_engine.query(QUESTION)
-print(f"Answer: {res.response}")
+print(f"Yanıt (Answer): {res.response}")
 print(f"---------------------------------------------\n\n")
 ```
 
-### Metadata Filtering
+### Metaveri Filtreleme (Metadata Filtering)
 
-#### Load Data for Metadata Filtering
+#### Metaveri Filtreleme için Veri Yükleme (Load Data for Metadata Filtering)
 
-```
+```python
 import os
 
 
@@ -210,7 +209,7 @@ from llama_index.vector_stores.alibabacloud_mysql.base import (
 )
 
 
-# set Embbeding model
+# Gömme modelini ayarla
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
@@ -218,7 +217,7 @@ from llama_index.embeddings.dashscope import DashScopeEmbedding
 Settings.embed_model = DashScopeEmbedding(api_key=DASHSCOPE_API_KEY)
 
 
-# config llm model
+# llm modelini yapılandır
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 
 
@@ -228,26 +227,25 @@ dashscope_llm = DashScope(
 
 
 documents = SimpleDirectoryReader("data/paul_graham/").load_data()
-print(f"Total documents: {len(documents)}")
-print(f"First document, id: {documents[0].doc_id}")
-print(f"First document, hash: {documents[0].hash}")
+print(f"Toplam belge: {len(documents)}")
+print(f"İlk belge, kimlik: {documents[0].doc_id}")
+print(f"İlk belge, hash: {documents[0].hash}")
 print(
-    "First document, text"
-    f" ({len(documents[0].text)} characters):\n{'='*20}\n{documents[0].text[:360]} ..."
+    f"İlk belge, metin ({len(documents[0].text)} karakter):\n{'='*20}\n{documents[0].text[:360]} ..."
 )
 
 
 print(
     """
 #################
-# generate vector with some metadata for Metadata Filtering
+# Metaveri Filtreleme için bazı metaverilerle vektör üretimi
 #################"""
 )
 client = AlibabaCloudMySQLVectorStore.from_params(
     host="rm-***.mysql.***.rds.aliyuncs.com",
     port=3306,
-    user="user",
-    password="password",
+    user="kullanici",
+    password="sifre",
     database="llama_index_meta_test",
     distance_method="COSINE",
 )
@@ -261,11 +259,11 @@ from llama_index.core import Document
 import regex as re
 
 
-# Split the text into paragraphs.
+# Metni paragraflara ayırın.
 text_chunks = documents[0].text.split("\n\n")
 
 
-# Create a document for each footnote
+# Her dipnot için bir belge oluşturun
 footnotes = [
     Document(
         text=chunk,
@@ -280,14 +278,14 @@ footnotes = [
 ]
 
 
-# Insert the footnotes into the index
+# Dipnotları indekse yerleştirin
 for f in footnotes:
     index.insert(f)
 ```
 
-#### Query using AlibabaCloudMySQL with Search Test
+#### Arama Testi ile AlibabaCloudMySQL Kullanarak Sorgulama
 
-```
+```python
 import os
 
 
@@ -300,17 +298,17 @@ from llama_index.vector_stores.alibabacloud_mysql.base import (
 )
 
 
-# set Embbeding model
+# Gömme modelini ayarla
 from llama_index.core import Settings
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
 
 embed_model = DashScopeEmbedding(api_key=DASHSCOPE_API_KEY)
-# Global Settings
+# Küresel Ayarlar
 Settings.embed_model = embed_model
 
 
-# config llm model
+# llm modelini yapılandır
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 
 
@@ -322,15 +320,15 @@ dashscope_llm = DashScope(
 print(
     """
 #################
-# Querying with Metadata Filtering including Search Test
+# Arama Testi dahil Metaveri Filtreleme ile Sorgulama
 #################
 """
 )
 client = AlibabaCloudMySQLVectorStore.from_params(
     host="rm-***.mysql.***.rds.aliyuncs.com",
     port=3306,
-    user="user",
-    password="password",
+    user="kullanici",
+    password="sifre",
     database="llama_index_meta_test",
     distance_method="COSINE",
 )
@@ -347,9 +345,9 @@ from llama_index.core.vector_stores import (
 )
 
 
-QUESTION = "What did the author about space aliens and lisp?"
+QUESTION = "Yazar uzaylılar ve lisp hakkında ne söyledi?"
 print(f"---------------------------------------------")
-print(f"Question: {QUESTION}")
+print(f"Soru: {QUESTION}")
 filters = MetadataFilters(
     filters=[
         MetadataFilter(
@@ -361,22 +359,22 @@ filters = MetadataFilters(
 )
 print(f"---------------------------------------------")
 for i in range(len(filters.filters)):
-    print(f"Filter[{i}]: {filters.filters[i]}")
-print(f"Filter Condition: {filters.condition}")
+    print(f"Filtre[{i}]: {filters.filters[i]}")
+print(f"Filtre Koşulu: {filters.condition}")
 print(f"---------------------------------------------")
 retriever = index.as_retriever(
     filters=filters,
 )
 result = retriever.retrieve(QUESTION)
 for node in result:
-    print("Search Test")
+    print("Arama Testi")
     print(f"---------------------------------------------")
-    print(f"Score: {node.score:.3f}")
+    print(f"Puan: {node.score:.3f}")
     print(node.get_content())
     print(f"---------------------------------------------")
 
 
-# Create a query engine that only searches certain footnotes.
+# Sadece belirli dipnotları arayan bir sorgu motoru oluşturun.
 footnote_query_engine = index.as_query_engine(
     filters=filters,
     llm=dashscope_llm,
@@ -384,6 +382,6 @@ footnote_query_engine = index.as_query_engine(
 
 
 res = footnote_query_engine.query(QUESTION)
-print(f"Answer: {res.response}")
+print(f"Yanıt: {res.response}")
 print(f"---------------------------------------------\n\n")
 ```

@@ -1,54 +1,54 @@
-# Pathway Retriever
+# Pathway Erişicisi (Pathway Retriever)
 
 ---
-title: Pathway Retriever
- | LlamaIndex OSS Documentation
+title: Pathway Erişicisi (Pathway Retriever)
+ | LlamaIndex OSS Belgeleri
 ---
 
-> [Pathway](https://pathway.com/) is an open data processing framework. It allows you to easily develop data transformation pipelines and Machine Learning applications that work with live data sources and changing data.
+> [Pathway](https://pathway.com/), açık bir veri işleme çerçevesidir. Canlı veri kaynakları ve değişen verilerle çalışan veri dönüştürme hatlarını ve Makine Öğrenimi uygulamalarını kolayca geliştirmenize olanak tanır.
 
-This notebook demonstrates how to use a live data indexing pipeline with `LlamaIndex`. You can query the results of this pipeline from your LLM application using the provided `PathwayRetriever`. However, under the hood, Pathway updates the index on each data change giving you always up-to-date answers.
+Bu not defteri, `LlamaIndex` ile canlı bir veri indeksleme hattının nasıl kullanılacağını gösterir. Bu hattın sonuçlarını, sağlanan `PathwayRetriever`ı kullanarak LLM uygulamanızdan sorgulayabilirsiniz. Ancak Pathway perde arkasında, her veri değişikliğinde indeksi güncelleyerek size her zaman güncel yanıtlar sunar.
 
-In this notebook, we will use a [public demo document processing pipeline](https://pathway.com/solutions/ai-pipelines#try-it-out) that:
+Bu not defterinde, aşağıdaki işlemleri gerçekleştiren [herkese açık bir demo belge işleme hattı](https://pathway.com/solutions/ai-pipelines#try-it-out) kullanacağız:
 
-1. Monitors several cloud data sources for data changes.
-2. Builds a vector index for the data.
+1. Veri değişiklikleri için çeşitli bulut veri kaynaklarını izler.
+2. Veriler için bir vektör indeksi oluşturur.
 
-To have your own document processing pipeline check the [hosted offering](https://pathway.com/solutions/ai-pipelines) or [build your own](https://pathway.com/developers/user-guide/llm-xpack/vectorstore_pipeline/) by following this notebook.
+Kendi belge işleme hattınıza sahip olmak için [barındırılan teklife](https://pathway.com/solutions/ai-pipelines) göz atın veya bu not defterini takip ederek [kendi hattınızı oluşturun](https://pathway.com/developers/user-guide/llm-xpack/vectorstore_pipeline/).
 
-We will connect to the index using `llama_index.retrievers.pathway.PathwayRetriever` retriever, which implements the `retrieve` interface.
+İndekse, `retrieve` arayüzünü uygulayan `llama_index.retrievers.pathway.PathwayRetriever` erişicisini kullanarak bağlanacağız.
 
-The basic pipeline described in this document allows to effortlessly build a simple index of files stored in a cloud location. However, Pathway provides everything needed to build realtime data pipelines and apps, including SQL-like able operations such as groupby-reductions and joins between disparate data sources, time-based grouping and windowing of data, and a wide array of connectors.
+Bu belgede açıklanan temel hat, bir bulut konumunda depolanan dosyaların basit bir indeksini zahmetsizce oluşturmanıza olanak tanır. Ancak Pathway; farklı veri kaynakları arasında birleştirmeler (joins) ve gruplandırılmış indirgemeler (groupby-reductions) gibi SQL benzeri işlemler, verilerin zamana dayalı gruplandırılması ve pencerelenmesi (windowing) ve çok çeşitli bağlayıcılar (connectors) dahil olmak üzere gerçek zamanlı veri hatları ve uygulamaları oluşturmak için gereken her şeyi sağlar.
 
-For more details about Pathway data ingestion pipeline and vector store, visit [vector store pipeline](https://pathway.com/developers/showcases/vectorstore_pipeline).
+Pathway veri alımı (ingestion) hattı ve vektör deposu hakkında daha fazla ayrıntı için [vektör deposu hattı (vector store pipeline)](https://pathway.com/developers/showcases/vectorstore_pipeline) sayfasını ziyaret edin.
 
-## Prerequisites
+## Ön Koşullar (Prerequisites)
 
-To use `PathwayRetrievier` you must install `llama-index-retrievers-pathway` package.
+`PathwayRetriever`ı kullanmak için `llama-index-retrievers-pathway` paketini kurmalısınız.
 
-```
+```bash
 !pip install llama-index-retrievers-pathway
 ```
 
-## Create Retriever for llama-index
+## llama-index için Erişici Oluşturma (Create Retriever for llama-index)
 
-To instantiate and configure `PathwayRetriever` you need to provide either the `url` or the `host` and `port` of your document indexing pipeline. In the code below we use a publicly available [demo pipeline](https://pathway.com/solutions/ai-pipelines#try-it-out), which REST API you can access at `https://demo-document-indexing.pathway.stream`. This demo ingests documents from [Google Drive](https://drive.google.com/drive/u/0/folders/1cULDv2OaViJBmOfG5WB0oWcgayNrGtVs) and [Sharepoint](https://navalgo.sharepoint.com/sites/ConnectorSandbox/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FConnectorSandbox%2FShared%20Documents%2FIndexerSandbox\&p=true\&ga=1) and maintains an index for retrieving documents.
+`PathwayRetriever`ı başlatmak ve yapılandırmak için belge indeksleme hattınızın `url` değerini veya `host` ve `port` bilgilerini sağlamanız gerekir. Aşağıdaki kodda, REST API'sine `https://demo-document-indexing.pathway.stream` adresinden erişebileceğiniz herkese açık bir [demo hattı](https://pathway.com/solutions/ai-pipelines#try-it-out) kullanıyoruz. Bu demo; [Google Drive](https://drive.google.com/drive/u/0/folders/1cULDv2OaViJBmOfG5WB0oWcgayNrGtVs) ve [Sharepoint](https://navalgo.sharepoint.com/sites/ConnectorSandbox/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FConnectorSandbox%2FShared%20Documents%2FIndexerSandbox\&p=true\&ga=1) üzerinden belgeleri alır ve belgeleri getirmek için bir indeksi güncel tutar.
 
-```
+```python
 from llama_index.retrievers.pathway import PathwayRetriever
 
 
 retriever = PathwayRetriever(
     url="https://demo-document-indexing.pathway.stream"
 )
-retriever.retrieve(str_or_query_bundle="what is pathway")
+retriever.retrieve(str_or_query_bundle="pathway nedir")
 ```
 
-**Your turn!** [Get your pipeline](https://pathway.com/solutions/ai-pipelines) or upload [new documents](https://chat-realtime-sharepoint-gdrive.demo.pathway.com/) to the demo pipeline and retry the query!
+**Sıra sizde!** [Kendi hattınızı edinin](https://pathway.com/solutions/ai-pipelines) veya demo hattına [yeni belgeler](https://chat-realtime-sharepoint-gdrive.demo.pathway.com/) yükleyin ve sorguyu tekrar deneyin!
 
-## Use in Query Engine
+## Sorgu Motorunda Kullanım (Use in Query Engine)
 
-```
+```python
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 
@@ -57,34 +57,34 @@ query_engine = RetrieverQueryEngine.from_args(
 )
 ```
 
-```
-response = query_engine.query("Tell me about Pathway")
+```python
+response = query_engine.query("Bana Pathway hakkında bilgi ver")
 print(str(response))
 ```
 
-## Building your own data processing pipeline
+## Kendi veri işleme hattınızı oluşturma (Building your own data processing pipeline)
 
-### Prerequisites
+### Ön Koşullar (Prerequisites)
 
-Install `pathway` package. Then download sample data.
+`pathway` paketini kurun. Ardından örnek verileri indirin.
 
-```
+```bash
 %pip install pathway
 %pip install llama-index-embeddings-openai
 ```
 
-```
+```bash
 !mkdir -p 'data/'
 !wget 'https://gist.githubusercontent.com/janchorowski/dd22a293f3d99d1b726eedc7d46d2fc0/raw/pathway_readme.md' -O 'data/pathway_readme.md'
 ```
 
-### Define data sources tracked by Pathway
+### Pathway tarafından izlenen veri kaynaklarını tanımlama (Define data sources tracked by Pathway)
 
-Pathway can listen to many sources simultaneously, such as local files, S3 folders, cloud storage and any data stream for data changes.
+Pathway; yerel dosyalar, S3 klasörleri, bulut depolama ve veri değişiklikleri için herhangi bir veri akışı gibi birçok kaynağı aynı anda dinleyebilir.
 
-See [pathway-io](https://pathway.com/developers/api-docs/pathway-io) for more information.
+Daha fazla bilgi için [pathway-io](https://pathway.com/developers/api-docs/pathway-io) sayfasını ziyaret edin.
 
-```
+```python
 import pathway as pw
 
 
@@ -95,24 +95,25 @@ data_sources.append(
         format="binary",
         mode="streaming",
         with_metadata=True,
-    )  # This creates a `pathway` connector that tracks
-    # all the files in the ./data directory
+    )  # Bu, ./data dizinindeki tüm dosyaları izleyen 
+    # bir `pathway` bağlayıcısı (connector) oluşturur.
 )
 
 
-# This creates a connector that tracks files in Google drive.
-# please follow the instructions at https://pathway.com/developers/tutorials/connectors/gdrive-connector/ to get credentials
+# Bu, Google Drive'daki dosyaları izleyen bir bağlayıcı oluşturur.
+# Kimlik bilgilerini (credentials) almak için lütfen https://pathway.com/developers/tutorials/connectors/gdrive-connector/ 
+# adresindeki talimatları izleyin.
 # data_sources.append(
 #     pw.io.gdrive.read(object_id="17H4YpBOAKQzEJ93xmC2z170l0bP2npMy", service_user_credentials_file="credentials.json", with_metadata=True))
 ```
 
-### Create the document indexing pipeline
+### Belge indeksleme hattını oluşturma (Create the document indexing pipeline)
 
-Let us create the document indexing pipeline. The `transformations` should be a list of `TransformComponent`s ending with an `Embedding` transformation.
+Belge indeksleme hattını oluşturalım. `transformations`, bir `Embedding` dönüşümü ile biten bir `TransformComponent` listesi olmalıdır.
 
-In this example, let’s first split the text first using `TokenTextSplitter`, then embed with `OpenAIEmbedding`.
+Bu örnekte metni önce `TokenTextSplitter` kullanarak bölelim, ardından `OpenAIEmbedding` ile gömelim.
 
-```
+```python
 from pathway.xpacks.llm.vector_store import VectorStoreServer
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.node_parser import TokenTextSplitter
@@ -137,24 +138,26 @@ processing_pipeline = VectorStoreServer.from_llamaindex_components(
 )
 
 
-# Define the Host and port that Pathway will be on
+# Pathway'in üzerinde olacağı Host ve port bilgilerini tanımlayın
 PATHWAY_HOST = "127.0.0.1"
 PATHWAY_PORT = 8754
 
 
-# `threaded` runs pathway in detached mode, we have to set it to False when running from terminal or container
-# for more information on `with_cache` check out https://pathway.com/developers/api-docs/persistence-api
+# `threaded` parametresi Pathway'i ayrılmış (detached) modda çalıştırır; 
+# terminalden veya bir konteynerden çalıştırırken bunu False olarak ayarlamalıyız.
+# `with_cache` hakkında daha fazla bilgi için bkz. https://pathway.com/developers/api-docs/persistence-api
 processing_pipeline.run_server(
     host=PATHWAY_HOST, port=PATHWAY_PORT, with_cache=False, threaded=True
 )
 ```
 
-### Connect the retriever to the custom pipeline
+### Erişiciyi özel hatta bağlama (Connect the retriever to the custom pipeline)
 
-```
+```python
 from llama_index.retrievers.pathway import PathwayRetriever
 
 
+# Erişiciyi (retriever) oluştur ve host/port bilgilerini ver
 retriever = PathwayRetriever(host=PATHWAY_HOST, port=PATHWAY_PORT)
-retriever.retrieve(str_or_query_bundle="what is pathway")
+retriever.retrieve(str_or_query_bundle="pathway nedir")
 ```

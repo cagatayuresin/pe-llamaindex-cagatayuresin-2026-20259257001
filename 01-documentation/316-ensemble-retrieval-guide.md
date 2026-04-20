@@ -322,7 +322,7 @@ Bir değerlendirme kıyaslama veri seti tanımlıyoruz/yüklüyoruz ve ardından
 
 **UYARI**: Bu işlem, özellikle GPT-4 ile *pahalı* olabilir. Dikkatli olun ve örneklem boyutunu bütçenize göre ayarlayın.
 
-```
+```python
 from llama_index.core.evaluation import DatasetGenerator, QueryResponseDataset
 from llama_index.llms.openai import OpenAI
 import nest_asyncio
@@ -331,10 +331,10 @@ import nest_asyncio
 nest_asyncio.apply()
 ```
 
-```
-# NOTE: run this if the dataset isn't already saved
+```python
+# NOT: veri seti henüz kaydedilmemişse bunu çalıştırın
 eval_llm = OpenAI(model="gpt-4")
-# generate questions from the largest chunks (1024)
+# en büyük parçalardan (1024) sorular oluşturun
 dataset_generator = DatasetGenerator(
     nodes_list[-1],
     llm=eval_llm,
@@ -343,24 +343,24 @@ dataset_generator = DatasetGenerator(
 )
 ```
 
-```
+```python
 eval_dataset = await dataset_generator.agenerate_dataset_from_nodes(num=60)
 ```
 
-```
+```python
 eval_dataset.save_json("data/llama2_eval_qr_dataset.json")
 ```
 
-```
-# optional
+```python
+# isteğe bağlı
 eval_dataset = QueryResponseDataset.from_json(
     "data/llama2_eval_qr_dataset.json"
 )
 ```
 
-### Compare Results
+### Sonuçları Karşılaştırın (Compare Results)
 
-```
+```python
 import asyncio
 import nest_asyncio
 
@@ -368,7 +368,7 @@ import nest_asyncio
 nest_asyncio.apply()
 ```
 
-```
+```python
 from llama_index.core.evaluation import (
     CorrectnessEvaluator,
     SemanticSimilarityEvaluator,
@@ -378,7 +378,7 @@ from llama_index.core.evaluation import (
 )
 
 
-# NOTE: can uncomment other evaluators
+# NOT: diğer değerlendiricilerin yorumları kaldırılabilir
 evaluator_c = CorrectnessEvaluator(llm=eval_llm)
 evaluator_s = SemanticSimilarityEvaluator(llm=eval_llm)
 evaluator_r = RelevancyEvaluator(llm=eval_llm)
@@ -388,7 +388,7 @@ evaluator_f = FaithfulnessEvaluator(llm=eval_llm)
 pairwise_evaluator = PairwiseComparisonEvaluator(llm=eval_llm)
 ```
 
-```
+```python
 from llama_index.core.evaluation.eval_utils import (
     get_responses,
     get_results_df,
@@ -404,27 +404,27 @@ qr_pairs = eval_dataset.qr_pairs
 ref_response_strs = [r for (_, r) in qr_pairs]
 
 
-# resetup base query engine and ensemble query engine
-# base query engine
+# temel sorgu motorunu ve topluluk sorgu motorunu yeniden kurun
+# temel sorgu motoru (base query engine)
 base_query_engine = vector_indices[-1].as_query_engine(similarity_top_k=2)
-# ensemble query engine
+# topluluk sorgu motoru (ensemble query engine)
 reranker = CohereRerank(top_n=4)
 query_engine = RetrieverQueryEngine(retriever, node_postprocessors=[reranker])
 ```
 
-```
+```python
 base_pred_responses = get_responses(
     eval_qs[:max_samples], base_query_engine, show_progress=True
 )
 ```
 
-```
+```python
 pred_responses = get_responses(
     eval_qs[:max_samples], query_engine, show_progress=True
 )
 ```
 
-```
+```python
 import numpy as np
 
 
@@ -432,17 +432,17 @@ pred_response_strs = [str(p) for p in pred_responses]
 base_pred_response_strs = [str(p) for p in base_pred_responses]
 ```
 
-```
+```python
 evaluator_dict = {
-    "correctness": evaluator_c,
-    "faithfulness": evaluator_f,
+    "doğruluk": evaluator_c,
+    "bağlılık": evaluator_f,
     # "relevancy": evaluator_r,
-    "semantic_similarity": evaluator_s,
+    "semantik_benzerlik": evaluator_s,
 }
 batch_runner = BatchEvalRunner(evaluator_dict, workers=1, show_progress=True)
 ```
 
-```
+```python
 eval_results = await batch_runner.aevaluate_responses(
     queries=eval_qs[:max_samples],
     responses=pred_responses[:max_samples],
@@ -450,7 +450,7 @@ eval_results = await batch_runner.aevaluate_responses(
 )
 ```
 
-```
+```python
 base_eval_results = await batch_runner.aevaluate_responses(
     queries=eval_qs[:max_samples],
     responses=base_pred_responses[:max_samples],
@@ -458,16 +458,16 @@ base_eval_results = await batch_runner.aevaluate_responses(
 )
 ```
 
-```
+```python
 results_df = get_results_df(
     [eval_results, base_eval_results],
-    ["Ensemble Retriever", "Base Retriever"],
-    ["correctness", "faithfulness", "semantic_similarity"],
+    ["Topluluk Erişicisi", "Temel Erişici"],
+    ["doğruluk", "bağlılık", "semantik_benzerlik"],
 )
 display(results_df)
 ```
 
-```
+```css
 .dataframe tbody tr th {
     vertical-align: top;
 }
@@ -478,12 +478,12 @@ display(results_df)
 }
 ```
 
-|   | names              | correctness | faithfulness | semantic\_similarity |
+|   | names              | doğruluk | bağlılık | semantik\_benzerlik |
 | - | ------------------ | ----------- | ------------ | -------------------- |
-| 0 | Ensemble Retriever | 4.375000    | 0.983333     | 0.964546             |
-| 1 | Base Retriever     | 4.066667    | 0.983333     | 0.956692             |
+| 0 | Topluluk Erişicisi | 4.375000    | 0.983333     | 0.964546             |
+| 1 | Temel Erişici      | 4.066667    | 0.983333     | 0.956692             |
 
-```
+```python
 batch_runner = BatchEvalRunner(
     {"pairwise": pairwise_evaluator}, workers=3, show_progress=True
 )
@@ -496,16 +496,16 @@ pairwise_eval_results = await batch_runner.aevaluate_response_strs(
 )
 ```
 
-```
+```python
 results_df = get_results_df(
     [eval_results, base_eval_results],
-    ["Ensemble Retriever", "Base Retriever"],
+    ["Topluluk Erişicisi", "Temel Erişici"],
     ["pairwise"],
 )
 display(results_df)
 ```
 
-```
+```css
 .dataframe tbody tr th {
     vertical-align: top;
 }
@@ -518,4 +518,4 @@ display(results_df)
 
 |   | names               | pairwise |
 | - | ------------------- | -------- |
-| 0 | Pairwise Comparison | 0.5      |
+| 0 | İkili Karşılaştırma | 0.5      |

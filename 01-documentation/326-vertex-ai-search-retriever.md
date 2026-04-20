@@ -1,31 +1,31 @@
-# Vertex AI Search Retriever
+# Vertex AI Arama Erişicisi (Vertex AI Search Retriever)
 
 ---
-title: Vertex AI Search Retriever
- | LlamaIndex OSS Documentation
+title: Vertex AI Arama Erişicisi (Vertex AI Search Retriever)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook walks you through how to setup a Retriever that can fetch from Vertex AI search datastore
+Bu not defteri, Vertex AI arama veri deposundan (datastore) veri getirebilen bir Erişicinin (Retriever) nasıl kurulacağını anlatır.
 
-### Pre-requirements
+### Ön Koşullar (Pre-requirements)
 
-- Set up a Google Cloud project
-- Set up a Vertex AI Search datastore
-- Enable Vertex AI API
+- Bir Google Cloud projesi kurun
+- Bir Vertex AI Search veri deposu kurun
+- Vertex AI API'sini etkinleştirin
 
-### Install library
+### Kütüphaneyi Yükle (Install library)
 
-```
+```bash
 %pip install llama-index-retrievers-vertexai-search
 ```
 
-### Restart current runtime
+### Mevcut Çalışma Zamanını Yeniden Başlat (Restart current runtime)
 
-To use the newly installed packages in this Jupyter runtime, you must restart the runtime. You can do this by running the cell below, which will restart the current kernel.
+Yeni yüklenen paketleri bu Jupyter çalışma zamanında kullanmak için çalışma zamanını yeniden başlatmalısınız. Bunu, mevcut çekirdeği (kernel) yeniden başlatacak olan aşağıdaki hücreyi çalıştırarak yapabilirsiniz.
 
-```
-# Colab only
-# Automatically restart kernel after installs so that your environment can access the new packages
+```python
+# Yalnızca Colab için
+# Ortamınızın yeni paketlere erişebilmesi için yüklemelerden sonra çekirdeği otomatik olarak yeniden başlatın
 import IPython
 
 
@@ -33,12 +33,12 @@ app = IPython.Application.instance()
 app.kernel.do_shutdown(True)
 ```
 
-### Authenticate your notebook environment (Colab only)
+### Not Defteri Ortamınızı Doğrulayın (Authenticate your notebook environment - Sadece Colab)
 
-If you are running this notebook on Google Colab, you will need to authenticate your environment. To do this, run the new cell below. This step is not required if you are using [Vertex AI Workbench](https://cloud.google.com/vertex-ai-workbench).
+Bu not defterini Google Colab üzerinde çalıştırıyorsanız, ortamınızı doğrulamanız gerekecektir. Bunun için aşağıdaki yeni hücreyi çalıştırın. [Vertex AI Workbench](https://cloud.google.com/vertex-ai-workbench) kullanıyorsanız bu adım gerekli değildir.
 
-```
-# Colab only
+```python
+# Yalnızca Colab için
 import sys
 
 
@@ -49,26 +49,26 @@ if "google.colab" in sys.modules:
     auth.authenticate_user()
 ```
 
-```
-# If you're using JupyterLab instance, uncomment and run the below code.
+```python
+# Eğer bir JupyterLab örneği (instance) kullanıyorsanız, aşağıdaki kodun yorumunu kaldırın ve çalıştırın.
 #!gcloud auth login
 ```
 
-```
+```python
 from llama_index.retrievers.vertexai_search import VertexAISearchRetriever
 
 
-# Please note it's underscore '_' in vertexai_search
+# Lütfen vertexai_search kısmında alt çizgi '_' kullanıldığına dikkat edin
 ```
 
-### Set Google Cloud project information and initialize Vertex AI SDK
+### Google Cloud Proje Bilgilerini Ayarlayın ve Vertex AI SDK'sını Başlatın (Set Google Cloud project information and initialize Vertex AI SDK)
 
-To get started using Vertex AI, you must have an existing Google Cloud project and [enable the Vertex AI API](https://console.cloud.google.com/flows/enableapi?apiid=aiplatform.googleapis.com).
+Vertex AI kullanmaya başlamak için mevcut bir Google Cloud projeniz olmalı ve [Vertex AI API'sini etkinleştirmelisiniz](https://console.cloud.google.com/flows/enableapi?apiid=aiplatform.googleapis.com).
 
-Learn more about [setting up a project and a development environment](https://cloud.google.com/vertex-ai/docs/start/cloud-environment).
+[Bir proje ve geliştirme ortamı kurma](https://cloud.google.com/vertex-ai/docs/start/cloud-environment) hakkında daha fazla bilgi edinin.
 
-```
-PROJECT_ID = "{your project id}"  # @param {type:"string"}
+```python
+PROJECT_ID = "{proje kimliğiniz}"  # @param {type:"string"}
 LOCATION = "us-central1"  # @param {type:"string"}
 import vertexai
 
@@ -76,14 +76,14 @@ import vertexai
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 ```
 
-### Test Structured datastore
+### Yapılandırılmış Veri Deposunu Test Et (Test Structured datastore)
 
-```
-DATA_STORE_ID = "{your id}"  # @param {type:"string"}
+```python
+DATA_STORE_ID = "{id'niz}"  # @param {type:"string"}
 LOCATION_ID = "global"
 ```
 
-```
+```python
 struct_retriever = VertexAISearchRetriever(
     project_id=PROJECT_ID,
     data_store_id=DATA_STORE_ID,
@@ -92,23 +92,23 @@ struct_retriever = VertexAISearchRetriever(
 )
 ```
 
-```
+```python
 query = "harry potter"
 retrieved_results = struct_retriever.retrieve(query)
 ```
 
-```
+```python
 print(retrieved_results[0])
 ```
 
-### Test Unstructured datastore
+### Yapılandırılmamış Veri Deposunu Test Et (Test Unstructured datastore)
 
-```
-DATA_STORE_ID = "{your id}"
+```python
+DATA_STORE_ID = "{id'niz}"
 LOCATION_ID = "global"
 ```
 
-```
+```python
 unstruct_retriever = VertexAISearchRetriever(
     project_id=PROJECT_ID,
     data_store_id=DATA_STORE_ID,
@@ -117,19 +117,19 @@ unstruct_retriever = VertexAISearchRetriever(
 )
 ```
 
-```
+```python
 query = "alphabet 2018 earning"
 retrieved_results2 = unstruct_retriever.retrieve(query)
 ```
 
-```
+```python
 print(retrieved_results2[0])
 ```
 
-### Test Website datastore
+### Web Sitesi Veri Deposunu Test Et (Test Website datastore)
 
-```
-DATA_STORE_ID = "{your id}"
+```python
+DATA_STORE_ID = "{id'niz}"
 LOCATION_ID = "global"
 website_retriever = VertexAISearchRetriever(
     project_id=PROJECT_ID,
@@ -139,43 +139,43 @@ website_retriever = VertexAISearchRetriever(
 )
 ```
 
-```
-query = "what's diamaxol"
+```python
+query = "diamaxol nedir"
 retrieved_results3 = website_retriever.retrieve(query)
 ```
 
-```
+```python
 print(retrieved_results3[0])
 ```
 
-## Use in Query Engine
+## Sorgu Motorunda Kullanım (Use in Query Engine)
 
-```
-# import modules needed
+```python
+# gerekli modülleri içe aktar
 from llama_index.core import Settings
 from llama_index.llms.vertex import Vertex
 from llama_index.embeddings.vertex import VertexTextEmbedding
 ```
 
-```
+```python
 vertex_gemini = Vertex(
     model="gemini-1.5-pro",
     temperature=0,
     context_window=100000,
     additional_kwargs={},
 )
-# setup the index/query llm
+# indeks/sorgu llm'ini kur
 Settings.llm = vertex_gemini
 ```
 
-```
+```python
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 
 query_engine = RetrieverQueryEngine.from_args(struct_retriever)
 ```
 
-```
-response = query_engine.query("Tell me about harry potter")
+```python
+response = query_engine.query("Bana Harry Potter'dan bahset")
 print(str(response))
 ```

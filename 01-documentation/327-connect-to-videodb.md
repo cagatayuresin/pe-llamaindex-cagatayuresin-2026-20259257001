@@ -1,62 +1,56 @@
-# connect to VideoDB
+# VideoDB'ye Bağlanma (connect to VideoDB)
 
 ---
-title: connect to VideoDB
- | LlamaIndex OSS Documentation
+title: VideoDB'ye Bağlanma (connect to VideoDB)
+ | LlamaIndex OSS Belgeleri
 ---
-
-conn = connect() coll = conn.create\_collection( name=“VideoDB Retrievers”, description=“VideoDB Retrievers” )
-
-# upload videos to default collection in VideoDB
-
-print(“Uploading Video”) video = coll.upload(url=“<https://www.youtube.com/watch?v=aRgP3n0XiMc>”) print(f”Video uploaded with ID: {video.id}“)
-
-# video = coll.get\_video(“m-b6230808-307d-468a-af84-863b2c321f05”)
-
-````
-    Uploading Video
-    Video uploaded with ID: m-a758f9bb-f769-484a-9d54-02417ccfe7e6
-
-
-
-
-> * `coll = conn.get_collection()` : Returns default collection object.
-> * `coll.get_videos()` : Returns list of all the videos in a collections.
-> * `coll.get_video(video_id)`: Returns Video object from given`video_id`.
-
-
-### 🗣️ Step 2: Indexing & Search from Spoken Content
-
-
-Video can be viewed as data with different modalities. First, we will work with the `spoken content`.
-
-
-#### 🗣️ Indexing Spoken Content
-
-
-
 
 ```python
-print("Indexing spoken content in Video...")
-video.index_spoken_words()
-````
-
+conn = connect()
+coll = conn.create_collection(name="VideoDB Erişicileri", description="VideoDB Erişicileri")
 ```
-Indexing spoken content in Video...
 
+# VideoDB'deki varsayılan koleksiyona videoları yükleyin
 
+```python
+print("Video Yükleniyor")
+video = coll.upload(url="https://www.youtube.com/watch?v=aRgP3n0XiMc")
+print(f"Video şu kimlikle yüklendi: {video.id}")
+```
 
+```text
+    Video Yükleniyor
+    Video şu kimlikle yüklendi: m-a758f9bb-f769-484a-9d54-02417ccfe7e6
+```
+
+> * `coll = conn.get_collection()` : Varsayılan koleksiyon nesnesini döndürür.
+> * `coll.get_videos()` : Bir koleksiyondaki tüm videoların listesini döndürür.
+> * `coll.get_video(video_id)`: Verilen `video_id` değerine sahip Video nesnesini döndürür.
+
+### 🗣️ Adım 2: Konuşulan İçerikten İndeksleme ve Arama (Step 2: Indexing & Search from Spoken Content)
+
+Video, farklı modalitelere sahip veriler olarak görülebilir. İlk olarak `konuşulan içerik` üzerinde çalışacağız.
+
+#### 🗣️ Konuşulan İçeriği İndeksleme (Indexing Spoken Content)
+
+```python
+print("Videodaki konuşulan içerik indeksleniyor...")
+video.index_spoken_words()
+```
+
+```text
+Videodaki konuşulan içerik indeksleniyor...
 
 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:48<00:00,  2.08it/s]
 ```
 
-#### 🗣️ Retrieving Relevant Nodes from Spoken Index
+#### 🗣️ Konuşma İndeksinden İlgili Düğümleri Getirme (Retrieving Relevant Nodes from Spoken Index)
 
-We will use the `VideoDBRetriever` to retrieve relevant nodes from our indexed content. The video ID should be passed as a parameter, and the `index_type` should be set to `IndexType.spoken_word`.
+İndekslenmiş içeriğimizden ilgili düğümleri getirmek için `VideoDBRetriever` kullanacağız. Video kimliği bir parametre olarak geçilmeli ve `index_type` değeri `IndexType.spoken_word` olarak ayarlanmalıdır.
 
-You can configure the `score_threshold` and `result_threshold` after experimentation.
+Deney yaptıktan sonra `score_threshold` ve `result_threshold` değerlerini yapılandırabilirsiniz.
 
-```
+```python
 from llama_index.retrievers.videodb import VideoDBRetriever
 from videodb import SearchType, IndexType
 
@@ -70,15 +64,15 @@ spoken_retriever = VideoDBRetriever(
 )
 
 
-spoken_query = "Nationwide exams"
+spoken_query = "Ülke çapındaki sınavlar"
 nodes_spoken_index = spoken_retriever.retrieve(spoken_query)
 ```
 
-#### 🗣️️️ Viewing the result : 💬 Text
+#### 🗣️ Sonucu Görüntüleme: 💬 Metin (Viewing the result : Text)
 
-We will use the relevant nodes and synthesize the response using llamaindex
+İlgili düğümleri kullanacağız ve llamaindex kullanarak yanıtı sentezleyeceğiz.
 
-```
+```python
 from llama_index.core import get_response_synthesizer
 
 
@@ -91,17 +85,17 @@ response = response_synthesizer.synthesize(
 print(response)
 ```
 
+```text
+Ülke çapındaki sınavların sonuçları tüm gün merakla beklendi.
 ```
-The results of the nationwide exams were eagerly awaited all day.
-```
 
-#### 🗣️ Viewing the result : 🎥 Video Clip
+#### 🗣️ Sonucu Görüntüleme: 🎥 Video Klibi (Viewing the result : Video Clip)
 
-For each retrieved node that is relevant to the query, the `start` and `end` fields in the metadata represent the time interval covered by the node.
+Sorguyla ilgili getirilen her düğüm için, metaverideki `start` (başlangıç) ve `end` (bitiş) alanları düğümün kapsadığı zaman aralığını temsil eder.
 
-We will use VideoDB’s Programmable Stream to generate a stream of relevant video clips based on the timestamps of these nodes.
+Bu düğümlerin zaman damgalarına dayalı ilgili video kliplerinden oluşan bir akış oluşturmak için VideoDB'nin Programlanabilir Akışını (Programmable Stream) kullanacağız.
 
-```
+```python
 from videodb import play_stream
 
 
@@ -115,53 +109,51 @@ stream_link = video.generate_stream(results)
 play_stream(stream_link)
 ```
 
-```
+```text
 'https://console.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/3c108acd-e459-494a-bc17-b4768c78e5df.m3u8'
 ```
 
-### 📸️ Step3 : Index & Search from Visual Content
+### 📸️ Adım 3: Görsel İçerikten İndeksleme ve Arama (Step 3: Index & Search from Visual Content)
 
-#### 📸 Indexing Visual Content
+#### 📸 Görsel İçeriği İndeksleme (Indexing Visual Content)
 
-To learn more about Scene Index, explore the following guides:
+Sahne İndeksi (Scene Index) hakkında daha fazla bilgi edinmek için aşağıdaki kılavuzları inceleyin:
 
-- [Quickstart Guide](https://github.com/video-db/videodb-cookbook/blob/main/quickstart/Scene%20Index%20QuickStart.ipynb) guide provides a step-by-step introduction to Scene Index. It’s ideal for getting started quickly and understanding the primary functions.
+- [Hızlı Başlangıç Kılavuzu](https://github.com/video-db/videodb-cookbook/blob/main/quickstart/Scene%20Index%20QuickStart.ipynb): Sahne İndeksine adım adım giriş sağlar. Hızlıca başlamak ve temel işlevleri anlamak için idealdir.
 
-- [Scene Extraction Options Guide](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/playground_scene_extraction.ipynb) delves deeper into the various options available for scene extraction within Scene Index. It covers advanced settings, customization features, and tips for optimizing scene extraction based on different needs and preferences.
+- [Sahne Çıkarma Seçenekleri Kılavuzu](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/playground_scene_extraction.ipynb): Sahne İndeksi içindeki sahne çıkarma için mevcut çeşitli seçenekleri derinlemesine inceler. Gelişmiş ayarları, özelleştirme özelliklerini ve farklı ihtiyaç ve tercihlere göre sahne çıkarmayı optimize etmek için ipuçlarını kapsar.
 
-```
+```python
 from videodb import SceneExtractionType
 
 
-print("Indexing Visual content in Video...")
+print("Videodaki Görsel içerik indeksleniyor...")
 
 
-# Index scene content
+# Sahne içeriğini indeksle
 index_id = video.index_scenes(
     extraction_type=SceneExtractionType.shot_based,
     extraction_config={"frame_count": 3},
-    prompt="Describe the scene in detail",
+    prompt="Sahneyi detaylıca tanımla",
 )
 video.get_scene_index(index_id)
 
 
-print(f"Scene Index successful with ID: {index_id}")
+print(f"Sahne İndeksi şu kimlikle başarılı: {index_id}")
 ```
 
-```
-Indexing Visual content in Video...
-Scene Index successful with ID: 990733050d6fd4f5
+```text
+Videodaki Görsel içerik indeksleniyor...
+Sahne İndeksi şu kimlikle başarılı: 990733050d6fd4f5
 ```
 
-#### 📸️ Retrieving Relevant Nodes from Scene Index
+#### 📸️ Sahne İndeksinden İlgili Düğümleri Getirme (Retrieving Relevant Nodes from Scene Index)
 
-Just like we used `VideoDBRetriever` for the spoken index, we will use it for the scene index. Here, we will need to set `index_type` to `IndexType.scene` and pass the `scene_index_id`
+Konuşma indeksi için `VideoDBRetriever`ı nasıl kullandıysak, sahne indeksi için de öyle kullanacağız. Burada, `index_type` değerini `IndexType.scene` olarak ayarlamamız ve `scene_index_id` değerini geçmemiz gerekecektir.
 
-```
+```python
 from llama_index.retrievers.videodb import VideoDBRetriever
 from videodb import SearchType, IndexType
-
-
 
 
 scene_retriever = VideoDBRetriever(
@@ -174,13 +166,13 @@ scene_retriever = VideoDBRetriever(
 )
 
 
-scene_query = "accident scenes"
+scene_query = "kaza sahneleri"
 nodes_scene_index = scene_retriever.retrieve(scene_query)
 ```
 
-#### 📸️️️ Viewing the result : 💬 Text
+#### 📸️️️ Sonucu Görüntüleme: 💬 Metin (Viewing the result : Text)
 
-```
+```python
 from llama_index.core import get_response_synthesizer
 
 
@@ -193,13 +185,13 @@ response = response_synthesizer.synthesize(
 print(response)
 ```
 
-```
-The scenes described do not depict accidents but rather dynamic and intense scenarios involving motion, urgency, and tension in urban settings at night.
+```text
+Tanımlanan sahneler kazaları tasvir etmiyor, aksine geceleri kentsel ortamlarda hareket, aciliyet ve gerilim içeren dinamik ve yoğun senaryoları betimliyor.
 ```
 
-#### 📸 ️ Viewing the result : 🎥 Video Clip
+#### 📸 ️ Sonucu Görüntüleme: 🎥 Video Klibi (Viewing the result : Video Clip)
 
-```
+```python
 from videodb import play_stream
 
 
@@ -213,65 +205,61 @@ stream_link = video.generate_stream(results)
 play_stream(stream_link)
 ```
 
-```
+```text
 'https://console.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/ae74e9da-13bf-4056-8cfa-0267087b74d7.m3u8'
 ```
 
-### 🛠️ Step4: Simple Multimodal RAG - Combining Results of Both modalities
+### 🛠️ Adım 4: Basit Çok Modlu RAG - Her iki modalitenin sonuçlarını birleştirme (Step 4: Simple Multimodal RAG)
 
-We want to unlock in multimodal queries in our video library like this:
+Video kitaplığımızdaki çok modlu sorguların kilidini bu şekilde açmak istiyoruz:
 
-> 📸🗣️ “*Show me 1.Accident Scene 2.Discussion about nationwide exams*”
+> 📸🗣️ “*Bana şunları göster: 1.Kaza Sahnesi 2.Ülke çapındaki sınavlar hakkındaki tartışma*”
 
-There are lots of way to do create a multimodal RAG, for the sake of simplicity we are choosing a simple approach:
+Çok modlu bir RAG oluşturmanın birçok yolu vardır, basitlik açısından basit bir yaklaşım seçiyoruz:
 
-1. 🧩 **Query Transformation**: Divide query into two parts that can be used with respective scene and spoken indexes.
-2. 🔎 **Finding Relevant nodes for each modality**: Using `VideoDBRetriever` find relevant nodes from Spoken Index and Scene Index
-3. ✏️ **Viewing the result : Text**: Use Relevant Nodes to sythesize a text reponse Integrating the results from both indexes for precise video segment identification.
-4. 🎥 **Viewing the result : Video Clip**: Integrating the results from both indexes for precise video segment identification.
+1. 🧩 **Sorgu Dönüşümü (Query Transformation)**: Sorguyu, ilgili sahne ve konuşma indeksleriyle kullanılabilecek iki bölüme ayırın.
+2. 🔎 **Her modalite için ilgili düğümleri bulma**: `VideoDBRetriever` kullanarak Konuşma İndeksi ve Sahne İndeksinden ilgili düğümleri bulun.
+3. ✏️ **Sonucu görüntüleme: Metin**: Hassas video segmenti tanımlaması için her iki indeksten gelen sonuçları entegre ederek metin tabanlı bir yanıt sentezlemek üzere İlgili Düğümleri kullanın.
+4. 🎥 **Sonucu görüntüleme: Video Klibi**: Hassas video segmenti tanımlaması için her iki indeksten gelen sonuçları entegre edin.
 
-> To checkout more advanced multimodal techniques, checkout out [advnaced multimodal guides](https://docs.videodb.io/multimodal-guide-90)
+> Daha gelişmiş çok modlu teknikleri incelemek için [gelişmiş çok modlu kılavuzlara](https://docs.videodb.io/multimodal-guide-90) göz atın.
 
-#### 🧩 Query Transformation
+#### 🧩 Sorgu Dönüşümü (Query Transformation)
 
-```
+```python
 from llama_index.llms.openai import OpenAI
-
-
 
 
 def split_spoken_visual_query(query):
     transformation_prompt = """
-    Divide the following query into two distinct parts: one for spoken content and one for visual content. The spoken content should refer to any narration, dialogue, or verbal explanations and The visual content should refer to any images, videos, or graphical representations. Format the response strictly as:\nSpoken: <spoken_query>\nVisual: <visual_query>\n\nQuery: {query}
+    Aşağıdaki sorguyu iki ayrı parçaya bölün: biri konuşulan içerik için, diğeri görsel içerik için. Konuşulan içerik herhangi bir anlatım, diyalog veya sözlü açıklamaya atıfta bulunmalı; görsel içerik ise herhangi bir resim, video veya grafiksel temsile atıfta bulunmalıdır. Yanıtı kesinlikle şu şekilde formatlayın:\nKonuşulan (Spoken): <konuşulan_sorgu>\nGörsel (Visual): <görsel_sorgu>\n\nSorgu: {query}
     """
     prompt = transformation_prompt.format(query=query)
     response = OpenAI(model="gpt-4").complete(prompt)
     divided_query = response.text.strip().split("\n")
-    spoken_query = divided_query[0].replace("Spoken:", "").strip()
-    scene_query = divided_query[1].replace("Visual:", "").strip()
+    spoken_query = divided_query[0].replace("Konuşulan (Spoken):", "").strip()
+    scene_query = divided_query[1].replace("Görsel (Visual):", "").strip()
     return spoken_query, scene_query
 
 
-
-
-query = "Show me 1.Accident Scene 2.Discussion about nationwide exams "
+query = "Bana şunları göster: 1.Kaza Sahnesi 2.Ülke çapındaki sınavlar hakkındaki tartışma "
 spoken_query, scene_query = split_spoken_visual_query(query)
-print("Query for Spoken retriever : ", spoken_query)
-print("Query for Scene retriever : ", scene_query)
+print("Konuşma erişicisi için sorgu: ", spoken_query)
+print("Sahne erişicisi için sorgu: ", scene_query)
 ```
 
-```
-Query for Spoken retriever :  Discussion about nationwide exams
-Query for Scene retriever :  Accident Scene
+```text
+Konuşma erişicisi için sorgu:  Ülke çapındaki sınavlar hakkındaki tartışma
+Sahne erişicisi için sorgu:  Kaza Sahnesi
 ```
 
-##### 🔎 Finding Relevant nodes for each modality
+##### 🔎 Her modalite için ilgili düğümleri bulma
 
-```
+```python
 from videodb import SearchType, IndexType
 
 
-# Retriever for Spoken Index
+# Konuşma İndeksi için Erişici
 spoken_retriever = VideoDBRetriever(
     collection=coll.id,
     video=video.id,
@@ -281,7 +269,7 @@ spoken_retriever = VideoDBRetriever(
 )
 
 
-# Retriever for Scene Index
+# Sahne İndeksi için Erişici
 scene_retriever = VideoDBRetriever(
     collection=coll.id,
     video=video.id,
@@ -292,17 +280,17 @@ scene_retriever = VideoDBRetriever(
 )
 
 
-# Fetch relevant nodes for Spoken index
+# Konuşma indeksi için ilgili düğümleri getir
 nodes_spoken_index = spoken_retriever.retrieve(spoken_query)
 
 
-# Fetch relevant nodes for Scene index
+# Sahne indeksi için ilgili düğümleri getir
 nodes_scene_index = scene_retriever.retrieve(scene_query)
 ```
 
-#### ️💬️ Viewing the result : Text
+#### ️💬️ Sonucu Görüntüleme: Metin
 
-```
+```python
 response_synthesizer = get_response_synthesizer()
 
 
@@ -312,28 +300,26 @@ response = response_synthesizer.synthesize(
 print(response)
 ```
 
+```text
+İlk sahne, geceleri kentsel bir ortamda dinamik ve yoğun bir senaryoyu tasvir ediyor; muhtemelen kaçan bir figürün dahil olduğu bir motosiklet kovalamacasını içeriyor. İkinci sahne, büyük bir kamyonun yanında hareket halindeki karakterlerle dramatik bir kaçış veya kurtarma durumunu canlandırıyor. Ülke çapındaki sınavlarla ilgili tartışma, bir karakter ile annesi arasında sınav sonuçları ve ders çalışma üzerine geçen bir konuşmayı içeriyor.
 ```
-The first scene depicts a dynamic and intense scenario in an urban setting at night, involving a motorcycle chase with a figure possibly dodging away. The second scene portrays a dramatic escape or rescue situation with characters in motion alongside a large truck. The discussion about nationwide exams involves a conversation between a character and their mother about exam results and studying.
-```
 
-#### 🎥 Viewing the result : Video Clip
+#### 🎥 Sonucu Görüntüleme: Video Klibi
 
-From each modality, we have retrieved results that are relevant to the query within that specific modality (semantic and scene/visual, in this case).
+Her modaliteden, o modalite içindeki sorguyla ilgili (bu durumda anlamsal ve sahne/görsel) getirilmiş sonuçlarımız var.
 
-Each node has start and end fields in the metadata, which represent the time interval the node covers.
+Her düğümün metaverisinde, düğümün kapsadığı zaman aralığını temsil eden başlangıç ve bitiş alanları bulunur.
 
-There are lots of way to sythesize there results, For now we will use a simple method :
+Bu sonuçları sentezlemenin birçok yolu vardır, şimdilik basit bir yöntem kullanacağız:
 
-- `Union`: This method takes all the timestamps from every node, creating a comprehensive list that includes every relevant time, even if some timestamps appear in only one modality.
+- `Birleşim (Union)`: Bu yöntem, her düğümdeki tüm zaman damgalarını alarak, bazı zaman damgaları yalnızca bir modalitede görünse bile her ilgili zamanı içeren kapsamlı bir liste oluşturur.
 
-One of the other ways can be `Intersection`:
+Diğer yollardan biri `Kesişim (Intersection)` olabilir:
 
-- `Intersection`: This method only includes timestamps that are present in every node, resulting in a smaller list with times that are universally relevant across all modalities.
+- `Kesişim (Intersection)`: Bu yöntem yalnızca her düğümde mevcut olan zaman damgalarını içerir, bu da tüm modalitelerde evrensel olarak ilgili olan zamanların bulunduğu daha küçük bir liste ile sonuçlanır.
 
-```
+```python
 from videodb import play_stream
-
-
 
 
 def merge_intervals(intervals):
@@ -351,7 +337,7 @@ def merge_intervals(intervals):
 
 
 
-# Extract timestamps from both relevant nodes
+# Her iki ilgili düğümden zaman damgalarını çıkar
 results = [
     [node.metadata["start"], node.metadata["end"]]
     for node in nodes_spoken_index + nodes_scene_index
@@ -359,78 +345,78 @@ results = [
 merged_results = merge_intervals(results)
 
 
-# Use Videodb to create a stream of relevant clips
+# İlgili kliplerden oluşan bir akış oluşturmak için Videodb'yi kullanın
 stream_link = video.generate_stream(merged_results)
 play_stream(stream_link)
 ```
 
-```
+```text
 'https://console.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/91b08b39-c72f-4e33-ad1c-47a2ea11ac17.m3u8'
 ```
 
-## 🛠 Using VideoDBRetriever to Build RAG for Collection of Videos
+## 🛠 Video Koleksiyonu için RAG Oluşturmada VideoDBRetriever Kullanımı (Using VideoDBRetriever to Build RAG for Collection of Videos)
 
 ---
 
-### Adding More videos to our collection
+### Koleksiyonumuza daha fazla video ekleme
 
-```
+```python
 video_2 = coll.upload(url="https://www.youtube.com/watch?v=kMRX3EA68g4")
 ```
 
-#### 🗣️ Indexing Spoken Content
+#### 🗣️ Konuşulan İçeriği İndeksleme
 
-```
+```python
 video_2.index_spoken_words()
 ```
 
-#### 📸 Indexing Scenes
+#### 📸 Sahneleri İndeksleme
 
-```
+```python
 from videodb import SceneExtractionType
 
 
-print("Indexing Visual content in Video...")
+print("Videodaki Görsel içerik indeksleniyor...")
 
 
-# Index scene content
+# Sahne içeriğini indeksle
 index_id = video_2.index_scenes(
     extraction_type=SceneExtractionType.shot_based,
     extraction_config={"frame_count": 3},
-    prompt="Describe the scene in detail",
+    prompt="Sahneyi detaylıca tanımla",
 )
 video_2.get_scene_index(index_id)
 
 
-print(f"Scene Index successful with ID: {index_id}")
+print(f"Sahne İndeksi şu kimlikle başarılı: {index_id}")
 ```
 
-```
+```text
 [Video(id=m-b6230808-307d-468a-af84-863b2c321f05, collection_id=c-4882e4a8-9812-4921-80ff-b77c9c4ab4e7, stream_url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/528623c2-3a8e-4c84-8f05-4dd74f1a9977.m3u8, player_url=https://console.dev.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/528623c2-3a8e-4c84-8f05-4dd74f1a9977.m3u8, name=Death note - episode 1 (english dubbed) | HD, description=None, thumbnail_url=None, length=1366.006712),
  Video(id=m-f5b86106-4c28-43f1-b753-fa9b3f839dfe, collection_id=c-4882e4a8-9812-4921-80ff-b77c9c4ab4e7, stream_url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/4273851a-46f3-4d57-bc1b-9012ce330da8.m3u8, player_url=https://console.dev.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/4273851a-46f3-4d57-bc1b-9012ce330da8.m3u8, name=Death note - episode 5 (english dubbed) | HD, description=None, thumbnail_url=None, length=1366.099592)]
 ```
 
-#### 🧩 Query Transformation
+#### 🧩 Sorgu Dönüşümü
 
-```
-query = "Show me 1.Accident Scene 2.Kiara is speaking "
+```python
+query = "Bana şunları göster: 1.Kaza Sahnesi 2.Kiara konuşuyor "
 spoken_query, scene_query = split_spoken_visual_query(query)
-print("Query for Spoken retriever : ", spoken_query)
-print("Query for Scene retriever : ", scene_query)
+print("Konuşma erişicisi için sorgu: ", spoken_query)
+print("Sahne erişicisi için sorgu: ", scene_query)
 ```
 
-```
-Query for Spoken retriever :  Kiara is speaking
-Query for Scene retriever :  Show me Accident Scene
+```text
+Konuşma erişicisi için sorgu:  Kiara konuşuyor
+Sahne erişicisi için sorgu:  Kaza Sahnesini göster
 ```
 
-#### 🔎 Finding relevant nodes
+#### 🔎 İlgili düğümleri bulma
 
-```
+```python
 from videodb import SearchType, IndexType
 
 
-# Retriever for Spoken Index
+# Konuşma İndeksi için Erişici
 spoken_retriever = VideoDBRetriever(
     collection=coll.id,
     search_type=SearchType.semantic,
@@ -439,7 +425,7 @@ spoken_retriever = VideoDBRetriever(
 )
 
 
-# Retriever for Scene Index
+# Sahne İndeksi için Erişici
 scene_retriever = VideoDBRetriever(
     collection=coll.id,
     search_type=SearchType.semantic,
@@ -448,44 +434,44 @@ scene_retriever = VideoDBRetriever(
 )
 
 
-# Fetch relevant nodes for Spoken index
+# Konuşma indeksi için ilgili düğümleri getir
 nodes_spoken_index = spoken_retriever.retrieve(spoken_query)
 
 
-# Fetch relevant nodes for Scene index
+# Sahne indeksi için ilgili düğümleri getir
 nodes_scene_index = scene_retriever.retrieve(scene_query)
 ```
 
-#### ️💬️ Viewing the result : Text
+#### ️💬️ Sonucu Görüntüleme: Metin
 
-```
+```python
 response_synthesizer = get_response_synthesizer()
 
 
 response = response_synthesizer.synthesize(
-    "What is kaira speaking. And tell me about accident scene",
+    "Kiara ne hakkında konuşuyor? Ve bana kaza sahnesinden bahset",
     nodes=nodes_scene_index + nodes_spoken_index,
 )
 print(response)
 ```
 
+```text
+Kira, otobüsteki ajanla ilgili planları ve niyetleri hakkında konuşuyor. Kaza sahnesi, bir bireyin hasarlı bir arabanın yakınında acilen telefon görüşmesi yaptığı, kurbanın ise yerde hareketsiz yattığı üzücü bir anı yakalıyor. Kaotik sahne, arka plandaki bir otobüsü de içeriyor ve trajik olayın ciddiyetini vurguluyor.
 ```
-Kira is speaking about his plans and intentions regarding the agent from the bus. The accident scene captures a distressing moment where an individual is urgently making a phone call near a damaged car, with a victim lying motionless on the ground. The chaotic scene includes a bus in the background, emphasizing the severity of the tragic incident.
-```
 
-#### 🎥 Viewing the result : Video Clip
+#### 🎥 Sonucu Görüntüleme: Video Klibi
 
-When working with an editing workflow involving multiple videos, we need to create a `Timeline` of `VideoAsset` and then compile them.
+Birden fazla videoyu kapsayan bir kurgu akışıyla çalışırken, `VideoAsset` nesnelerinden oluşan bir `Zaman Çizelgesi (Timeline)` oluşturmamız ve ardından bunları derlememiz gerekir.
 
-![](https://codaio.imgix.net/docs/_s5lUnUCIU/blobs/bl-n4vT_dFztl/e664f43dbd4da89c3a3bfc92e3224c8a188eb19d2d458bebe049e780f72506ca6b19421c7168205f7ad307187e73da60c73cdbb9a0ef3fec77cc711927ad26a29a92cd13691fa9375c231f1c006853bacf28e09b3bf0bbcb5f7b76462b354a180fb437ad?auto=format%2Ccompress\&fit=max)
+![](https://codaio.imgix.net/docs/_s5lUnUCIU/blobs/bl-n4vT_dFztl/e664f43dbd4da89c3a3bfc92e3224c8a188eb19d2d458bebe049e780f72506ca6b19421c7168205f7ad307187e73da60c73cdbb9a0ef3fec77cc711927ad26a29a92cd13691fa9375c231f1c006853bacf28e09b3bf0bbcb5f7b76462b354a180fb437ad?auto=format%2Ccompress&fit=max)
 
-```
+```python
 from videodb import connect, play_stream
 from videodb.timeline import Timeline
 from videodb.asset import VideoAsset
 
 
-# Create a new timeline Object
+# Yeni bir timeline nesnesi oluştur
 timeline = Timeline(conn)
 
 
@@ -493,7 +479,7 @@ for node_obj in nodes_scene_index + nodes_spoken_index:
     node = node_obj.node
 
 
-    # Create a Video asset for each node
+    # Her düğüm için bir Video varlığı oluştur
     node_asset = VideoAsset(
         asset_id=node.metadata["video_id"],
         start=node.metadata["start"],
@@ -501,115 +487,113 @@ for node_obj in nodes_scene_index + nodes_spoken_index:
     )
 
 
-    # Add the asset to timeline
+    # Varlığı zaman çizelgesine ekle
     timeline.add_inline(node_asset)
 
 
-# Generate stream for the compiled timeline
+# Derlenen zaman çizelgesi için akış üret
 stream_url = timeline.generate_stream()
 play_stream(stream_url)
 ```
 
-```
+```text
 'https://console.videodb.io/player?url=https://dseetlpshk2tb.cloudfront.net/v3/published/manifests/2810827b-4d80-44af-a26b-ded2a7a586f6.m3u8'
 ```
 
- 
-
-## Configuring `VideoDBRetriever`
+## `VideoDBRetriever` Yapılandırması (Configuring VideoDBRetriever)
 
 ---
 
-### ⚙️ Retriever for only one Video
+### ⚙️ Sadece bir Video için Erişici
 
-You can pass the `id` of the video object to search in only that video.
+Sadece o videoda arama yapmak için video nesnesinin `id` değerini geçebilirsiniz.
 
-```
-VideoDBRetriever(video="my_video.id")
-```
-
-### ⚙️ Retriever for a set of Video/ Collection
-
-You can pass the `id` of the Collection to search in only that Collection.
-
-```
-VideoDBRetriever(collection="my_coll.id")
+```python
+VideoDBRetriever(video="video_id_miz")
 ```
 
-### ⚙️ Retriever for different type of Indexes
+### ⚙️ Bir Video Kümesi / Koleksiyonu için Erişici
 
+Sadece o Koleksiyonda arama yapmak için Koleksiyonun `id` değerini geçebilirsiniz.
+
+```python
+VideoDBRetriever(collection="koleksiyon_id_miz")
 ```
+
+### ⚙️ Farklı İndeks Türleri için Erişici
+
+```python
 from videodb import IndexType
-spoken_word = VideoDBRetriever(index_type=IndexType.spoken_word)
+konusulan_kelime = VideoDBRetriever(index_type=IndexType.spoken_word)
 
 
-scene_retriever = VideoDBRetriever(index_type=IndexType.scene, scene_index_id="my_index_id")
+sahne_ericisi = VideoDBRetriever(index_type=IndexType.scene, scene_index_id="indeks_id_miz")
 ```
 
-### ⚙️ Configuring Search Type of Retriever
+### ⚙️ Erişicinin Arama Türünü Yapılandırma
 
-`search_type` determines the search method used to retrieve nodes against given query
+`search_type`, verilen sorguya karşı düğümleri getirmek için kullanılan arama yöntemini belirler.
 
-```
+```python
 from videodb import SearchType, IndexType
 
 
-keyword_spoken_search = VideoDBRetriever(
+anahtar_kelime_konusma_aramasi = VideoDBRetriever(
     search_type=SearchType.keyword,
     index_type=IndexType.spoken_word
 )
 
 
-semantic_scene_search = VideoDBRetriever(
+anlamsal_sahne_aramasi = VideoDBRetriever(
     search_type=SearchType.semantic,
     index_type=IndexType.spoken_word
 )
 ```
 
-### ⚙️ Configure threshold parameters
+### ⚙️ Eşik parametrelerini yapılandırın
 
-- `result_threshold`: is the threshold for number of results returned by retriever; the default value is `5`
-- `score_threshold`: only nodes with score higher than `score_threshold` will be returned by retriever; the default value is `0.2`
+- `result_threshold`: Erişici tarafından döndürülen sonuç sayısı eşiğidir; varsayılan değer `5`tir.
+- `score_threshold`: Yalnızca puanı `score_threshold` değerinden yüksek olan düğümler erişici tarafından döndürülür; varsayılan değer `0.2`dir.
 
+```python
+ozel_ericisi = VideoDBRetriever(result_threshold=2, score_threshold=0.5)
 ```
-custom_retriever = VideoDBRetriever(result_threshold=2, score_threshold=0.5)
-```
 
-## ✨ Configuring Indexing and Chunking
+## ✨ İndeksleme ve Parçalama Yapılandırması (Configuring Indexing and Chunking)
 
 ---
 
-In this example, we utilize the VideoDB’s Indexing for video retrieval. However, you have the flexibility to load both Transcript and Scene Data and apply your own indexing techniques using llamaindex.
+Bu örnekte, video erişimi için VideoDB'nin İndekslemesini kullanıyoruz. Ancak, hem Transkript hem de Sahne Verilerini yükleme ve LlamaIndex kullanarak kendi indeksleme tekniklerinizi uygulama esnekliğine sahipsiniz.
 
-For more detailed guidance, refer to this [guide](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/multi_modal/multi_modal_videorag_videodb.ipynb).
+Daha ayrıntılı rehberlik için bu [kılavuza](https://colab.research.google.com/github/run-llama/llama_index/blob/main/docs/examples/multi_modal/multi_modal_videorag_videodb.ipynb) başvurun.
 
-## 🏃‍♂️ Next Steps
-
----
-
-In this guide, we built a Simple Multimodal RAG for Videos Using VideoDB, Llamaindex, and OpenAI
-
-You can optimize the pipeline by incorporating more advanced techniques like
-
-- Optimize Query Transformation
-- More methods to combine retrieved nodes from different modalities
-- Experiment with Different RAG pipelines like Knowledge Graph
-
-To learn more about Programable Stream feature that we used to create relevant clip checkout [Dynamic Video Stream Guide](https://docs.videodb.io/dynamic-video-stream-guide-44)
-
-To learn more about Scene Index, explore the following guides:
-
-- [Quickstart Guide](https://github.com/video-db/videodb-cookbook/blob/main/quickstart/Scene%20Index%20QuickStart.ipynb)
-- [Scene Extraction Options](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/playground_scene_extraction.ipynb)
-- [Advanced Visual Search](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/advanced_visual_search.ipynb)
-- [Custom Annotation Pipelines](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/custom_annotations.ipynb)
-
-## 👨‍👩‍👧‍👦 Support & Community
+## 🏃‍♂️ Sonraki Adımlar (Next Steps)
 
 ---
 
-If you have any questions or feedback. Feel free to reach out to us 🙌🏼
+Bu kılavuzda, VideoDB, LlamaIndex ve OpenAI kullanarak Videolar için Basit Çok Modlu bir RAG oluşturduk.
+
+Aşağıdaki gibi daha gelişmiş teknikleri dahil ederek işleme hattını optimize edebilirsiniz:
+
+- Sorgu Dönüşümünü Optimize Edin
+- Farklı modalitelerden getirilen düğümleri birleştirmek için daha fazla yöntem kullanın
+- Bilgi Grafiği (Knowledge Graph) gibi farklı RAG işleme hatlarını deneyin
+
+İlgili klibi oluşturmak için kullandığımız Programlanabilir Akış özelliği hakkında daha fazla bilgi edinmek için [Dinamik Video Akışı Kılavuzu](https://docs.videodb.io/dynamic-video-stream-guide-44)na göz atın.
+
+Sahne İndeksi hakkında daha fazla bilgi edinmek için aşağıdaki kılavuzları inceleyin:
+
+- [Hızlı Başlangıç Kılavuzu](https://github.com/video-db/videodb-cookbook/blob/main/quickstart/Scene%20Index%20QuickStart.ipynb)
+- [Sahne Çıkarma Seçenekleri](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/playground_scene_extraction.ipynb)
+- [Gelişmiş Görsel Arama](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/advanced_visual_search.ipynb)
+- [Özel Açıklama İşleme Hattı](https://github.com/video-db/videodb-cookbook/blob/main/guides/scene-index/custom_annotations.ipynb)
+
+## 👨‍👩‍👧‍👦 Destek ve Topluluk (Support & Community)
+
+---
+
+Herhangi bir sorunuz veya geri bildiriminiz varsa, bize ulaşmaktan çekinmeyin 🙌🏼
 
 - [Discord](https://colab.research.google.com/corgiredirector?site=https%3A%2F%2Fdiscord.gg%2Fpy9P639jGz)
 - [GitHub](https://github.com/video-db)
-- [Email](mailto:ashu@videodb.io)
+- [E-posta](mailto:ashu@videodb.io)

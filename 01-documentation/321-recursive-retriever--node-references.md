@@ -1,46 +1,46 @@
-# Recursive Retriever + Node References
+# Özyinelemeli Erişici + Düğüm Referansları (Recursive Retriever + Node References)
 
 ---
-title: Recursive Retriever + Node References
- | LlamaIndex OSS Documentation
+title: Özyinelemeli Erişici + Düğüm Referansları (Recursive Retriever + Node References)
+ | LlamaIndex OSS Belgeleri
 ---
 
-This guide shows how you can use recursive retrieval to traverse node relationships and fetch nodes based on “references”.
+Bu kılavuz, düğüm ilişkilerini gezinmek ve "referanslara" dayalı düğümleri getirmek için özyinelemeli erişimin (recursive retrieval) nasıl kullanılacağını gösterir.
 
-Node references are a powerful concept. When you first perform retrieval, you may want to retrieve the reference as opposed to the raw text. You can have multiple references point to the same node.
+Düğüm referansları güçlü bir kavramdır. İlk erişimi gerçekleştirdiğinizde, ham metin yerine referansı getirmek isteyebilirsiniz. Aynı düğüme işaret eden birden fazla referansınız olabilir.
 
-In this guide we explore some different usages of node references:
+Bu kılavuzda düğüm referanslarının bazı farklı kullanımlarını keşfediyoruz:
 
-- **Chunk references**: Different chunk sizes referring to a bigger chunk
-- **Metadata references**: Summaries + Generated Questions referring to a bigger chunk
+- **Parça referansları (Chunk references)**: Daha büyük bir parçaya atıfta bulunan farklı parça boyutları.
+- **Metaveri referansları (Metadata references)**: Daha büyük bir parçaya atıfta bulunan Özetler + Üretilen Sorular.
 
-```
+```bash
 %pip install llama-index-llms-openai
 %pip install llama-index-readers-file
 ```
 
-```
+```python
 %load_ext autoreload
 %autoreload 2
 %env OPENAI_API_KEY=YOUR_OPENAI_KEY
 ```
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i kurmanız gerekecektir 🦙.
 
-```
+```bash
 !pip install llama-index pypdf
 ```
 
-## Load Data + Setup
+## Veriyi Yükleme + Kurulum (Load Data + Setup)
 
-In this section we download the Llama 2 paper and create an initial set of nodes (chunk size 1024).
+Bu bölümde Llama 2 makalesini indiriyoruz ve bir dizi başlangıç düğümü oluşturuyoruz (parça boyutu 1024).
 
-```
+```bash
 !mkdir -p 'data/'
 !wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
 ```
 
-```
+```text
 Will not apply HSTS. The HSTS database must be a regular and non-world-writable file.
 ERROR: could not open HSTS store at '/home/loganm/.wget-hsts'. HSTS will be disabled.
 --2024-01-01 11:13:01--  https://arxiv.org/pdf/2307.09288.pdf
@@ -57,7 +57,7 @@ data/llama2.pdf     100%[===================>]  13.03M  27.3MB/s    in 0.5s
 2024-01-01 11:13:02 (27.3 MB/s) - ‘data/llama2.pdf’ saved [13661300/13661300]
 ```
 
-```
+```python
 from pathlib import Path
 from llama_index.readers.file import PDFReader
 from llama_index.core.response.notebook_utils import display_source_node
@@ -68,12 +68,12 @@ from llama_index.llms.openai import OpenAI
 import json
 ```
 
-```
+```python
 loader = PDFReader()
 docs0 = loader.load_data(file=Path("./data/llama2.pdf"))
 ```
 
-```
+```python
 from llama_index.core import Document
 
 
@@ -81,23 +81,23 @@ doc_text = "\n\n".join([d.get_content() for d in docs0])
 docs = [Document(text=doc_text)]
 ```
 
-```
+```python
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import IndexNode
 ```
 
-```
+```python
 node_parser = SentenceSplitter(chunk_size=1024)
 ```
 
-```
+```python
 base_nodes = node_parser.get_nodes_from_documents(docs)
-# set node ids to be a constant
+# düğüm kimliklerini (ID) sabit olarak ayarla
 for idx, node in enumerate(base_nodes):
     node.id_ = f"node-{idx}"
 ```
 
-```
+```python
 from llama_index.core.embeddings import resolve_embed_model
 
 
@@ -105,58 +105,58 @@ embed_model = resolve_embed_model("local:BAAI/bge-small-en")
 llm = OpenAI(model="gpt-3.5-turbo")
 ```
 
-## Baseline Retriever
+## Temel Erişici (Baseline Retriever)
 
-Define a baseline retriever that simply fetches the top-k raw text nodes by embedding similarity.
+Gömme benzerliğine göre en iyi k ham metin düğümünü getiren temel bir erişici tanımlayın.
 
-```
+```python
 base_index = VectorStoreIndex(base_nodes, embed_model=embed_model)
 base_retriever = base_index.as_retriever(similarity_top_k=2)
 ```
 
-```
+```python
 retrievals = base_retriever.retrieve(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 ```
 
-```
+```python
 for n in retrievals:
     display_source_node(n, source_length=1500)
 ```
 
-**Node ID:** node-26\
-**Similarity:** 0.8581930837671874\
-**Text:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distill…
+**Düğüm Kimliği (Node ID):** node-26\
+**Benzerlik:** 0.8581930837671874\
+**Metin:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distill…
 
-**Node ID:** node-33\
-**Similarity:** 0.8442806881920294\
-**Text:** Examples of evaluation prompts and responses can be found in Appendix A.4.6. We then asked raters to judge models for safety violations on a five-point Likert scale with the following definitions: •5- No safety violations and very helpful •4- No safety violations and only minor non-safety issues •3- No safety violations but not helpful or other major non-safety issues •2- Mild or moderate safety violations 29
+**Düğüm Kimliği (Node ID):** node-33\
+**Benzerlik:** 0.8442806881920294\
+**Metin:** Examples of evaluation prompts and responses can be found in Appendix A.4.6. We then asked raters to judge models for safety violations on a five-point Likert scale with the following definitions: •5- No safety violations and very helpful •4- No safety violations and only minor non-safety issues •3- No safety violations but not helpful or other major non-safety issues •2- Mild or moderate safety violations 29
 
 (a)Overall violation percentage. (b)Overall safety and helpfulness mean rating. Figure17: Overallsafetymeasures. Left: Llama 2-Chat haslowviolationpercentageoverallacrossmodel sizes.Right: Llama 2-Chat has high safety and helpfulness mean rating overall across model sizes. It is important to note that these results are subject to limitations of the prompt set, subjectivity of the review guidelines, and subjectivity of individual raters. •1- Severe safety violations We consider a rating of 1 or 2 as violation and use violation percentage as our main evaluation metric, with themeanratingasasupplement. Eachexampleisannotatedbythreeannotatorsandwetakethemajority votetodetermineiftheresponseisviolatingornot. WeusedGwet’sAC1/2statistictomeasureinter-rater reliability(IRR)asinthehelpfulnesshumanevaluation. TheIRRscoresrangefrom 0.70to0.95depending on the annotation batch, indicating a high degree of agreement among annotators on safety assessments. OnLlama 2-Chat annotations, the average IRR is 0.92according to Gwet’s AC2 measure. We see lower IRR scoresonbatcheswherethemo…
 
-```
+```python
 query_engine_base = RetrieverQueryEngine.from_args(base_retriever, llm=llm)
 ```
 
-```
+```python
 response = query_engine_base.query(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 print(str(response))
 ```
 
+```text
+Güvenlik ince ayarı (safety fine-tuning) için temel kavramlar arasında denetimli güvenlik ince ayarı (supervised safety fine-tuning), güvenlik RLHF (İnsan Geri Bildiriminden Takviyeli Öğrenme - Reinforcement Learning from Human Feedback) ve güvenlik bağlam damıtması (safety context distillation) yer alır. Denetimli güvenlik ince ayarında, düşmanca istemler (adversarial prompts) ve güvenli gösterimler toplanır ve genel denetimli ince ayar sürecine dahil edilir. Bu, modelin güvenlik yönergeleriyle uyumlu hale gelmesine yardımcı olur ve yüksek kaliteli insan tercihi veri açıklaması için temel oluşturur. Güvenlik RLHF, güvenliği genel RLHF hattına entegre etmeyi içerir; bu da güvenliğe özgü bir ödül modelinin eğitilmesini ve reddetme örnekleme tarzı ince ayar ve PPO (Proximal Policy Optimization) optimizasyonu için daha zorlu düşmanca istemlerin toplanmasını kapsar. Güvenlik bağlam damıtması, RLHF hattının bağlam damıtması ile rafine edildiği son adımdır. Bu, bir istemin önüne bir güvenlik ön istemi (safety preprompt) ekleyerek daha güvenli model yanıtları üretmeyi ve ardından modeli bu ön istem olmadan daha güvenli yanıtlar üzerinde ince ayarlamayı içerir.
 ```
-The key concepts for safety fine-tuning include supervised safety fine-tuning, safety RLHF (Reinforcement Learning from Human Feedback), and safety context distillation. In supervised safety fine-tuning, adversarial prompts and safe demonstrations are gathered and included in the general supervised fine-tuning process. This helps the model align with safety guidelines and lays the foundation for high-quality human preference data annotation. Safety RLHF involves integrating safety in the general RLHF pipeline, which includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO (Proximal Policy Optimization) optimization. Safety context distillation is the final step, where the RLHF pipeline is refined with context distillation. This involves generating safer model responses by prefixing a prompt with a safety preprompt and then fine-tuning the model on the safer responses without the preprompt.
-```
 
-## Chunk References: Smaller Child Chunks Referring to Bigger Parent Chunk
+## Parça Referansları: Daha Büyük Ana Parçaya Atıfta Bulunan Küçük Alt Parçalar
 
-In this usage example, we show how to build a graph of smaller chunks pointing to bigger parent chunks.
+Bu kullanım örneğinde, daha büyük ana parçaları işaret eden daha küçük parçalardan oluşan bir grafiğin nasıl oluşturulacağını gösteriyoruz.
 
-During query-time, we retrieve smaller chunks, but we follow references to bigger chunks. This allows us to have more context for synthesis.
+Sorgu zamanında, daha küçük parçaları getiriyoruz ancak daha büyük parçalara olan referansları takip ediyoruz. Bu, sentez için daha fazla bağlama sahip olmamızı sağlar.
 
-```
+```python
 sub_chunk_sizes = [128, 256, 512]
 sub_node_parsers = [
     SentenceSplitter(chunk_size=c, chunk_overlap=20) for c in sub_chunk_sizes
@@ -173,24 +173,24 @@ for base_node in base_nodes:
         all_nodes.extend(sub_inodes)
 
 
-    # also add original node to node
+    # orijinal düğümü de ekle
     original_node = IndexNode.from_text_node(base_node, base_node.node_id)
     all_nodes.append(original_node)
 ```
 
-```
+```python
 all_nodes_dict = {n.node_id: n for n in all_nodes}
 ```
 
-```
+```python
 vector_index_chunk = VectorStoreIndex(all_nodes, embed_model=embed_model)
 ```
 
-```
+```python
 vector_retriever_chunk = vector_index_chunk.as_retriever(similarity_top_k=2)
 ```
 
-```
+```python
 retriever_chunk = RecursiveRetriever(
     "vector",
     retriever_dict={"vector": vector_retriever_chunk},
@@ -199,67 +199,67 @@ retriever_chunk = RecursiveRetriever(
 )
 ```
 
-```
+```python
 nodes = retriever_chunk.retrieve(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 for node in nodes:
     display_source_node(node, source_length=2000)
 ```
 
-```
-[1;3;34mRetrieving with query id None: Can you tell me about the key concepts for safety finetuning
-[0m[1;3;38;5;200mRetrieved node with id, entering: node-26
-[0m[1;3;34mRetrieving with query id node-26: Can you tell me about the key concepts for safety finetuning
-[0m[1;3;38;5;200mRetrieved node with id, entering: node-1
-[0m[1;3;34mRetrieving with query id node-1: Can you tell me about the key concepts for safety finetuning
-[0m
+```text
+ [1;3;34mRetrieving with query id None: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0m [1;3;38;5;200mRetrieved node with id, entering: node-26
+ [0m [1;3;34mRetrieving with query id node-26: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0m [1;3;38;5;200mRetrieved node with id, entering: node-1
+ [0m [1;3;34mRetrieving with query id node-1: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0m
 ```
 
-**Node ID:** node-26\
-**Similarity:** 0.8809071991986446\
-**Text:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
+**Düğüm Kimliği (Node ID):** node-26\
+**Benzerlik:** 0.8809071991986446\
+**Metin:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
 
-**Node ID:** node-1\
-**Similarity:** 0.8744334039911964\
-**Text:** … … … … … … … … … … … … 9 3.2 Reinforcement Learning with Human Feedback (RLHF) … … … … … … … 9 3.3 System Message for Multi-Turn Consistency … … … … … … … … … . . 16 3.4 RLHF Results … … … … … … … … … … … … … … … . 17 4 Safety 20 4.1 Safety in Pretraining … … … … … … … … … … … … … … 20 4.2 Safety Fine-Tuning … … … … … … … … … … … … … … . 23 4.3 Red Teaming … … … … … … … … … … … … … … … . . 28 4.4 Safety Evaluation of Llama 2-Chat … … … … … … … … … … … . 29 5 Discussion 32 5.1 Learnings and Observations … … … … … … … … … … … … . . 32 5.2 Limitations and Ethical Considerations … … … … … … … … … … . 34 5.3 Responsible Release Strategy … … … … … … … … … … … … . 35 6 Related Work 35 7 Conclusion 36 A Appendix 46 A.1 Contributions … … … … … … … … … … … … …
+**Düğüm Kimliği (Node ID):** node-1\
+**Benzerlik:** 0.8744334039911964\
+**Metin:** … … … … … … … … … … … … 9 3.2 Reinforcement Learning with Human Feedback (RLHF) … … … … … … … 9 3.3 System Message for Multi-Turn Consistency … … … … … … … … … . . 16 3.4 RLHF Results … … … … … … … … … … … … … … … . 17 4 Safety 20 4.1 Safety in Pretraining … … … … … … … … … … … … … … 20 4.2 Safety Fine-Tuning … … … … … … … … … … … … … … . 23 4.3 Red Teaming … … … … … … … … … … … … … … … . . 28 4.4 Safety Evaluation of Llama 2-Chat … … … … … … … … … … … . 29 5 Discussion 32 5.1 Learnings and Observations … … … … … … … … … … … … . . 32 5.2 Limitations and Ethical Considerations … … … … … … … … … … . 34 5.3 Responsible Release Strategy … … … … … … … … … … … … . 35 6 Related Work 35 7 Conclusion 36 A Appendix 46 A.1 Contributions … … … … … … … … … … … … …
 
-```
+```python
 query_engine_chunk = RetrieverQueryEngine.from_args(retriever_chunk, llm=llm)
 ```
 
-```
+```python
 response = query_engine_chunk.query(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 print(str(response))
 ```
 
+```text
+ [1;3;34mRetrieving with query id None: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0m [1;3;38;5;200mRetrieved node with id, entering: node-26
+ [0m [1;3;34mRetrieving with query id node-26: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0m [1;3;38;5;200mRetrieved node with id, entering: node-1
+ [0m [1;3;34mRetrieving with query id node-1: Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?
+ [0mGüvenlik ince ayarı (safety fine-tuning) için temel kavramlar arasında denetimli güvenlik ince ayarı, güvenlik RLHF (İnsan Geri Bildiriminden Takviyeli Öğrenme) ve güvenlik bağlam damıtması yer alır. Denetimli güvenlik ince ayarı, modelin güvenlik yönergeleriyle uyumlu hale gelmesini öğretmek için düşmanca istemlerin ve güvenli gösterimlerin toplanmasını içerir. Güvenlik RLHF, güvenliğe özgü bir ödül modeli eğiterek ve reddetme örnekleme tarzı ince ayar ile PPO optimizasyonu için zorlu düşmanca istemler toplanarak güvenliği genel RLHF hattına entegre eder. Güvenlik bağlam damıtması, bir istemin önüne bir güvenlik ön istemi ekleyerek daha güvenli model yanıtları üretmeyi ve modeli ön istem olmadan daha güvenli yanıtlar üzerinde ince ayarlamayı içerir. Bu teknikler, güvenlik risklerini azaltmayı ve modelin güvenli ve sorumlu yanıtlar verme yeteneğini geliştirmeyi amaçlar.
 ```
-[1;3;34mRetrieving with query id None: Can you tell me about the key concepts for safety finetuning
-[0m[1;3;38;5;200mRetrieved node with id, entering: node-26
-[0m[1;3;34mRetrieving with query id node-26: Can you tell me about the key concepts for safety finetuning
-[0m[1;3;38;5;200mRetrieved node with id, entering: node-1
-[0m[1;3;34mRetrieving with query id node-1: Can you tell me about the key concepts for safety finetuning
-[0mThe key concepts for safety fine-tuning include supervised safety fine-tuning, safety RLHF (Reinforcement Learning with Human Feedback), and safety context distillation. Supervised safety fine-tuning involves gathering adversarial prompts and safe demonstrations to teach the model to align with safety guidelines. Safety RLHF integrates safety into the general RLHF pipeline by training a safety-specific reward model and gathering challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. Safety context distillation involves generating safer model responses by prefixing a prompt with a safety preprompt and fine-tuning the model on the safer responses without the preprompt. These techniques aim to mitigate safety risks and improve the model's ability to provide safe and responsible responses.
-```
 
-## Metadata References: Summaries + Generated Questions referring to a bigger chunk
+## Metaveri Referansları: Daha Büyük Bir Parçaya Atıfta Bulunan Özetler + Üretilen Sorular
 
-In this usage example, we show how to define additional context that references the source node.
+Bu kullanım örneğinde, kaynak düğüme atıfta bulunan ek bağlamın (metaveri) nasıl tanımlanacağını gösteriyoruz.
 
-This additional context includes summaries as well as generated questions.
+Bu ek bağlam, özetlerin yanı sıra üretilen soruları da içerir.
 
-During query-time, we retrieve smaller chunks, but we follow references to bigger chunks. This allows us to have more context for synthesis.
+Sorgu zamanında, daha küçük parçalar getiriyoruz ancak daha büyük parçalara olan referansları takip ediyoruz. Bu, sentez için daha fazla bağlama sahip olmamızı sağlar.
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import IndexNode
 from llama_index.core.extractors import (
@@ -268,15 +268,15 @@ from llama_index.core.extractors import (
 )
 ```
 
-```
+```python
 extractors = [
     SummaryExtractor(summaries=["self"], show_progress=True),
     QuestionsAnsweredExtractor(questions=5, show_progress=True),
 ]
 ```
 
-```
-# run metadata extractor across base nodes, get back dictionaries
+```python
+# temel düğümler üzerinde metaveri çıkarıcıyı çalıştır, sözlükleri geri al
 node_to_metadata = {}
 for extractor in extractors:
     metadata_dicts = extractor.extract(base_nodes)
@@ -287,13 +287,13 @@ for extractor in extractors:
             node_to_metadata[node.node_id].update(metadata)
 ```
 
-```
+```text
 100%|██████████| 93/93 [01:13<00:00,  1.27it/s]
 100%|██████████| 93/93 [00:49<00:00,  1.88it/s]
 ```
 
-```
-# cache metadata dicts
+```python
+# metaveri sözlüklerini önbelleğe al
 def save_metadata_dicts(path, data):
     with open(path, "w") as fp:
         json.dump(data, fp)
@@ -307,16 +307,16 @@ def load_metadata_dicts(path):
     return data
 ```
 
-```
+```python
 save_metadata_dicts("data/llama2_metadata_dicts.json", node_to_metadata)
 ```
 
-```
+```python
 metadata_dicts = load_metadata_dicts("data/llama2_metadata_dicts.json")
 ```
 
-```
-# all nodes consists of source nodes, along with metadata
+```python
+# tüm düğümler, metaverilerle birlikte kaynak düğümlerden oluşur
 import copy
 
 
@@ -326,12 +326,12 @@ for node_id, metadata in node_to_metadata.items():
         all_nodes.append(IndexNode(text=val, index_id=node_id))
 ```
 
-```
+```python
 all_nodes_dict = {n.node_id: n for n in all_nodes}
 ```
 
-```
-## Load index into vector index
+```python
+## İndeksi vektör indeksine yükle
 from llama_index.core import VectorStoreIndex
 from llama_index.llms.openai import OpenAI
 
@@ -342,13 +342,13 @@ llm = OpenAI(model="gpt-3.5-turbo")
 vector_index_metadata = VectorStoreIndex(all_nodes)
 ```
 
-```
+```python
 vector_retriever_metadata = vector_index_metadata.as_retriever(
     similarity_top_k=2
 )
 ```
 
-```
+```python
 retriever_metadata = RecursiveRetriever(
     "vector",
     retriever_dict={"vector": vector_retriever_metadata},
@@ -357,52 +357,52 @@ retriever_metadata = RecursiveRetriever(
 )
 ```
 
-```
+```python
 nodes = retriever_metadata.retrieve(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 for node in nodes:
     display_source_node(node, source_length=2000)
 ```
 
-**Node ID:** node-26\
-**Similarity:** 0.8727061238826861\
-**Text:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
+**Düğüm Kimliği (Node ID):** node-26\
+**Benzerlik:** 0.8727061238826861\
+**Metin:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
 
-**Node ID:** node-26\
-**Similarity:** 0.8586079224453517\
-**Text:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
+**Düğüm Kimliği (Node ID):** node-26\
+**Benzerlik:** 0.8586079224453517\
+**Metin:** AsLLMsareintegratedanddeployed,welookforwardto continuing research that will amplify their potential for positive impact on these important social issues. 4.2 Safety Fine-Tuning In this section, we describe our approach to safety fine-tuning, including safety categories, annotation guidelines,andthetechniquesweusetomitigatesafetyrisks. Weemployaprocesssimilartothegeneral fine-tuning methods as described in Section 3, with some notable differences related to safety concerns. Specifically, we use the following techniques in safety fine-tuning: 1.Supervised Safety Fine-Tuning : We initialize by gathering adversarial prompts and safe demonstra- tions that are then included in the general supervised fine-tuning process (Section 3.1). This teaches themodeltoalignwithoursafetyguidelinesevenbeforeRLHF,andthuslaysthefoundationfor high-quality human preference data annotation. 2.Safety RLHF : Subsequently, we integrate safety in the general RLHF pipeline described in Sec- tion 3.2.2. This includes training a safety-specific reward model and gathering more challenging adversarial prompts for rejection sampling style fine-tuning and PPO optimization. 3.SafetyContextDistillation : Finally,werefineourRLHFpipelinewithcontextdistillation(Askell etal.,2021b). Thisinvolvesgeneratingsafermodelresponsesbyprefixingapromptwithasafety preprompt, e.g., “You are a safe and responsible assistant,” and then fine-tuning the model on the safer responses without the preprompt, which essentially distillsthe safety preprompt (context) into the model. Weuseatargetedapproachthatallowsoursafetyrewardmodeltochoosewhethertouse context distillation for each sample. 4.2.1 Safety Categories and Annotation Guidelines Based on limitations of LLMs known from prior work, we design instructions for our annotation team to createadversarialpromptsalongtwodimensions: a riskcategory ,orpotentialtopicaboutwhichtheLLM couldproduceunsafecontent;andan attackvector ,orquestionstyletocoverdifferentvarietiesofprompts …
 
-```
+```python
 query_engine_metadata = RetrieverQueryEngine.from_args(
     retriever_metadata, llm=llm
 )
 ```
 
-```
+```python
 response = query_engine_metadata.query(
-    "Can you tell me about the key concepts for safety finetuning"
+    "Güvenlik ince ayarı (safety finetuning) için temel kavramlar hakkında bilgi verebilir misiniz?"
 )
 print(str(response))
 ```
 
+```text
+Güvenlik ince ayarı (safety fine-tuning) için temel kavramlar arasında denetimli güvenlik ince ayarı, güvenlik RLHF (İnsan Geri Bildiriminden Takviyeli Öğrenme) ve güvenlik bağlam damıtması yer alır. Denetimli güvenlik ince ayarı, modelin güvenlik yönergeleriyle uyumlu hale gelmesini eğitmek için düşmanca istemlerin ve güvenli gösterimlerin toplanmasını içerir. Güvenlik RLHF, güvenliğe özgü bir ödül modeli eğiterek ve ince ayar ile optimizasyon için zorlu düşmanca istemler toplanarak güvenliği RLHF hattına entegre eder. Güvenlik bağlam damıtması, bir istemin önüne bir güvenlik ön istemi ekleyerek daha güvenli model yanıtları üretmeyi ve modeli ön istem olmadan daha güvenli yanıtlar üzerinde ince ayarlamayı içerir. Bu kavramlar, güvenlik risklerini azaltmak ve modelin güvenli ve yararlı yanıtlar üretme yeteneğini geliştirmek için kullanılır.
 ```
-The key concepts for safety fine-tuning include supervised safety fine-tuning, safety RLHF (Reinforcement Learning from Human Feedback), and safety context distillation. Supervised safety fine-tuning involves gathering adversarial prompts and safe demonstrations to train the model to align with safety guidelines. Safety RLHF integrates safety into the RLHF pipeline by training a safety-specific reward model and gathering challenging adversarial prompts for fine-tuning and optimization. Safety context distillation involves generating safer model responses by prefixing a prompt with a safety preprompt and fine-tuning the model on the safer responses without the preprompt. These concepts are used to mitigate safety risks and improve the model's ability to produce safe and helpful responses.
-```
 
-## Evaluation
+## Değerlendirme (Evaluation)
 
-We evaluate how well our recursive retrieval + node reference methods work. We evaluate both chunk references as well as metadata references. We use embedding similarity lookup to retrieve the reference nodes.
+Özyinelemeli erişim + düğüm referansı yöntemlerimizin ne kadar iyi çalıştığını değerlendiriyoruz. Hem parça referanslarını hem de metaveri referanslarını inceliyoruz. Referans düğümlerini getirmek için gömme benzerliği aramasını kullanıyoruz.
 
-We compare both methods against a baseline retriever where we fetch the raw nodes directly.
+Her iki yöntemi de ham düğümleri doğrudan getirdiğimiz temel bir erişiciyle karşılaştırıyoruz.
 
-In terms of metrics, we evaluate using both hit-rate and MRR.
+Metrikler açısından hem isabet oranını (hit-rate) hem de MRR'ı kullanıyoruz.
 
-### Dataset Generation
+### Veri Kümesi Üretimi (Dataset Generation)
 
-We first generate a dataset of questions from the set of text chunks.
+Önce metin parçaları kümesinden bir soru veri kümesi oluşturuyoruz.
 
-```
+```python
 from llama_index.core.evaluation import (
     generate_question_context_pairs,
     EmbeddingQAFinetuneDataset,
@@ -416,34 +416,34 @@ import nest_asyncio
 nest_asyncio.apply()
 ```
 
-```
+```python
 eval_dataset = generate_question_context_pairs(
     base_nodes, OpenAI(model="gpt-3.5-turbo")
 )
 ```
 
-```
+```text
 100%|██████████| 93/93 [02:08<00:00,  1.38s/it]
 ```
 
-```
+```python
 eval_dataset.save_json("data/llama2_eval_dataset.json")
 ```
 
-```
-# optional
+```python
+# isteğe bağlı
 eval_dataset = EmbeddingQAFinetuneDataset.from_json(
     "data/llama2_eval_dataset.json"
 )
 ```
 
-### Compare Results
+### Sonuçları Karşılaştır (Compare Results)
 
-We run evaluations on each of the retrievers to measure hit rate and MRR.
+İsabet oranını ve MRR'ı ölçmek için erişicilerin her biri üzerinde değerlendirmeler yapıyoruz.
 
-We find that retrievers with node references (either chunk or metadata) tend to perform better than retrieving the raw chunks.
+Düğüm referanslarına (parça veya metaveri) sahip erişicilerin, ham parçaları getirmekten daha iyi performans gösterme eğiliminde olduğunu görüyoruz.
 
-```
+```python
 import pandas as pd
 from llama_index.core.evaluation import (
     RetrieverEvaluator,
@@ -451,14 +451,14 @@ from llama_index.core.evaluation import (
 )
 
 
-# set vector retriever similarity top k to higher
+# vektör erişici similarity top k değerini daha yükseğe ayarla
 top_k = 10
 
 
 
 
 def display_results(names, results_arr):
-    """Display results from evaluate."""
+    """Değerlendirmeden gelen sonuçları göster."""
 
 
     hit_rates = []
@@ -478,12 +478,12 @@ def display_results(names, results_arr):
 
 
     final_df = pd.DataFrame(
-        {"retrievers": names, "hit_rate": hit_rates, "mrr": mrrs}
+        {"erişiciler": names, "isabet_oranı": hit_rates, "mrr": mrrs}
     )
     display(final_df)
 ```
 
-```
+```python
 vector_retriever_chunk = vector_index_chunk.as_retriever(
     similarity_top_k=top_k
 )
@@ -496,13 +496,13 @@ retriever_chunk = RecursiveRetriever(
 retriever_evaluator = RetrieverEvaluator.from_metric_names(
     ["mrr", "hit_rate"], retriever=retriever_chunk
 )
-# try it out on an entire dataset
+# tüm veri kümesi üzerinde dene
 results_chunk = await retriever_evaluator.aevaluate_dataset(
     eval_dataset, show_progress=True
 )
 ```
 
-```
+```python
 vector_retriever_metadata = vector_index_metadata.as_retriever(
     similarity_top_k=top_k
 )
@@ -515,40 +515,40 @@ retriever_metadata = RecursiveRetriever(
 retriever_evaluator = RetrieverEvaluator.from_metric_names(
     ["mrr", "hit_rate"], retriever=retriever_metadata
 )
-# try it out on an entire dataset
+# tüm veri kümesi üzerinde dene
 results_metadata = await retriever_evaluator.aevaluate_dataset(
     eval_dataset, show_progress=True
 )
 ```
 
-```
+```python
 base_retriever = base_index.as_retriever(similarity_top_k=top_k)
 retriever_evaluator = RetrieverEvaluator.from_metric_names(
     ["mrr", "hit_rate"], retriever=base_retriever
 )
-# try it out on an entire dataset
+# tüm veri kümesi üzerinde dene
 results_base = await retriever_evaluator.aevaluate_dataset(
     eval_dataset, show_progress=True
 )
 ```
 
-```
+```text
 100%|██████████| 194/194 [00:09<00:00, 19.86it/s]
 ```
 
-```
+```python
 full_results_df = get_retrieval_results_df(
     [
-        "Base Retriever",
-        "Retriever (Chunk References)",
-        "Retriever (Metadata References)",
+        "Temel Erişici (Base Retriever)",
+        "Erişici (Parça Referansları)",
+        "Erişici (Metaveri Referansları)",
     ],
     [results_base, results_chunk, results_metadata],
 )
 display(full_results_df)
 ```
 
-```
+```css
 .dataframe tbody tr th {
     vertical-align: top;
 }
@@ -559,8 +559,8 @@ display(full_results_df)
 }
 ```
 
-|   | retrievers                      | hit\_rate | mrr      |
+|   | erişiciler | isabet\_oranı | mrr |
 | - | ------------------------------- | --------- | -------- |
-| 0 | Base Retriever                  | 0.778351  | 0.563103 |
-| 1 | Retriever (Chunk References)    | 0.896907  | 0.691114 |
-| 2 | Retriever (Metadata References) | 0.891753  | 0.718440 |
+| 0 | Temel Erişici (Base Retriever) | 0.778351 | 0.563103 |
+| 1 | Erişici (Parça Referansları) | 0.896907 | 0.691114 |
+| 2 | Erişici (Metaveri Referansları) | 0.891753 | 0.718440 |

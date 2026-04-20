@@ -1,15 +1,15 @@
-# Simple Fusion Retriever
+# Basit Füzyon Erişicisi (Simple Fusion Retriever)
 
 ---
-title: Simple Fusion Retriever
- | LlamaIndex OSS Documentation
+title: Basit Füzyon Erişicisi (Simple Fusion Retriever)
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this example, we walk through how you can combine retrieval results from multiple queries and multiple indexes.
+Bu örnekte, birden fazla sorgu ve birden fazla indeksten gelen erişim sonuçlarını nasıl birleştirebileceğinizi inceliyoruz.
 
-The retrieved nodes will be returned as the top-k across all queries and indexes, as well as handling de-duplication of any nodes.
+Getirilen düğümler, tüm sorgular ve indeksler genelinde en iyi k (top-k) sonucu olarak döndürülecek ve düğümlerin yinelenenleri (de-duplication) ayıklanacaktır.
 
-```
+```python
 import os
 import openai
 
@@ -18,11 +18,11 @@ os.environ["OPENAI_API_KEY"] = "sk-..."
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-## Setup
+## Kurulum (Setup)
 
-For this notebook, we will use two very similar pages of our documentation, each stored in a separaete index.
+Bu not defteri için, her biri ayrı bir indekste saklanan, belgelerimizdeki birbirine çok benzer iki sayfayı kullanacağız.
 
-```
+```python
 from llama_index.core import SimpleDirectoryReader
 
 
@@ -34,7 +34,7 @@ documents_2 = SimpleDirectoryReader(
 ).load_data()
 ```
 
-```
+```python
 from llama_index.core import VectorStoreIndex
 
 
@@ -42,142 +42,140 @@ index_1 = VectorStoreIndex.from_documents(documents_1)
 index_2 = VectorStoreIndex.from_documents(documents_2)
 ```
 
-## Fuse the Indexes!
+## İndeksleri Birleştirin! (Fuse the Indexes!)
 
-In this step, we fuse our indexes into a single retriever. This retriever will also generate augment our query by generating extra queries related to the original question, and aggregate the results.
+Bu adımda, indekslerimizi tek bir erişicide birleştiriyoruz. Bu erişici aynı zamanda orijinal soruyla ilgili ek sorgular üreterek sorgumuzu genişletecek ve sonuçları bir araya getirecektir.
 
-This setup will query 4 times, once with your original query, and generate 3 more queries.
+Bu düzenek 4 kez sorgulama yapacaktır: bir kez orijinal sorgunuzla ve 3 tane daha üretilen sorgu ile.
 
-By default, it uses the following prompt to generate extra queries:
+Varsayılan olarak, ek sorgular oluşturmak için aşağıdaki istemi (prompt) kullanır:
 
-```
+```python
 QUERY_GEN_PROMPT = (
-    "You are a helpful assistant that generates multiple search queries based on a "
-    "single input query. Generate {num_queries} search queries, one on each line, "
-    "related to the following input query:\n"
-    "Query: {query}\n"
-    "Queries:\n"
+    "Sen, tek bir giriş sorgusuna dayanarak birden fazla arama sorgusu üreten yardımcı bir asistansın. "
+    "Aşağıdaki giriş sorgusuyla ilgili, her satıra bir tane gelecek şekilde {num_queries} tane arama sorgusu oluştur:\n"
+    "Sorgu (Query): {query}\n"
+    "Sorgular (Queries):\n"
 )
 ```
 
-```
+```python
 from llama_index.core.retrievers import QueryFusionRetriever
 
 
 retriever = QueryFusionRetriever(
     [index_1.as_retriever(), index_2.as_retriever()],
     similarity_top_k=2,
-    num_queries=4,  # set this to 1 to disable query generation
+    num_queries=4,  # sorgu oluşturmayı devre dışı bırakmak için bunu 1 yapın
     use_async=True,
     verbose=True,
-    # query_gen_prompt="...",  # we could override the query generation prompt here
+    # query_gen_prompt="...",  # burada sorgu oluşturma istemini geçersiz kılabiliriz
 )
 ```
 
-```
-# apply nested async to run in a notebook
+```python
+# bir not defterinde çalıştırmak için iç içe geçmiş asenkron yapıyı uygula
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
-nodes_with_scores = retriever.retrieve("How do I setup a chroma vector store?")
+```python
+nodes_with_scores = retriever.retrieve("Nasıl bir chroma vektör deposu kurarım?")
 ```
 
-```
+```text
 Generated queries:
-1. What are the steps to set up a chroma vector store?
-2. Best practices for configuring a chroma vector store
-3. Troubleshooting common issues when setting up a chroma vector store
+1. Bir chroma vektör deposu kurmak için gereken adımlar nelerdir?
+2. Bir chroma vektör deposunu yapılandırmak için en iyi uygulamalar
+3. Bir chroma vektör deposu kurarken karşılaşılan yaygın sorunların giderilmesi
 ```
 
-```
+```python
 for node in nodes_with_scores:
-    print(f"Score: {node.score:.2f} - {node.text[:100]}...")
+    print(f"Puan (Score): {node.score:.2f} - {node.text[:100]}...")
 ```
 
+```text
+Score: 0.78 - # Vektör Depoları
+
+
+Vektör depoları, alınan belge parçalarının gömme vektörlerini (ve bazen...
+Score: 0.78 - # Vektör Depolarını Kullanma
+
+
+LlamaIndex, vektör depoları / vektör veri... ile birden fazla entegrasyon noktası sunar...
 ```
-Score: 0.78 - # Vector Stores
 
+## Bir Sorgu Motorunda Kullanın! (Use in a Query Engine!)
 
-Vector stores contain embedding vectors of ingested document chunks
-(and sometimes ...
-Score: 0.78 - # Using Vector Stores
+Şimdi, doğal dilde yanıtlar sentezlemek için erişicimizi bir sorgu motoruna bağlayabiliriz.
 
-
-LlamaIndex offers multiple integration points with vector stores / vector dat...
-```
-
-## Use in a Query Engine!
-
-Now, we can plug our retriever into a query engine to synthesize natural language responses.
-
-```
+```python
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 
 query_engine = RetrieverQueryEngine.from_args(retriever)
 ```
 
-```
+```python
 response = query_engine.query(
-    "How do I setup a chroma vector store? Can you give an example?"
+    "Nasıl bir chroma vektör deposu kurarım? Bir örnek verebilir misiniz?"
 )
 ```
 
-```
+```text
 Generated queries:
-1. How to set up a chroma vector store?
-2. Step-by-step guide for creating a chroma vector store.
-3. Examples of chroma vector store setups and configurations.
+1. Bir chroma vektör deposu nasıl kurulur?
+2. Bir chroma vektör deposu oluşturmak için adım adım kılavuz.
+3. Chroma vektör deposu kurulumu ve yapılandırması örnekleri.
 ```
 
-```
+```python
 from llama_index.core.response.notebook_utils import display_response
 
 
 display_response(response)
 ```
 
-**`Final Response:`** To set up a Chroma vector store, you need to follow these steps:
+**`Nihai Yanıt (Final Response):`** Bir Chroma vektör deposu kurmak için şu adımları izlemeniz gerekir:
 
-1. Import the necessary libraries:
+1. Gerekli kütüphaneleri içe aktarın:
 
-```
+```python
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
 ```
 
-2. Create a Chroma client:
+2. Bir Chroma istemcisi (client) oluşturun:
 
-```
+```python
 chroma_client = chromadb.EphemeralClient()
 chroma_collection = chroma_client.create_collection("quickstart")
 ```
 
-3. Construct the vector store:
+3. Vektör deposunu oluşturun:
 
-```
+```python
 vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 ```
 
-Here’s an example of how to set up a Chroma vector store using the above steps:
+Yukarıdaki adımları kullanarak bir Chroma vektör deposunun nasıl kurulacağına dair bir örnek aşağıdadır:
 
-```
+```python
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 
-# Creating a Chroma client
-# EphemeralClient operates purely in-memory, PersistentClient will also save to disk
+# Bir Chroma istemcisi oluşturma
+# EphemeralClient tamamen bellek içinde çalışır, PersistentClient ise diske de kaydeder
 chroma_client = chromadb.EphemeralClient()
 chroma_collection = chroma_client.create_collection("quickstart")
 
 
-# construct vector store
+# vektör deposunu oluştur
 vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 ```
 
-This example demonstrates how to create a Chroma client, create a collection named “quickstart”, and then construct a Chroma vector store using that collection.
+Bu örnek, bir Chroma istemcisinin nasıl oluşturulacağını, "quickstart" adında bir koleksiyonun nasıl oluşturulacağını ve ardından bu koleksiyonu kullanarak bir Chroma vektör deposunun nasıl inşa edileceğini gösterir.
