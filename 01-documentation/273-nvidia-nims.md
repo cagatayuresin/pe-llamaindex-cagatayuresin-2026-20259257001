@@ -1,71 +1,71 @@
-# NVIDIA NIMs
+# NVIDIA NIM'leri
 
 ---
-title: NVIDIA NIMs
- | LlamaIndex OSS Documentation
+title: NVIDIA NIM'leri
+ | LlamaIndex OSS Belgeleri
 ---
 
-The `llama-index-llms-nvidia` package contains LlamaIndex integrations for chat models and embeddings powered by [NVIDIA AI Foundation Models](https://www.nvidia.com/en-us/ai-data-science/foundation-models/), and hosted on the [NVIDIA API Catalog](https://build.nvidia.com/). NVIDIA AI Foundation models are community- and NVIDIA-built models that are optimized to deliver the best performance on NVIDIA-accelerated infrastructure. You can use the API to query live endpoints that are available on the NVIDIA API Catalog to get quick results from a DGX-hosted cloud compute environment, or you can download models from NVIDIA’s API catalog with NVIDIA NIM, which is included with the NVIDIA AI Enterprise license. The ability to run models on-premises gives your enterprise ownership of your customizations and full control of your IP and AI application.
+`llama-index-llms-nvidia` paketi, [NVIDIA AI Foundation Modelleri](https://www.nvidia.com/en-us/ai-data-science/foundation-models/) tarafından desteklenen ve [NVIDIA API Kataloğu](https://build.nvidia.com/) üzerinde barındırılan sohbet modelleri ve eşlemeler (embeddings) için LlamaIndex entegrasyonlarını içerir. NVIDIA AI Foundation modelleri, NVIDIA tarafından hızlandırılmış altyapıda en iyi performansı sunmak üzere optimize edilmiş, topluluk ve NVIDIA yapımı modellerdir. DGX üzerinde barındırılan bulut bilişim ortamından hızlı sonuçlar almak için NVIDIA API Kataloğu'ndaki canlı uç noktaları sorgulayabilir veya NVIDIA AI Enterprise lisansına dahil olan NVIDIA NIM ile modelleri indirebilirsiniz. Modelleri kurum bünyesinde (on-premises) çalıştırma yeteneği, işletmenize özelleştirmelerinizin sahipliğini ve fikri mülkiyetiniz ile yapay zeka uygulamanız üzerinde tam kontrol sağlar.
 
-NIMs can be exported from NVIDIA’s API catalog using the NVIDIA AI Enterprise license and run on-premises or in the cloud,
+NIM'ler, NVIDIA AI Enterprise lisansı kullanılarak NVIDIA'nın API kataloğundan dışa aktarılabilir ve kurum bünyesinde veya bulutta çalıştırılabilir.
 
-NIMs are packaged as container images on a per model basis and are distributed as NGC container images through the NVIDIA NGC Catalog. At their core, NIMs provide easy, consistent, and familiar APIs for running inference on an AI model.
+NIM'ler, model bazında konteyner imajları olarak paketlenir ve NVIDIA NGC Kataloğu aracılığıyla NGC konteyner imajları olarak dağıtılır. Temelde NIM'ler, bir yapay zeka modeli üzerinde çıkarım (inference) yapmak için kolay, tutarlı ve tanıdık API'ler sağlar.
 
-# NVIDIA’s LLM connector
+# NVIDIA’ın LLM bağlayıcısı
 
-This example goes over how to use LlamaIndex to interact with and develop LLM-powered systems using the publicly-accessible AI Foundation endpoints.
+bu örnek, halka açık AI Foundation uç noktalarını kullanarak LLM destekli sistemler geliştirmek ve bunlarla etkileşim kurmak için LlamaIndex'in nasıl kullanılacağını ele almaktadır.
 
-With this connector, you’ll be able to connect to and generate from compatible models available as hosted [NVIDIA NIMs](https://ai.nvidia.com), such as:
+Bu bağlayıcı ile, barındırılan [NVIDIA NIM'leri](https://ai.nvidia.com) olarak sunulan uyumlu modellere bağlanabilir ve onlardan içerik üretebilirsiniz, örneğin:
 
-- Google’s [gemma-7b](https://build.nvidia.com/google/gemma-7b)
-- Mistal AI’s [mistral-7b-instruct-v0.2](https://build.nvidia.com/mistralai/mistral-7b-instruct-v2)
-- And more!
+- Google’ın [gemma-7b](https://build.nvidia.com/google/gemma-7b) modeli
+- Mistal AI’nın [mistral-7b-instruct-v0.2](https://build.nvidia.com/mistralai/mistral-7b-instruct-v2) modeli
+- Ve daha fazlası!
 
-## Installation
+## Kurulum
 
-```
+```bash
 %pip install --upgrade --quiet llama-index-llms-nvidia llama-index-embeddings-nvidia llama-index-readers-file
 ```
 
-## Setup
+## Yapılandırma
 
-**To get started:**
+**Başlamak için:**
 
-1. Create a free account with [NVIDIA](https://build.nvidia.com/), which hosts NVIDIA AI Foundation models.
+1. NVIDIA AI Foundation modellerini barındıran [NVIDIA](https://build.nvidia.com/) üzerinden ücretsiz bir hesap oluşturun.
 
-2. Click on your model of choice.
+2. İstediğiniz modeli seçin.
 
-3. Under Input select the Python tab, and click `Get API Key`. Then click `Generate Key`.
+3. "Input" (Girdi) kısmından "Python" sekmesini seçin ve `Get API Key` (API Anahtarı Al) düğmesine tıklayın. Ardından `Generate Key` (Anahtarı Oluştur) düğmesine tıklayın.
 
-4. Copy and save the generated key as NVIDIA\_API\_KEY. From there, you should have access to the endpoints.
+4. Oluşturulan anahtarı kopyalayın ve NVIDIA\_API\_KEY olarak kaydedin. Buradan itibaren uç noktalara erişiminiz olmalıdır.
 
-```
+```python
 import getpass
 import os
 
 
-# del os.environ['NVIDIA_API_KEY']  ## delete key and reset
+# os.environ['NVIDIA_API_KEY'] silerek sıfırlayabilirsiniz
 if os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
-    print("Valid NVIDIA_API_KEY already in environment. Delete to reset")
+    print("Geçerli NVIDIA_API_KEY zaten ortamda mevcut. Sıfırlamak için silin.")
 else:
-    nvapi_key = getpass.getpass("NVAPI Key (starts with nvapi-): ")
+    nvapi_key = getpass.getpass("NVAPI Anahtarı (nvapi- ile başlar): ")
     assert nvapi_key.startswith(
         "nvapi-"
-    ), f"{nvapi_key[:5]}... is not a valid key"
+    ), f"{nvapi_key[:5]}... geçerli bir anahtar değil"
     os.environ["NVIDIA_API_KEY"] = nvapi_key
 ```
 
-```
-# llama-parse is async-first, running the async code in a notebook requires the use of nest_asyncio
+```python
+# llama-parse asenkron-önceliklidir, bir not defterinde asenkron kodu çalıştırmak için nest_asyncio kullanımı gerekir
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-## Working with NVIDIA API Catalog
+## NVIDIA API Kataloğu ile Çalışma
 
-```
+```python
 from llama_index.llms.nvidia import NVIDIA
 from llama_index.core.llms import ChatMessage, MessageRole
 
@@ -75,11 +75,11 @@ llm = NVIDIA()
 
 messages = [
     ChatMessage(
-        role=MessageRole.SYSTEM, content=("You are a helpful assistant.")
+        role=MessageRole.SYSTEM, content=("Yardımsever bir asistansın.")
     ),
     ChatMessage(
         role=MessageRole.USER,
-        content=("What are the most popular house pets in North America?"),
+        content=("Kuzey Amerika'daki en popüler evcil hayvanlar hangileridir?"),
     ),
 ]
 
@@ -87,139 +87,139 @@ messages = [
 llm.chat(messages)
 ```
 
-## Working with NVIDIA NIMs
+## NVIDIA NIM'leri ile Çalışma
 
-In addition to connecting to hosted [NVIDIA NIMs](https://ai.nvidia.com), this connector can be used to connect to local microservice instances. This helps you take your applications local when necessary.
+Barındırılan [NVIDIA NIM'lerine](https://ai.nvidia.com) bağlanmanın yanı sıra, bu bağlayıcı yerel mikro hizmet örneklerine bağlanmak için de kullanılabilir. Bu, gerektiğinde uygulamalarınızı yerel ortama taşımanıza yardımcı olur.
 
-For instructions on how to setup local microservice instances, see <https://developer.nvidia.com/blog/nvidia-nim-offers-optimized-inference-microservices-for-deploying-ai-models-at-scale/>
+Yerel mikro hizmet örneklerinin nasıl kurulacağına ilişkin talimatlar için şu adrese bakın: <https://developer.nvidia.com/blog/nvidia-nim-offers-optimized-inference-microservices-for-deploying-ai-models-at-scale/>
 
-```
+```python
 from llama_index.llms.nvidia import NVIDIA
 
 
-# connect to an chat NIM running at localhost:8080, spcecifying a specific model
+# localhost:8080 üzerinde çalışan bir sohbet NIM'ine bağlanın ve belirli bir model belirtin
 llm = NVIDIA(
     base_url="http://localhost:8080/v1", model="meta/llama3-8b-instruct"
 )
 ```
 
-## Loading a specific model
+## Belirli bir modeli yükleme
 
-Now we can load our `NVIDIA` LLM by passing in the model name, as found in the docs - located [here](https://docs.api.nvidia.com/nim/reference/)
+Şimdi, buradaki [belgelerde](https://docs.api.nvidia.com/nim/reference/) bulunan model adını geçerek `NVIDIA` LLM'imizi yükleyebiliriz.
 
-> NOTE: The default model is `meta/llama3-8b-instruct`.
+> NOT: Varsayılan model `meta/llama3-8b-instruct`'dur.
 
-```
-# default model
+```python
+# varsayılan model
 llm = NVIDIA()
 llm.model
 ```
 
-We can observe which model our `llm` object is currently associated with the `.model` attribute.
+`llm` nesnemizin şu anda hangi modelle ilişkili olduğunu `.model` özniteliğiyle gözlemleyebiliriz.
 
-```
+```python
 llm = NVIDIA(model="mistralai/mistral-7b-instruct-v0.2")
 llm.model
 ```
 
-## Basic Functionality
+## Temel İşlevsellik
 
-Now we can explore the different ways you can use the connector within the LlamaIndex ecosystem!
+Artık bağlayıcıyı LlamaIndex ekosistemi içinde kullanmanın farklı yollarını keşfedebiliriz!
 
-Before we begin, lets set up a list of `ChatMessage` objects - which is the expected input for some of the methods.
+Başlamadan önce, bazı yöntemler için beklenen girdi olan bir `ChatMessage` nesneleri listesi hazırlayalım.
 
-We’ll follow the same basic pattern for each example:
+Her örnek için aynı temel modeli takip edeceğiz:
 
-1. We’ll point our `NVIDIA` LLM to our desired model
-2. We’ll examine how to use the endpoint to achieve the desired task!
+1. `NVIDIA` LLM'imizi istediğimiz modele yönlendireceğiz.
+2. İstenilen görevi başarmak için uç noktanın nasıl kullanılacağını inceleyeceğiz!
 
-### Complete: `.complete()`
+### Tamamlama (Complete): `.complete()`
 
-We can use `.complete()`/`.acomplete()` (which takes a string) to prompt a response from the selected model.
+Seçilen modelden bir yanıt almak için `.complete()`/`.acomplete()` (bir dize alır) yöntemini kullanabiliriz.
 
-Let’s use our default model for this task.
+Bu görev için varsayılan modelimizi kullanalım.
 
-```
+```python
 completion_llm = NVIDIA()
 ```
 
-We can verify this is the expected default by checking the `.model` attribute.
+`.model` özniteliğini kontrol ederek bunun beklenen varsayılan olduğunu doğrulayabiliriz.
 
-```
+```python
 completion_llm.model
 ```
 
-Let’s call `.complete()` on our model with a string, in this case `"Hello!"`, and observe the response.
+Modelimiz üzerinde `"Merhaba!"` dizesiyle `.complete()` yöntemini çağıralım ve yanıtı gözlemleyelim.
 
-```
-completion_llm.complete("Hello!")
-```
-
-As is expected by LlamaIndex - we get a `CompletionResponse` in response.
-
-#### Async Complete: `.acomplete()`
-
-There is also an async implementation which can be leveraged in the same way!
-
-```
-await completion_llm.acomplete("Hello!")
+```python
+completion_llm.complete("Merhaba!")
 ```
 
-#### Chat: `.chat()`
+LlamaIndex'ten beklendiği üzere - yanıt olarak bir `CompletionResponse` alırız.
 
-Now we can try the same thing using the `.chat()` method. This method expects a list of chat messages - so we’ll use the one we created above.
+#### Asenkron Tamamlama: `.acomplete()`
 
-We’ll use the `mistralai/mixtral-8x7b-instruct-v0.1` model for the example.
+Aynı şekilde kullanılabilecek bir asenkron uygulama da mevcuttur!
 
+```python
+await completion_llm.acomplete("Merhaba!")
 ```
+
+#### Sohbet (Chat): `.chat()`
+
+Şimdi aynı şeyi `.chat()` yöntemini kullanarak deneyebiliriz. Bu yöntem bir sohbet mesajları listesi bekler - bu yüzden yukarıda oluşturduğumuzu kullanacağız.
+
+Örnek için `mistralai/mixtral-8x7b-instruct-v0.1` modelini kullanacağız.
+
+```python
 chat_llm = NVIDIA(model="mistralai/mixtral-8x7b-instruct-v0.1")
 ```
 
-All we need to do now is call `.chat()` on our list of `ChatMessages` and observe our response.
+Şimdi tek yapmamız gereken `ChatMessages` listemiz üzerinde `.chat()` yöntemini çağırmak ve yanıtımızı gözlemlemek.
 
-You’ll also notice that we can pass in a few additional key-word arguments that can influence the generation - in this case, we’ve used the `seed` parameter to influence our generation and the `stop` parameter to indicate we want the model to stop generating once it reaches a certain token!
+Oluşturmayı etkileyebilecek birkaç ek anahtar kelime argümanı da geçebileceğimizi fark edeceksiniz - bu durumda, oluşturmamızı etkilemek için `seed` parametresini ve modelin belirli bir belirtece ulaştığında oluşturmayı durdurmasını istediğimizi belirtmek için `stop` parametresini kullandık!
 
-> NOTE: You can find information about what additional kwargs are supported by the model’s endpoint by referencing the API documentation for the selected model. Mixtral’s is located [here](https://docs.api.nvidia.com/nim/reference/mistralai-mixtral-8x7b-instruct-infer) as an example!
+> NOT: Seçilen modelin uç noktası tarafından hangi ek argümanların (kwargs) desteklendiğine dair bilgileri, modelin API belgelerine başvurarak bulabilirsiniz. Örnek olarak Mixtral'in belgeleri [buradadır](https://docs.api.nvidia.com/nim/reference/mistralai-mixtral-8x7b-instruct-infer)!
 
+```python
+chat_llm.chat(messages, seed=4, stop=["kedi", "kediler", "Kedi", "Kediler"])
 ```
-chat_llm.chat(messages, seed=4, stop=["cat", "cats", "Cat", "Cats"])
-```
 
-As expected, we receive a `ChatResponse` in response.
+Beklendiği gibi, yanıt olarak bir `ChatResponse` alırız.
 
-#### Async Chat: (`achat`)
+#### Asenkron Sohbet: (`achat`)
 
-We also have an async implementation of the `.chat()` method which can be called in the following way.
+Ayrıca aşağıdaki şekilde çağrılabilen `.chat()` yönteminin asenkron bir uygulamasına da sahibiz.
 
-```
+```python
 await chat_llm.achat(messages)
 ```
 
-### Stream: `.stream_chat()`
+### Akış (Stream): `.stream_chat()`
 
-We can also use the models found on `build.nvidia.com` for streaming use-cases!
+`build.nvidia.com` adresinde bulunan modelleri akış senaryoları için de kullanabiliriz!
 
-Let’s select another model and observe this behaviour. We’ll use Google’s `gemma-7b` model for this task.
+Başka bir model seçelim ve bu davranışı gözlemleyelim. Bu görev için Google'ın `gemma-7b` modelini kullanacağız.
 
-```
+```python
 stream_llm = NVIDIA(model="google/gemma-7b")
 ```
 
-Let’s call our model with `.stream_chat()`, which again expects a list of `ChatMessage` objects, and capture the response.
+Modelimizi, yine bir `ChatMessage` nesneleri listesi bekleyen `.stream_chat()` ile çağıralım ve yanıtı yakalayalım.
 
-```
+```python
 streamed_response = stream_llm.stream_chat(messages)
 ```
 
-```
+```python
 streamed_response
 ```
 
-As we can see, the response is a generator with the streamed response.
+Gördüğümüz gibi, yanıt akışlı yanıtı içeren bir oluşturucudur (generator).
 
-Let’s take a look at the final response once the generation is complete.
+Oluşturma tamamlandığında nihai yanıta bir göz atalım.
 
-```
+```python
 last_element = None
 for last_element in streamed_response:
     pass
@@ -228,19 +228,19 @@ for last_element in streamed_response:
 print(last_element)
 ```
 
-#### Async Stream: `.astream_chat()`
+#### Asenkron Akış: `.astream_chat()`
 
-We have the equivalent async method for streaming as well, which can be used in a similar way to the sync implementation.
+Akış için, senkron uygulamaya benzer şekilde kullanılabilecek eşdeğer asenkron yönteme de sahibiz.
 
-```
+```python
 streamed_response = await stream_llm.astream_chat(messages)
 ```
 
-```
+```python
 streamed_response
 ```
 
-```
+```python
 last_element = None
 async for last_element in streamed_response:
     pass
@@ -249,29 +249,29 @@ async for last_element in streamed_response:
 print(last_element)
 ```
 
-## Streaming Query Engine Responses
+## Akışlı Sorgu Motoru Yanıtları
 
-Let’s look at a slightly more involved example using a query engine!
+Sorgu motoru kullanarak biraz daha kapsamlı bir örneğe bakalım!
 
-We’ll start by loading some data (we’ll be using the [Hitchhiker’s Guide to the Galaxy](https://web.eecs.utk.edu/~hqi/deeplearning/project/hhgttg.txt)).
+Bazı verileri yükleyerek başlayacağız ([Otostopçunun Galaksi Rehberi](https://web.eecs.utk.edu/~hqi/deeplearning/project/hhgttg.txt) belgesini kullanacağız).
 
-### Loading Data
+### Veri Yükleme
 
-Let’s first create a directory where our data can live.
+Önce verilerimizin barınabileceği bir dizin oluşturalım.
 
-```
+```bash
 !mkdir -p 'data/hhgttg'
 ```
 
-We’ll download our data from the above source.
+Verilerimizi yukarıdaki kaynaktan indireceğiz.
 
-```
+```bash
 !wget 'https://web.eecs.utk.edu/~hqi/deeplearning/project/hhgttg.txt' -O 'data/hhgttg/hhgttg.txt'
 ```
 
-We’ll need to have an embedding model for this step! We’ll use NVIDIA `NV-Embed-QA` model to achieve this, and save it in our `Settings`.
+Bu adım için bir eşleme (embedding) modeline ihtiyacımız olacak! Bunu başarmak için NVIDIA `NV-Embed-QA` modelini kullanacağız ve bunu `Settings` içine kaydedeceğiz.
 
-```
+```python
 from llama_index.embeddings.nvidia import NVIDIAEmbedding
 from llama_index.core import Settings
 
@@ -280,9 +280,9 @@ embedder = NVIDIAEmbedding(model="NV-Embed-QA", truncate="END")
 Settings.embed_model = embedder
 ```
 
-Now we can load our document and create an index leveraging the above
+Artık belgemizi yükleyebilir ve yukarıdaki modelden yararlanarak bir indeks oluşturabiliriz.
 
-```
+```python
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 
 
@@ -290,35 +290,35 @@ documents = SimpleDirectoryReader("data/hhgttg").load_data()
 index = VectorStoreIndex.from_documents(documents)
 ```
 
-Now we can create a simple query engine and set our `streaming` parameter to `True`.
+Şimdi basit bir sorgu motoru oluşturabilir ve `streaming` parametremizi `True` olarak ayarlayabiliriz.
 
-```
+```python
 streaming_qe = index.as_query_engine(streaming=True)
 ```
 
-Let’s send a query to our query engine, and then stream the response.
+Sorgu motorumuza bir sorgu gönderelim ve ardından yanıtı akış şeklinde alalım.
 
-```
+```python
 streaming_response = streaming_qe.query(
-    "What is the significance of the number 42?",
+    "42 sayısının önemi nedir?",
 )
 ```
 
-```
+```python
 streaming_response.print_response_stream()
 ```
 
-### Tool calling
+### Araç çağırma (Tool calling)
 
-Starting in v0.2.1, NVIDIA supports tool calling.
+v0.2.1'den itibaren NVIDIA, araç çağırmayı desteklemektedir.
 
-NVIDIA provides integration with the variety of models on build.nvidia.com as well as local NIMs. Not all these models are trained for tool calling. Be sure to select a model that does have tool calling for your experimention and applications.
+NVIDIA, build.nvidia.com adresindeki çeşitli modellerin yanı sıra yerel NIM'lerle entegrasyon sağlar. Bu modellerin tümü araç çağırma için eğitilmemiştir. Deneyleriniz ve uygulamalarınız için araç çağırma yeteneğine sahip bir model seçtiğinizden emin olun.
 
-You can get a list of models that are known to support tool calling with,
+Araç çağırmayı desteklediği bilinen modellerin bir listesini şu şekilde alabilirsiniz:
 
-`NOTE:` For more examples refer : [nvidia\_agent.ipynb](../agent/nvidia_agent.ipynb)
+`NOT:` Daha fazla örnek için bakınız: [nvidia\_agent.ipynb](../agent/nvidia_agent.ipynb)
 
-```
+```python
 tool_models = [
     model
     for model in NVIDIA().available_models
@@ -326,16 +326,16 @@ tool_models = [
 ]
 ```
 
-With a tool capable model,
+Araç kabiliyeti olan bir modelle:
 
-```
+```python
 from llama_index.core.tools import FunctionTool
 
 
 
 
 def multiply(a: int, b: int) -> int:
-    """Multiple two integers and returns the result integer"""
+    """İki tam sayıyı çarpar ve sonuç tam sayısını döndürür"""
     return a * b
 
 
@@ -347,7 +347,7 @@ multiply_tool = FunctionTool.from_defaults(fn=multiply)
 
 
 def add(a: int, b: int) -> int:
-    """Add two integers and returns the result integer"""
+    """İki tam sayıyı toplar ve sonuç tam sayısını döndürür"""
     return a + b
 
 
@@ -366,6 +366,6 @@ agent_worker = FunctionAgent(
 )
 
 
-response = await agent.run("What is (121 * 3) + 42?")
+response = await agent_worker.run("(121 * 3) + 42 kaçtır?")
 print(str(response))
 ```

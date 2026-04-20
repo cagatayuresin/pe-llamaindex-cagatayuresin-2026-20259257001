@@ -2,35 +2,35 @@
 
 ---
 title: LM Studio
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Setup
+## Kurulum
 
-1. Download and Install LM Studio
-2. Follow the steps mentioned in the [README](https://github.com/run-llama/llama_index/blob/main/llama-index-integrations/llms/llama-index-llms-lmstudio/README.md).
+1. LM Studio'yu indirin ve kurun.
+2. [README](https://github.com/run-llama/llama_index/blob/main/llama-index-integrations/llms/llama-index-llms-lmstudio/README.md) dosyasında belirtilen adımları izleyin.
 
-If not already installed in collab, install *llama-index* and *lmstudio* integration.
+Colab'da henüz yüklü değilse, *llama-index* ve *lmstudio* entegrasyonunu kurun.
 
-```
+```bash
 %pip install llama-index-core llama-index llama-index-llms-lmstudio
 ```
 
-Fix for “RuntimeError: This event loop is already running”
+“RuntimeError: This event loop is already running” hatası için çözüm:
 
-```
+```python
 import nest_asyncio
 
 
 nest_asyncio.apply()
 ```
 
-```
+```python
 from llama_index.llms.lmstudio import LMStudio
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 ```
 
-```
+```python
 llm = LMStudio(
     model_name="Hermes-2-Pro-Llama-3-8B",
     base_url="http://localhost:1234/v1",
@@ -38,93 +38,93 @@ llm = LMStudio(
 )
 ```
 
-```
-response = llm.complete("Hey there, what is 2+2?")
+```python
+response = llm.complete("Selam, 2+2 kaç eder?")
 print(str(response))
 ```
 
 ```
-The result of 2 + 2 is 4.
+2 + 2'nin sonucu 4'tür.
 ```
 
-```
-# use llm.stream_complete
-response = llm.stream_complete("What is 7+3?")
+```python
+# llm.stream_complete kullanım örneği
+response = llm.stream_complete("7+3 kaç eder?")
 for r in response:
     print(r.delta, end="")
 ```
 
 ```
-The result of 7 + 3 is 10.
+7 + 3'ün sonucu 10'dur.
 ```
 
-```
+```python
 messages = [
     ChatMessage(
         role=MessageRole.SYSTEM,
-        content="You an expert AI assistant. Help User with their queries.",
+        content="Sen uzman bir yapay zeka asistanısın. Kullanıcıya sorularında yardımcı ol.",
     ),
     ChatMessage(
         role=MessageRole.USER,
-        content="What is the significance of the number 42?",
+        content="42 sayısının önemi nedir?",
     ),
 ]
 ```
 
-```
+```python
 response = llm.chat(messages=messages)
 print(str(response))
 ```
 
 ```
-assistant: The number 42 has been significant in various contexts throughout history and across different cultures, often holding symbolic or philosophical meanings.
+assistant: 42 sayısı, tarih boyunca ve farklı kültürlerde çeşitli bağlamlarda önemli olmuş, genellikle sembolik veya felsefi anlamlar taşımıştır.
 
 
-1. In mathematics: 42 is a relatively simple but still interesting whole number with no factors other than 1 and itself.
+1. Matematikte: 42, 1 ve kendisinden başka böleni olmayan (Not: Aslında bol bölenli bir sayıdır) ama yine de ilginç olan, nispeten basit bir tam sayıdır.
 
 
-2. In popular culture: Douglas Adams' science fiction series "The Hitchhiker's Guide to the Galaxy" presents the ultimate answer to the meaning of life as 42, which has become a well-known joke and meme since its introduction in the first book published in 1979.
+2. Popüler kültürde: Douglas Adams'ın bilim kurgu serisi "Otostopçunun Galaksi Rehberi"nde hayatın anlamı için nihai cevap 42 olarak sunulur; bu, 1979'da yayınlanan ilk kitaptan bu yana iyi bilinen bir şaka ve internet akımı (meme) haline gelmiştir.
 
 
-3. In religion and mythology: The number 42 appears in various religious texts or myths with different meanings, such as the Biblical Book of Numbers where Moses spent 42 years tending to his father-in-law's flock before receiving the call from God, or in Norse mythology when Odin spent 42 nights suspended on Yggdrasil (the World Tree) to gain knowledge.
+3. Din ve mitolojide: 42 sayısı, çeşitli dini metinlerde veya mitlerde farklı anlamlarla yer alır; örneğin İncil'deki Sayılar Kitabı'nda Musa'nın Tanrı'dan çağrıyı almadan önce kayınpederinin sürüsüne bakarak 42 yıl geçirmesi veya İskandinav mitolojisinde Odin'in bilgi edinmek için Yggdrasil'de (Dünya Ağacı) asılı kalarak 42 gece geçirmesi gibi.
 
 
-4. In sports: In baseball, a perfect game is considered to be an immaculate game with no hits, errors, or runners allowed to reach base; only 15 players can achieve this in Major League Baseball history, and the number of their names added together equals 42 (6 + 2 = 8, 3 + 4 = 7).
+4. Sporda: Beyzbolda, vuruş (hit), hata (error) veya koşucunun kaleye ulaşmasına izin verilmeyen bir oyun "kusursuz oyun" (perfect game) olarak kabul edilir; Major League Baseball tarihinde bunu sadece 15 oyuncu başarabilmiştir ve isimlerinin toplam sayısı 42'ye eşittir (6 + 2 = 8, 3 + 4 = 7 - Not: Bu AI halüsinasyonu olabilir).
 
 
-5. In music: The English rock band Coldplay's popular song "42" is about lead singer Chris Martin reflecting on his age during the time it took for the band to gain success.
+5. Müzikte: İngiliz rock grubu Coldplay'in popüler şarkısı "42", grubun başarıya ulaşması için geçen süre boyunca solist Chris Martin'in yaşı üzerine düşünmesini konu alır.
 
 
-The significance of the number 42 varies depending on the context and cultural background. It has often been used symbolically or metaphorically, making it a versatile and intriguing number in various aspects of human life.
+42 sayısının önemi bağlam ve kültürel arka plana göre değişir. Sık sık sembolik veya mecazi olarak kullanılmış, bu da onu insan yaşamının çeşitli yönlerinde çok yönlü ve ilgi çekici bir sayı haline getirmiştir.
 ```
 
-```
+```python
 response = llm.stream_chat(messages=messages)
 for r in response:
     print(r.delta, end="")
 ```
 
 ```
-The number 42 has various significances in different contexts:
+42 sayısının farklı bağlamlarda çeşitli önemleri vardır:
 
 
-1. In popular culture: The famous "Answer to the Ultimate Question of Life, the Universe and Everything" from Douglas Adams' science fiction series "The Hitchhiker's Guide to the Galaxy" is 42. This has led to widespread recognition of the number as something meaningful or profound.
+1. Popüler kültürde: Douglas Adams'ın bilim kurgu serisi "Otostopçunun Galaksi Rehberi"ndeki ünlü "Hayata, Evrene ve Her Şeye Dair Nihai Sorunun Cevabı" 42'dir. Bu durum, sayının anlamlı veya derin bir şey olarak yaygın şekilde tanınmasına yol açmıştır.
 
 
-2. Mathematics: The number 42 is a highly composite number with many divisors (1, 2, 3, 6, 7, 14, 21, and 42). In mathematics, the study of factors and divisors plays an essential role in various concepts such as prime factorization and greatest common denominators.
+2. Matematik: 42 sayısı, birçok böleni (1, 2, 3, 6, 7, 14, 21 ve 42) olan yüksek kompozit bir sayıdır. Matematikte çarpanlar ve bölenler üzerine yapılan çalışmalar, asal çarpanlara ayırma ve en büyük ortak bölen gibi çeşitli kavramlarda temel bir rol oynar.
 
 
-3. Christianity: According to a story from The Book of Kells (an illuminated manuscript), it is said that St. Patrick used the number 42 to calculate when to begin his mission to convert Ireland to Christianity.
+3. Hristiyanlık: Kells Kitabı'ndan (tezhip edilmiş bir el yazması) bir hikayeye göre, Aziz Patrick'in İrlanda'yı Hristiyanlığa döndürme misyonuna ne zaman başlayacağını hesaplamak için 42 sayısını kullandığı söylenir.
 
 
-4. Astrology: In astrology, the 42nd day after the Winter Solstice marks the beginning of the new astrological year and the start of a 13-month cycle in some traditions.
+4. Astrolojide: Bazı geleneklerde, kış gündönümünden sonraki 42. gün, yeni astrolojik yılın başlangıcını ve 13 aylık bir döngünün başlangıcını işaret eder.
 
 
-5. Literature: The number 42 is mentioned several times throughout William Shakespeare's plays, such as "Hamlet" and "Henry IV." It appears as a coincidence or possibly with symbolic intent in these works.
+5. Edebiyat: 42 sayısı, William Shakespeare'in "Hamlet" ve "IV. Henry" gibi oyunları boyunca birkaç kez geçmektedir. Bu eserlerde bir tesadüf olarak veya muhtemelen sembolik bir niyetle yer alır.
 
 
-6. In the field of computer science, the popular programming language 'Python' uses 42 as its "magic number" to represent the start-up code for the interpreter.
+6. Bilgisayar bilimi alanında, popüler programlama dili 'Python', yorumlayıcının başlangıç kodunu temsil etmek için "sihirli sayı" (magic number) olarak 42'yi kullanır.
 
 
-Each context assigns a different significance to the number 42, making it multi-faceted and culturally relevant in various ways.
+Her bağlam 42 sayısına farklı bir önem atfeder, bu da onu çeşitli şekillerde çok yönlü ve kültürel olarak ilgili kılar.
 ```

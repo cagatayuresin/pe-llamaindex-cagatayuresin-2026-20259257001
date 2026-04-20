@@ -2,80 +2,80 @@
 
 ---
 title: MyMagic AI LLM
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Introduction
+## Giriş
 
-This notebook demonstrates how to use MyMagicAI for batch inference on massive data stored in cloud buckets. The only enpoints implemented are `complete` and `acomplete` which can work on many use cases including Completion, Summariation and Extraction. To use this notebook, you need an API key (Personal Access Token) from MyMagicAI and data stored in cloud buckets. Sign up by clicking Get Started at [MyMagicAI’s website](https://mymagic.ai/) to get your API key.
+Bu not defteri, bulut sepetlerinde (cloud buckets) depolanan devasa veriler üzerinde toplu çıkarım (batch inference) yapmak için MyMagicAI'nin nasıl kullanılacağını gösterir. Uygulanan tek uç noktalar, Tamamlama (Completion), Özetleme (Summarization) ve Çıkarma (Extraction) dahil olmak üzere birçok kullanım durumunda çalışabilen `complete` ve `acomplete` uç noktalarıdır. Bu not defterini kullanmak için MyMagicAI'den bir API anahtarına (Kişisel Erişim Belirteci) ve bulut sepetlerinde depolanan verilere ihtiyacınız vardır. API anahtarınızı almak için [MyMagicAI'nin web sitesindeki](https://mymagic.ai/) "Get Started" düğmesine tıklayarak kaydolun.
 
-## Setup
+## Kurulum
 
-To set up your bucket and grant MyMagic API a secure access to your cloud storage, please visit [MyMagic docs](https://docs.mymagic.ai/) for reference. If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Sepetinizi kurmak ve MyMagic API'sine bulut depolama alanınıza güvenli bir erişim yetkisi vermek için lütfen referans olarak [MyMagic belgelerini](https://docs.mymagic.ai/) ziyaret edin. Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-llms-mymagic
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.mymagic import MyMagicAI
 ```
 
-```
+```python
 llm = MyMagicAI(
     api_key="your-api-key",
     storage_provider="s3",  # s3, gcs
     bucket_name="your-bucket-name",
-    session="your-session-name",  # files should be located in this folder on which batch inference will be run
+    session="your-session-name",  # toplu çıkarımın çalıştırılacağı dosyalar bu klasörde bulunmalıdır
     role_arn="your-role-arn",
     system_prompt="your-system-prompt",
     region="your-bucket-region",
-    return_output=False,  # Whether you want MyMagic API to return the output json
-    input_json_file=None,  # name of the input file (stored on the bucket)
-    list_inputs=None,  # Option to provide inputs as a list in case of small batch
-    structured_output=None,  # json schema of the output
+    return_output=False,  # MyMagic API'nin çıktı json'unu döndürmesini isteyip istemediğiniz
+    input_json_file=None,  # sepet üzerinde depolanan girdi dosyasının adı
+    list_inputs=None,  # küçük toplu iş durumunda girdileri liste olarak sağlama seçeneği
+    structured_output=None,  # çıktının json şeması
 )
 ```
 
-Note: if return\_output is set True above, max\_tokens should be set to at least 100
+Not: Yukarıda `return_output` True olarak ayarlanmışsa, `max_tokens` değeri en az 100 olarak ayarlanmalıdır.
 
-```
+```python
 resp = llm.complete(
-    question="your-question",
-    model="chhoose-model",  # currently we support mistral7b, llama7b, mixtral8x7b, codellama70b, llama70b, more to come...
-    max_tokens=5,  # number of tokens to generate, default is 10
+    question="sorunuz",
+    model="choose-model",  # şu anda mistral7b, llama7b, mixtral8x7b, codellama70b, llama70b desteklenmektedir...
+    max_tokens=5,  # üretilecek belirteç sayısı, varsayılan 10'dur
 )
 ```
 
-```
-# The response indicated that the final output is stored in your bucket or raises an exception if the job failed
+```python
+# Yanıt, nihai çıktının sepetinizde depolandığını gösterir veya iş başarısız olursa bir istisna fırlatır
 print(resp)
 ```
 
-## Asynchronous Requests by using `acomplete` endpoint
+## `acomplete` uç noktasını kullanarak asenkron istekler
 
-For asynchronous operations, use the following approach.
+Asenkron işlemler için aşağıdaki yaklaşımı kullanın.
 
-```
+```python
 import asyncio
 ```
 
-```
+```python
 async def main():
     response = await llm.acomplete(
-        question="your-question",
-        model="choose-model",  # supported models constantly updated and are listed at docs.mymagic.ai
-        max_tokens=5,  # number of tokens to generate, default is 10
+        question="sorunuz",
+        model="choose-model",  # desteklenen modeller sürekli güncellenmektedir ve docs.mymagic.ai adresinde listelenmektedir
+        max_tokens=5,  # üretilecek belirteç sayısı, varsayılan 10'dur
     )
 
 
-    print("Async completion response:", response)
+    print("Asenkron tamamlama yanıtı:", response)
 ```
 
-```
+```python
 await main()
 ```

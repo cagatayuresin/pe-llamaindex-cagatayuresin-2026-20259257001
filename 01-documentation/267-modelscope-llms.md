@@ -1,21 +1,21 @@
-# ModelScope LLMS
+# ModelScope LLM'leri
 
 ---
-title: ModelScope LLMS
- | LlamaIndex OSS Documentation
+title: ModelScope LLM'leri
+ | LlamaIndex OSS Belgeleri
 ---
 
-In this notebook, we show how to use the ModelScope LLM models in LlamaIndex. Check out the [ModelScope site](https://www.modelscope.cn/).
+Bu not defterinde, LlamaIndex'te ModelScope LLM modellerinin nasıl kullanılacağını gösteriyoruz. [ModelScope sitesine](https://www.modelscope.cn/) göz atın.
 
-If you’re opening this Notebook on colab, you will need to install LlamaIndex 🦙 and the modelscope.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, LlamaIndex 🦙 ve modelscope'u kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index-llms-modelscope
 ```
 
-## Basic Usage
+## Temel Kullanım
 
-```
+```python
 import sys
 from llama_index.llms.modelscope import ModelScopeLLM
 
@@ -23,21 +23,21 @@ from llama_index.llms.modelscope import ModelScopeLLM
 llm = ModelScopeLLM(model_name="qwen/Qwen3-8B", model_revision="master")
 
 
-rsp = llm.complete("Hello, who are you?")
+rsp = llm.complete("Merhaba, sen kimsin?")
 print(rsp)
 ```
 
-#### Use Message request
+#### Mesaj isteği kullanma
 
-```
+```python
 from llama_index.core.base.llms.types import MessageRole, ChatMessage
 
 
 messages = [
     ChatMessage(
-        role=MessageRole.SYSTEM, content="You are a helpful assistant."
+        role=MessageRole.SYSTEM, content="Yardımsever bir asistansın."
     ),
-    ChatMessage(role=MessageRole.USER, content="How to make cake?"),
+    ChatMessage(role=MessageRole.USER, content="Kek nasıl yapılır?"),
 ]
 resp = llm.chat(messages)
 print(resp)

@@ -2,35 +2,35 @@
 
 ---
 title: Maritalk
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-## Introduction
+## Giriş
 
-MariTalk is an assistant developed by the Brazilian company [Maritaca AI](https://www.maritaca.ai). MariTalk is based on language models that have been specially trained to understand Portuguese well.
+MariTalk, Brezilyalı şirket [Maritaca AI](https://www.maritaca.ai) tarafından geliştirilen bir asistandır. MariTalk, Portekizceyi iyi anlamak üzere özel olarak eğitilmiş dil modellerine dayanmaktadır.
 
-This notebook demonstrates how to use MariTalk with Llama Index through two examples:
+Bu not defteri, MariTalk'un Llama Index ile nasıl kullanılacağını iki örnekle göstermektedir:
 
-1. Get pet name suggestions with chat method;
-2. Classify film reviews as negative or positive with few-shot examples with complete method.
+1. Sohbet (chat) yöntemiyle evcil hayvan ismi önerileri alma;
+2. Tamamlama (complete) yöntemiyle few-shot örnekleri kullanarak film incelemelerini negatif veya pozitif olarak sınıflandırma.
 
-## Installation
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i kurmanız gerekecektir.
 
-```
+```bash
 !pip install llama-index
 !pip install llama-index-llms-maritalk
 !pip install asyncio
 ```
 
-## API Key
+## API Anahtarı
 
-You will need an API key that can be obtained from chat.maritaca.ai (“Chaves da API” section).
+chat.maritaca.ai adresinden ("Chaves da API" bölümü) alabileceğiniz bir API anahtarına ihtiyacınız olacak.
 
-### Example 1 - Pet Name Suggestions with Chat
+### Örnek 1 - Sohbet (Chat) ile Evcil Hayvan İsim Önerileri
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.maritalk import Maritalk
 
@@ -38,29 +38,29 @@ from llama_index.llms.maritalk import Maritalk
 import asyncio
 
 
-# To customize your API key, do this
-# otherwise it will lookup MARITALK_API_KEY from your env variable
+# API anahtarınızı özelleştirmek için bunu yapın
+# aksi takdirde ortam değişkeninizden MARITALK_API_KEY'i arayacaktır
 llm = Maritalk(api_key="<your_maritalk_api_key>", model="sabia-2-medium")
 
 
-# Call chat with a list of messages
+# Mesaj listesiyle sohbeti çağırın
 messages = [
     ChatMessage(
         role="system",
-        content="You are an assistant specialized in suggesting pet names. Given the animal, you must suggest 4 names.",
+        content="Evcil hayvan isimleri önerme konusunda uzmanlaşmış bir asistansın. Verilen hayvana göre 4 isim önermelisin.",
     ),
-    ChatMessage(role="user", content="I have a dog."),
+    ChatMessage(role="user", content="Bir köpeğim var."),
 ]
 
 
-# Sync chat
+# Senkron sohbet (Sync chat)
 response = llm.chat(messages)
 print(response)
 
 
 
 
-# Async chat
+# Asenkron sohbet (Async chat)
 async def get_dog_name(llm, messages):
     response = await llm.achat(messages)
     print(response)
@@ -71,12 +71,12 @@ async def get_dog_name(llm, messages):
 asyncio.run(get_dog_name(llm, messages))
 ```
 
-#### Stream Generation
+#### Akış (Stream) Oluşturma
 
-For tasks involving the generation of long text, such as creating an extensive article or translating a large document, it can be advantageous to receive the response in parts, as the text is generated, instead of waiting for the complete text. This makes the application more responsive and efficient, especially when the generated text is extensive. We offer two approaches to meet this need: one synchronous and another asynchronous.
+Kapsamlı bir makale oluşturma veya büyük bir belgeyi çevirme gibi uzun metin oluşturma içeren görevlerde, yanıtı metin oluşturuldukça parça parça almak, metnin tamamını beklemek yerine avantajlı olabilir. Bu, özellikle oluşturulan metin kapsamlı olduğunda uygulamayı daha duyarlı ve verimli hale getirir. Bu ihtiyacı karşılamak için iki yaklaşım sunuyoruz: biri senkron, diğeri asenkron.
 
-```
-# Sync streaming chat
+```python
+# Senkron akışlı sohbet (Sync streaming chat)
 response = llm.stream_chat(messages)
 for chunk in response:
     print(chunk.delta, end="", flush=True)
@@ -84,7 +84,7 @@ for chunk in response:
 
 
 
-# Async streaming chat
+# Asenkron akışlı sohbet (Async streaming chat)
 async def get_dog_name_streaming(llm, messages):
     async for chunk in await llm.astream_chat(messages):
         print(chunk.delta, end="", flush=True)
@@ -95,34 +95,34 @@ async def get_dog_name_streaming(llm, messages):
 asyncio.run(get_dog_name_streaming(llm, messages))
 ```
 
-### Example 2 - Few-shot Examples with Complete
+### Örnek 2 - Tamamlama (Complete) ile Few-shot Örnekleri
 
-We recommend using the `llm.complete()` method when using the model with few-shot examples
+Modeli few-shot örnekleriyle kullanırken `llm.complete()` yöntemini kullanmanızı öneririz.
 
-```
-prompt = """Classifique a resenha de filme como "positiva" ou "negativa".
-
-
-Resenha: Gostei muito do filme, é o melhor do ano!
-Classe: positiva
+```python
+prompt = """Film incelemesini "pozitif" veya "negatif" olarak sınıflandırın.
 
 
-Resenha: O filme deixa muito a desejar.
-Classe: negativa
+İnceleme: Filmi çok beğendim, yılın en iyisi!
+Sınıf: pozitif
 
 
-Resenha: Apesar de longo, valeu o ingresso..
-Classe:"""
+İnceleme: Film beklentilerin çok altında kalıyor.
+Sınıf: negatif
 
 
-# Sync complete
+İnceleme: Uzun olmasına rağmen bilet parasına değdi..
+Sınıf:"""
+
+
+# Senkron tamamlama (Sync complete)
 response = llm.complete(prompt)
 print(response)
 
 
 
 
-# Async complete
+# Asenkron tamamlama (Async complete)
 async def classify_review(llm, prompt):
     response = await llm.acomplete(prompt)
     print(response)
@@ -133,8 +133,8 @@ async def classify_review(llm, prompt):
 asyncio.run(classify_review(llm, prompt))
 ```
 
-```
-# Sync streaming complete
+```python
+# Senkron akışlı tamamlama (Sync streaming complete)
 response = llm.stream_complete(prompt)
 for chunk in response:
     print(chunk.delta, end="", flush=True)
@@ -142,7 +142,7 @@ for chunk in response:
 
 
 
-# Async streaming complete
+# Asenkron akışlı tamamlama (Async streaming complete)
 async def classify_review_streaming(llm, prompt):
     async for chunk in await llm.astream_complete(prompt):
         print(chunk.delta, end="", flush=True)

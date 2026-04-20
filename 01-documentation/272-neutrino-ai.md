@@ -2,44 +2,44 @@
 
 ---
 title: Neutrino AI
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-Neutrino lets you intelligently route queries to the best-suited LLM for the prompt, maximizing performance while optimizing for costs and latency.
+Neutrino, sorguları istem (prompt) için en uygun LLM'ye akıllıca yönlendirmenizi sağlayarak bir yandan maliyetleri ve gecikmeyi optimize ederken diğer yandan performansı en üst düzeye çıkarır.
 
-Check us out at: [neutrinoapp.com](https://www.neutrinoapp.com/) Docs: [docs.neutrinoapp.com](https://docs.neutrinoapp.com/) Create an API key: [platform.neutrinoapp.com](https://platform.neutrinoapp.com/)
+Bizi buradan inceleyin: [neutrinoapp.com](https://www.neutrinoapp.com/) Belgeler: [docs.neutrinoapp.com](https://docs.neutrinoapp.com/) API anahtarı oluşturun: [platform.neutrinoapp.com](https://platform.neutrinoapp.com/)
 
-```
+```bash
 %pip install llama-index-llms-neutrino
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-#### Set Neutrino API Key env variable
+#### Neutrino API Anahtarı Ortam Değişkenini Ayarla
 
-You can create an API key at: [platform.neutrinoapp.com](https://platform.neutrinoapp.com/)
+[platform.neutrinoapp.com](https://platform.neutrinoapp.com/) adresinden bir API anahtarı oluşturabilirsiniz.
 
-```
+```python
 import os
 
 
-os.environ["NEUTRINO_API_KEY"] = "<your-neutrino-api-key>"
+os.environ["NEUTRINO_API_KEY"] = "<neutrino-api-anahtarınız>"
 ```
 
-#### Using Your Router
+#### Yönlendiricinizi (Router) Kullanma
 
-A router is a collection of LLMs that you can route queries to. You can create a router in the Neutrino [dashboard](https://platform.neutrinoapp.com/) or use the default router, which includes all supported models. You can treat a router as a LLM.
+Yönlendirici, sorguları yönlendirebileceğiniz bir LLM koleksiyonudur. Neutrino [kontrol panelinde](https://platform.neutrinoapp.com/) bir yönlendirici oluşturabilir veya desteklenen tüm modelleri içeren varsayılan yönlendiriciyi kullanabilirsiniz. Bir yönlendiriciye bir LLM gibi davranabilirsiniz.
 
-```
+```python
 from llama_index.llms.neutrino import Neutrino
 from llama_index.core.llms import ChatMessage
 
 
 llm = Neutrino(
-    # api_key="<your-neutrino-api-key>",
-    # router="<your-router-id>"  # (or 'default')
+    # api_key="<neutrino-api-anahtarınız>",
+    # router="<yönlendirici-id-niz>"  # (veya 'default')
 )
 
 
@@ -50,13 +50,13 @@ print(response)
 
 ```
 Optimal model: gpt-3.5-turbo
-a subatomic particle that is electrically neutral and has a very small mass. It is one of the fundamental particles that make up the universe. Neutrinos are extremely difficult to detect because they interact very weakly with matter, making them able to pass through most materials without any interaction. They are produced in various natural processes, such as nuclear reactions in the Sun and other stars, as well as in particle interactions on Earth. Neutrinos have played a significant role in advancing our understanding of particle physics and the universe.
+assistant: elektriksel olarak nötr olan ve çok küçük bir kütleye sahip olan bir atom altı parçacıktır. Evreni oluşturan temel parçacıklardan biridir. Nötrinoların tespiti son derece zordur çünkü maddeyle çok zayıf etkileşime girerler, bu da onların çoğu malzemenin içinden herhangi bir etkileşim olmadan geçebilmelerini sağlar. Güneş ve diğer yıldızlardaki nükleer reaksiyonlar gibi çeşitli doğal süreçlerin yanı sıra Dünya'daki parçacık etkileşimlerinde üretilirler. Nötrinolar, parçacık fiziği ve evren hakkındaki anlayışımızı geliştirmede önemli bir rol oynamıştır.
 ```
 
-```
+```python
 message = ChatMessage(
     role="user",
-    content="Explain the difference between statically typed and dynamically typed languages.",
+    content="Statik olarak yazılmış (statically typed) ve dinamik olarak yazılmış (dynamically typed) diller arasındaki farkı açıklayın.",
 )
 resp = llm.chat([message])
 print(f"Optimal model: {resp.raw['model']}")
@@ -65,23 +65,23 @@ print(resp)
 
 ```
 Optimal model: mistralai/Mixtral-8x7B-Instruct-v0.1
-assistant:  Statically typed languages and dynamically typed languages are categories of programming languages based on how they handle variable types.
+assistant: Statik olarak yazılmış diller ve dinamik olarak yazılmış diller, değişken türlerini nasıl işlediklerine bağlı programlama dili kategorileridir.
 
 
-In statically typed languages, the type of a variable is determined at compile-time, which means that the type is checked before the program is run. This ensures that variables are always used in a type-safe manner, preventing many types of errors from occurring at runtime. Examples of statically typed languages include Java, C, C++, and C#.
+Statik olarak yazılmış dillerde, bir değişkenin türü derleme zamanında (compile-time) belirlenir, bu da türün program çalıştırılmadan önce kontrol edildiği anlamına gelir. Bu, değişkenlerin her zaman tür açısından güvenli bir şekilde kullanılmasını sağlayarak birçok hata türünün çalışma zamanında oluşmasını engeller. Statik olarak yazılmış dillere örnek olarak Java, C, C++ ve C# verilebilir.
 
 
-In dynamically typed languages, the type of a variable is determined at runtime, which means that the type is checked as the program is running. This provides more flexibility, as variables can be assigned values of different types at different times, but it also means that type errors may not be caught until the program is running, which can make debugging more difficult. Examples of dynamically typed languages include Python, Ruby, JavaScript, and PHP.
+Dinamik olarak yazılmış dillerde, bir değişkenin türü çalışma zamanında (runtime) belirlenir, bu da türün program çalışırken kontrol edildiği anlamına gelir. Bu daha fazla esneklik sağlar, çünkü değişkenlere farklı zamanlarda farklı türden değerler atanabilir, ancak aynı zamanda tür hatalarının program çalışana kadar yakalanamayabileceği anlamına gelir ve bu da hata ayıklamayı zorlaştırabilir. Dinamik olarak yazılmış dillere örnek olarak Python, Ruby, JavaScript ve PHP verilebilir.
 
 
-One key difference between statically typed and dynamically typed languages is that statically typed languages tend to be more verbose, requiring explicit type declarations for variables, while dynamically typed languages are more concise and allow for implicit type declarations. However, this also means that statically typed languages can catch type errors earlier in the
+Statik ve dinamik diller arasındaki temel farklardan biri, statik dillerin değişkenler için açık tür bildirimleri gerektirerek daha ayrıntılı olma eğiliminde olmasıdır; dinamik diller ise daha özlüdür ve dolaylı tür bildirimlerine izin verir. Ancak bu aynı zamanda statik dillerin tür hatalarını daha erken yakalayabileceği anlamına gelir.
 ```
 
-#### Streaming Responses
+#### Akışlı Yanıtlar (Streaming Responses)
 
-```
+```python
 message = ChatMessage(
-    role="user", content="What is the approximate population of Mexico?"
+    role="user", content="Meksika'nın yaklaşık nüfusu nedir?"
 )
 resp = llm.stream_chat([message])
 for i, r in enumerate(resp):
@@ -92,5 +92,5 @@ for i, r in enumerate(resp):
 
 ```
 Optimal model: anthropic.claude-instant-v1
- According to the latest UN estimates, the population of Mexico is approximately 128 million as of 2020. Mexico has the 10th largest population in the world.
+assistant: En son BM tahminlerine göre, 2020 itibarıyla Meksika'nın nüfusu yaklaşık 128 milyondur. Meksika, dünyadaki en büyük 10. nüfusa sahiptir.
 ```

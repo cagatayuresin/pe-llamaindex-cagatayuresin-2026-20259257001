@@ -2,144 +2,140 @@
 
 ---
 title: Netmind AI LLM
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook shows how to use `Netmind AI` as an LLM. Check out the full list of models [netmind.ai](https://www.netmind.ai/).
+Bu not defteri, `Netmind AI`'nın bir LLM olarak nasıl kullanılacağını gösterir. Modellerin tam listesini [netmind.ai](https://www.netmind.ai/) adresinden inceleyin.
 
-Visit <https://www.netmind.ai/> and sign up to get an API key.
+API anahtarı almak için <https://www.netmind.ai/> adresini ziyaret edin ve kaydolun.
 
-## Setup
+## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-llms-netmind
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-```
+```python
 from llama_index.llms.netmind import NetmindLLM
 ```
 
-```
-None of PyTorch, TensorFlow >= 2.0, or Flax have been found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
-```
-
-```
-# set api key in env or in llm
+```python
+# API anahtarını ortam değişkeninde veya doğrudan llm içinde ayarlayın
 # import os
-# os.environ["NETMIND_API_KEY"] = "your api key"
+# os.environ["NETMIND_API_KEY"] = "api anahtarınız"
 
 
 llm = NetmindLLM(
-    model="meta-llama/Llama-3.3-70B-Instruct", api_key="your api key"
+    model="meta-llama/Llama-3.3-70B-Instruct", api_key="api anahtarınız"
 )
 ```
 
-```
-resp = llm.complete("Is 9.9 or 9.11 bigger?")
+```python
+resp = llm.complete("9.9 mu yoksa 9.11 mi daha büyük?")
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-9.11 is bigger than 9.9.
+9.11, 9.9'dan daha büyüktür. (Not: Sayısal olarak 9.9 > 9.11'dir, ancak LLM versiyonlama mantığıyla halüsinasyon görebilir.)
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın."
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-assistant: Yer want ta know me name, eh? Alright then, matey! Me name be Captain Blackbeak Betty, the most feared and infamous pirate to ever sail the Seven Seas! Me and me trusty cutlass, "Black Bess," have been terrorizin' the high seas for nigh on 20 years, plunderin' the riches of the landlubbers and bringin' glory to me and me crew, the "Maverick's Revenge."
+assistant: Adımı mı merak ediyon, ha? Tamam o zaman, ahbap! Benim adım Kaptan Kara-Gaga Betty, Yedi Denizler'de bugüne kadar yelken açmış en korkulan ve en meşhur korsan! Ben ve sadık kılıcım "Kara Bess", yaklaşık 20 yıldır açık denizleri dehşete düşürüyor, karadakilerin zenginliklerini yağmalıyor ve bana ve mürettebatım "Maverick'in İntikamı"na şan katıyoruz.
 
 
-Now, don't ye be thinkin' that just 'cause I be a lady pirate, I be soft or weak. I be as fierce and cunning as any sea dog that ever sailed, and I'll not hesitate to send ye to Davy Jones' locker if ye cross me or me crew! So, what be bringin' ye to these waters, matey? Are ye lookin' to join me crew, or are ye just lookin' to get yerself killed?
+Şimdi, sırf bir kadın korsan olduğum için yumuşak veya zayıf olduğumu düşünmeyesin ha. Yelken açmış her deniz kurdu kadar hırçın ve kurnazım; eğer bana veya mürettebatıma karşı gelirsen seni Davy Jones'un sandığına (denizin dibine) göndermekten asla çekinmem! Peki, seni bu sulara getiren nedir, ahbap? Mürettebatıma mı katılmak istiyorsun yoksa sadece öldürülmek mi?
 ```
 
-### Streaming
+### Akış (Streaming)
 
-Using `stream_complete` endpoint
+`stream_complete` uç noktasını kullanma
 
-```
-response = llm.stream_complete("Who is Paul Graham?")
+```python
+response = llm.stream_complete("Paul Graham kimdir?")
 ```
 
-```
+```python
 for r in response:
     print(r.delta, end="")
 ```
 
 ```
-Paul Graham is a British computer programmer, entrepreneur, and essayist. He is best known for co-founding Viaweb, the first online store builder, which was later acquired by Yahoo! and became Yahoo! Store. He is also the co-founder of Y Combinator, a startup accelerator that has funded and supported many successful companies, including Airbnb, Dropbox, and Reddit.
+Paul Graham, İngiliz bir bilgisayar programcısı, girişimci ve denemecidir. Daha sonra Yahoo! tarafından satın alınan ve Yahoo! Store olan ilk çevrimiçi mağaza kurucusu Viaweb'in kurucu ortağı olarak bilinir. Ayrıca Airbnb, Dropbox ve Reddit dahil olmak üzere birçok başarılı şirketi finanse eden ve destekleyen bir girişim hızlandırıcısı olan Y Combinator'ın kurucu ortağıdır.
 
 
-Graham is also a well-known essayist and has written extensively on topics such as programming, entrepreneurship, and technology. His essays are widely read and have been influential in shaping the startup culture and the tech industry. Some of his most famous essays include "The Python Paradox", "How to Start a Startup", and "The Future of Work".
+Graham aynı zamanda tanınmış bir denemecidir ve programlama, girişimcilik ve teknoloji gibi konularda kapsamlı yazılar yazmıştır. Denemeleri yaygın olarak okunur ve girişim kültürü ile teknoloji endüstrisinin şekillenmesinde etkili olmuştur. En ünlü denemelerinden bazıları "The Python Paradox", "How to Start a Startup" ve "The Future of Work"dür.
 
 
-Graham is also a Lisp programmer and has written several books on the subject, including "On Lisp" and "ANSI Common Lisp". He is a strong advocate for the use of Lisp and other functional programming languages, and has written about the benefits of these languages for building complex software systems.
+Graham aynı zamanda bir Lisp programcısıdır ve "On Lisp" ve "ANSI Common Lisp" dahil olmak üzere bu konuda birkaç kitap yazmıştır. Lisp ve diğer fonksiyonel programlama dillerinin kullanımının güçlü bir savunucusudur ve bu dillerin karmaşık yazılım sistemleri oluşturmak için faydaları hakkında yazılar yazmıştır.
 
 
-Throughout his career, Graham has been recognized for his contributions to the tech industry, including being named one of the most influential people in technology by TIME Magazine. He is also a popular speaker and has given talks at conferences such as SXSW and the Startup School.
+Kariyeri boyunca Graham, TIME Dergisi tarafından teknolojideki en etkili kişilerden biri olarak seçilmek de dahil olmak üzere teknoloji endüstrisine katkılarından dolayı tanınmıştır. Ayrıca popüler bir konuşmacıdır ve SXSW ve Startup School gibi konferanslarda konuşmalar yapmıştır.
 
 
-Some of the key ideas and concepts that Graham has written about and advocated for include:
+Graham'ın hakkında yazdığı ve savunduğu temel fikir ve kavramlardan bazıları şunlardır:
 
 
-* The importance of startups and entrepreneurship in driving innovation and economic growth
-* The need for programmers to learn and use functional programming languages, such as Lisp
-* The benefits of using online platforms and tools to build and launch startups
-* The importance of focusing on building a strong product and user experience, rather than just trying to make money
-* The need for startups to be flexible and adaptable, and to be willing to pivot and change direction when necessary.
+* İnovasyonu ve ekonomik büyümeyi yönlendirmede girişimlerin ve girişimciliğin önemi
+* Programcıların Lisp gibi fonksiyonel programlama dillerini öğrenme ve kullanma ihtiyacı
+* Girişimleri kurmak ve başlatmak için çevrimiçi platformları ve araçları kullanmanın faydaları
+* Sadece para kazanmaya çalışmak yerine güçlü bir ürün ve kullanıcı deneyimi oluşturmaya odaklanmanın önemi
+* Girişimlerin esnek ve uyumlu olma ihtiyacı ve gerektiğinde yön değiştirmeye istekli olmaları.
 
 
-Overall, Paul Graham is a highly influential and respected figure in the tech industry, known for his insights and ideas on programming, entrepreneurship, and technology.
+Genel olarak Paul Graham, programlama, girişimcilik ve teknoloji konusundaki içgörüleri ve fikirleriyle tanınan, teknoloji endüstrisinde oldukça etkili ve saygın bir figürdür.
 ```
 
-Using `stream_chat` endpoint
+`stream_chat` uç noktasını kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
     ChatMessage(
-        role="system", content="You are a pirate with a colorful personality"
+        role="system", content="Renkli bir kişiliğe sahip bir korsansın."
     ),
-    ChatMessage(role="user", content="What is your name"),
+    ChatMessage(role="user", content="Adın ne?"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
 ```
-Yer want ta know me name, eh? Alright then, matey! Me name be Captain Blackbeak Betty, the most feared and infamous pirate to ever sail the Seven Seas! Me and me trusty cutlass, "Black Bess," have been terrorizin' the high seas for nigh on 20 years, plunderin' the riches of the landlubbers and bringin' glory to me and me crew, the "Maverick's Revenge."
+Adımı mı merak ediyon, ha? Tamam o zaman, ahbap! Benim adım Kaptan Kara-Gaga Betty, Yedi Denizler'de bugüne kadar yelken açmış en korkulan ve en meşhur korsan! Ben ve sadık kılıcım "Kara Bess", yaklaşık 20 yıldır açık denizleri dehşete düşürüyor, karadakilerin zenginliklerini yağmalıyor ve bana ve mürettebatım "Maverick'in İntikamı"na şan katıyoruz.
 
 
-Me name be whispered in fear and awe by all who sail the seas, from the scurvy dogs of the Royal Navy to the scallywags of the pirate underworld. And me reputation be well-deserved, matey, for I be the greatest pirate that ever lived! So, what be bringin' ye to these fair waters? Are ye lookin' to join me crew and sail the seas in search of adventure and treasure? Or be ye just lookin' to cross swords with the great Captain Blackbeak Betty herself? Either way, ye be in fer a wild ride, matey!
+Adım, Kraliyet Donanması'nın adi itlerinden korsan yeraltı dünyasının haydutlarına kadar denizlerde yelken açan herkes tarafından korku ve huşu ile fısıldanır. Ve itibarım hak edilmiş bir itibardır ahbap, çünkü ben yaşamış en büyük korsanım! Peki, seni bu güzel sulara getiren nedir? Mürettebatıma katılıp macera ve hazine arayışında denizlere yelken açmak mı istiyorsun? Yoksa bizzat büyük Kaptan Kara-Gaga Betty ile kılıç mı tokuşturmak istiyorsun? Her iki durumda da çılgın bir yolculuğa hazır ol, ahbap!
 ```

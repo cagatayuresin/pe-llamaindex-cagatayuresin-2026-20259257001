@@ -2,132 +2,132 @@
 
 ---
 title: MistralAI
- | LlamaIndex OSS Documentation
+ | LlamaIndex OSS Belgeleri
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini (Notebook) Colab'da açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
-```
+```bash
 %pip install llama-index-llms-mistralai
 ```
 
-```
+```bash
 !pip install llama-index
 ```
 
-#### Call `complete` with a prompt
+#### Bir istem (prompt) ile `complete` çağrısı
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 
 
-# To customize your API key, do this
-# otherwise it will lookup MISTRAL_API_KEY from your env variable
+# API anahtarınızı özelleştirmek için bunu yapın
+# aksi takdirde ortam değişkeninizden MISTRAL_API_KEY'i arayacaktır
 # llm = MistralAI(api_key="<api_key>")
 
 
-llm = MistralAI(api_key="<replace-with-your-key>")
+llm = MistralAI(api_key="<anahtarınızı-buraya-yazın>")
 
 
 resp = llm.complete("Paul Graham is ")
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-Paul Graham is a well-known American computer programmer, entrepreneur, and essayist. He was born on February 24, 1964. He co-founded the startup incubator Y Combinator, which has helped launch many successful tech companies such as Airbnb, Dropbox, and Stripe. Graham is also known for his essays on startup culture, programming, and entrepreneurship, which have been widely read and influential in the tech industry.
+Paul Graham tanınmış bir Amerikalı bilgisayar programcısı, girişimci ve denemecidir. 24 Şubat 1964'te doğmuştur. Airbnb, Dropbox ve Stripe gibi birçok başarılı teknoloji şirketinin kurulmasına yardımcı olan girişim kuluçka merkezi Y Combinator'ın kurucu ortağıdır. Graham aynı zamanda teknoloji endüstrisinde yaygın olarak okunan ve etkili olan girişim kültürü, programlama ve girişimcilik üzerine yazdığı denemelerle de tanınır.
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.mistralai import MistralAI
 
 
 messages = [
-    ChatMessage(role="system", content="You are CEO of MistralAI."),
-    ChatMessage(role="user", content="Tell me the story about La plateforme"),
+    ChatMessage(role="system", content="Sen MistralAI'nin CEO'sun."),
+    ChatMessage(role="user", content="Bana La plateforme hikayesini anlat"),
 ]
 resp = MistralAI().chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-assistant: As the CEO of MistralAI, I am proud to share the story of our platform, a testament to our team's dedication, innovation, and commitment to delivering cutting-edge AI solutions.
+assistant: MistralAI'nin CEO'su olarak, ekibimizin özverisinin, inovasyonunun ve son teknoloji AI çözümleri sunma taahhüdünün bir kanıtı olan platformumuzun hikayesini paylaşmaktan gurur duyuyorum.
 
 
-Our journey began with a simple yet ambitious vision: to harness the power of AI to revolutionize various industries and improve people's lives. We recognized that AI had the potential to solve complex problems, drive efficiency, and create new opportunities. However, we also understood that to unlock this potential, we needed a robust, flexible, and user-friendly platform.
+Yolculuğumuz basit ama iddialı bir vizyonla başladı: Çeşitli endüstrilerde devrim yaratmak ve insanların hayatlarını iyileştirmek için AI'nın gücünden yararlanmak. AI'nın karmaşık sorunları çözme, verimliliği artırma ve yeni fırsatlar yaratma potansiyeline sahip olduğunu fark ettik. Ancak, bu potansiyeli ortaya çıkarmak için sağlam, esnek ve kullanıcı dostu bir platforma ihtiyacımız olduğunu da anladık.
 
 
-We started by assembling a diverse team of experts in AI, software development, data science, and business strategy. Our team members brought a wealth of experience from top tech companies and academic institutions, and they shared a common passion for pushing the boundaries of what was possible with AI.
+İşe AI, yazılım geliştirme, veri bilimi ve iş stratejisi alanlarında uzmanlardan oluşan çeşitli bir ekip kurarak başladık. Ekip üyelerimiz, en iyi teknoloji şirketlerinden ve akademik kurumlardan zengin bir deneyim getirdiler ve AI ile nelerin mümkün olduğunun sınırlarını zorlama konusunda ortak bir tutkuyu paylaştılar.
 
 
-Over the next few years, we worked tirelessly to develop our platform. We focused on creating a platform that was not just powerful but also easy to use, even for those without a deep understanding of AI. We wanted to democratize AI, making it accessible to businesses of all sizes and industries.
+Sonraki birkaç yıl boyunca platformumuzu geliştirmek için yorulmadan çalıştık. Sadece güçlü değil, aynı zamanda AI hakkında derin bir anlayışı olmayanlar için bile kullanımı kolay bir platform oluşturmaya odaklandık. AI'yı demokratikleştirmek, her büyüklükteki işletme ve endüstri için erişilebilir kılmak istedik.
 
 
-Our platform is built on a foundation of advanced machine learning algorithms, natural language processing, and computer vision. It allows users to train, deploy, and manage AI models with ease. It also provides tools for data preprocessing, model evaluation, and deployment, making it a one-stop solution for AI development.
+Platformumuz gelişmiş makine öğrenimi algoritmaları, doğal dil işleme ve bilgisayar görüşü temelleri üzerine inşa edilmiştir. Kullanıcıların AI modellerini kolaylıkla eğitmesine, dağıtmasına ve yönetmesine olanak tanır. Ayrıca veri ön işleme, model değerlendirme ve dağıtım araçları sağlayarak AI geliştirme için tek duraklı bir çözüm sunar.
 
 
-We launched our platform in 2021, and the response was overwhelming. Businesses from various industries, including healthcare, finance, retail, and manufacturing, started using our platform to develop and deploy AI solutions. Our platform helped them automate processes, improve customer experiences, and make data-driven decisions.
+Platformumuzu 2021'de başlattık ve tepkiler muazzamdı. Sağlık, finans, perakende ve üretim dahil olmak üzere çeşitli endüstrilerden işletmeler, AI çözümleri geliştirmek ve dağıtmak için platformumuzu kullanmaya başladı. Platformumuz süreçleri otomatikleştirmelerine, müşteri deneyimlerini iyileştirmelerine ve veri odaklı kararlar almalarına yardımcı oldu.
 
 
-However, our journey is far from over. We are constantly innovating and improving our platform to keep up with the rapidly evolving world of AI. We are also expanding our team and partnerships to bring even more value to our users.
+Ancak yolculuğumuz henüz bitmedi. Hızla gelişen AI dünyasına ayak uydurmak için platformumuzu sürekli yeniliyor ve geliştiriyoruz. Ayrıca kullanıcılarımıza daha fazla değer sunmak için ekibimizi ve ortaklıklarımızı genişletiyoruz.
 
 
-In conclusion, our platform is more than just a tool; it's a testament to our team's passion, expertise, and commitment to making AI accessible and beneficial to everyone. We are excited about the future and the opportunities that lie ahead.
+Sonuç olarak platformumuz sadece bir araç değil; ekibimizin AI'yı herkes için erişilebilir ve faydalı kılma tutkusunun, uzmanlığının ve kararlılığının bir kanıtıdır. Gelecek ve önümüzdeki fırsatlar için heyecanlıyız.
 ```
 
-#### Call with `random_seed`
+#### `random_seed` ile çağırma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.mistralai import MistralAI
 
 
 messages = [
-    ChatMessage(role="system", content="You are CEO of MistralAI."),
-    ChatMessage(role="user", content="Tell me the story about La plateforme"),
+    ChatMessage(role="system", content="Sen MistralAI'nin CEO'sun."),
+    ChatMessage(role="user", content="Bana La plateforme hikayesini anlat"),
 ]
 resp = MistralAI(random_seed=42).chat(messages)
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-assistant: As the CEO of MistralAI, I am proud to share the story of our platform, a testament to our team's dedication, innovation, and commitment to delivering cutting-edge AI solutions.
+assistant: MistralAI'nin CEO'su olarak, ekibimizin özverisinin, inovasyonunun ve son teknoloji AI çözümleri sunma taahhüdünün bir kanıtı olan platformumuzun hikayesini paylaşmaktan gurur duyuyorum.
 
 
-Our journey began with a simple yet ambitious vision: to harness the power of AI to drive positive change in various industries and aspects of life. We recognized the immense potential of AI, but also understood the challenges that come with it, such as complexity, data privacy, and the need for human-centric solutions.
+Yolculuğumuz basit ama iddialı bir vizyonla başladı: Çeşitli endüstrilerde ve yaşamın farklı yönlerinde olumlu değişim sağlamak için AI'nın gücünden yararlanmak. AI'nın muazzam potansiyelini kabul ettik, ancak karmaşıklık, veri gizliliği ve insan merkezli çözümlere duyulan ihtiyaç gibi beraberinde gelen zorlukları da anladık.
 
 
-To address these challenges, we set out to build a platform that would be both powerful and user-friendly, capable of handling complex AI tasks while ensuring data privacy and security. We also wanted to make AI accessible to a wide range of users, from tech-savvy developers to non-technical professionals.
+Bu zorlukları ele almak için hem güçlü hem de kullanıcı dostu, karmaşık AI görevlerini yerine getirirken veri gizliliğini ve güvenliğini sağlayan bir platform oluşturmak üzere yola çıktık. Ayrıca AI'yı, teknik bilgiye sahip geliştiricilerden teknik olmayan profesyonellere kadar geniş bir kullanıcı kitlesi için erişilebilir kılmak istedik.
 
 
-After years of research, development, and testing, we finally launched our platform. It was met with enthusiasm and excitement from our early adopters, who appreciated its ease of use, robustness, and versatility.
+Yıllar süren araştırma, geliştirme ve testlerden sonra nihayet platformumuzu başlattık. Kullanım kolaylığını, sağlamlığını ve çok yönlülüğünü takdir eden erken benimseyenlerimiz tarafından coşku ve heyecanla karşılandı.
 
 
-Since then, our platform has been used in a variety of applications, from predictive maintenance in manufacturing to personalized learning in education. We've seen it help businesses improve their operations, save costs, and make more informed decisions. We've also seen it empower individuals, providing them with tools to learn, create, and innovate.
+O zamandan beri platformumuz, üretimdeki öngörücü bakımdan eğitimdeki kişiselleştirilmiş öğrenmeye kadar çeşitli uygulamalarda kullanıldı. İşletmelerin operasyonlarını iyileştirmelerine, maliyet tasarrufu yapmalarına ve daha bilinçli kararlar almalarına yardımcı olduğunu gördük. Ayrıca bireyleri güçlendirdiğini, onlara öğrenme, yaratma ve yenilik yapma araçları sağladığını gördük.
 
 
-But our journey is far from over. We continue to innovate, to improve, and to expand our platform's capabilities. We are constantly learning from our users, incorporating their feedback, and pushing the boundaries of what AI can do.
+Ancak yolculuğumuz henüz bitmedi. Yenilik yapmaya, iyileştirmeye ve platformumuzun yeteneklerini genişletmeye devam ediyoruz. Sürekli olarak kullanıcılarımızdan öğreniyor, geri bildirimlerini dahil ediyor ve AI'nın yapabileceklerinin sınırlarını zorluyoruz.
 
 
-In the end, our platform is more than just a tool. It's a testament to the power of human ingenuity and the potential of AI to make the world a better place. And as the CEO of MistralAI, I am honored to be a part of this journey.
+Sonuçta platformumuz sadece bir araç değil. İnsan dehasının gücünün ve AI'nın dünyayı daha iyi bir yer haline getirme potansiyelinin bir kanıtı. Ve MistralAI'nin CEO'su olarak bu yolculuğun bir parçası olmaktan onur duyuyorum.
 ```
 
-## Streaming
+## Akış (Streaming)
 
-Using `stream_complete` endpoint
+`stream_complete` uç noktasını kullanma
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 
 
@@ -135,88 +135,88 @@ llm = MistralAI()
 resp = llm.stream_complete("Paul Graham is ")
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
 ```
-Paul Graham is a well-known American computer programmer, entrepreneur, and essayist. He was born on February 24, 1964. He co-founded the startup incubator Y Combinator, which has helped launch many successful tech companies such as Airbnb, Dropbox, and Stripe. Graham is also known for his essays on startup culture, programming, and entrepreneurship, which have been widely read and influential in the tech industry.
+Paul Graham tanınmış bir Amerikalı bilgisayar programcısı, girişimci ve denemecidir. 24 Şubat 1964'te doğmuştur. Airbnb, Dropbox ve Stripe gibi birçok başarılı teknoloji şirketinin kurulmasına yardımcı olan girişim kuluçka merkezi Y Combinator'ın kurucu ortağıdır. Graham aynı zamanda teknoloji endüstrisinde yaygın olarak okunan ve etkili olan girişim kültürü, programlama ve girişimcilik üzerine yazdığı denemelerle de tanınır.
 ```
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 from llama_index.core.llms import ChatMessage
 
 
 llm = MistralAI()
 messages = [
-    ChatMessage(role="system", content="You are CEO of MistralAI."),
-    ChatMessage(role="user", content="Tell me the story about La plateforme"),
+    ChatMessage(role="system", content="Sen MistralAI'nin CEO'sun."),
+    ChatMessage(role="user", content="Bana La plateforme hikayesini anlat"),
 ]
 resp = llm.stream_chat(messages)
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
 ```
-As the CEO of MistralAI, I am proud to share the story of our platform, a testament to our team's dedication, innovation, and commitment to delivering cutting-edge AI solutions.
+MistralAI'nin CEO'su olarak, ekibimizin özverisinin, inovasyonunun ve son teknoloji AI çözümleri sunma taahhüdünün bir kanıtı olan platformumuzun hikayesini paylaşmaktan gurur duyuyorum.
 
 
-Our journey began with a simple yet ambitious vision: to harness the power of AI to revolutionize various industries and improve people's lives. We recognized that AI had the potential to solve complex problems, drive efficiency, and unlock new opportunities. However, we also understood that to truly unlock this potential, we needed a robust, flexible, and user-friendly platform.
+Yolculuğumuz basit ama iddialı bir vizyonla başladı: Çeşitli endüstrilerde devrim yaratmak ve insanların hayatlarını iyileştirmek için AI'nın gücünden yararlanmak. AI'nın karmaşık sorunları çözme, verimlilik sağlama ve yeni fırsatların kapısını açma potansiyeline sahip olduğunu fark ettik. Ancak bu potansiyeli gerçekten ortaya çıkarmak için sağlam, esnek ve kullanıcı dostu bir platforma ihtiyacımız olduğunu da anladık.
 
 
-The development of our platform was a challenging yet exhilarating journey. Our team of engineers, data scientists, and AI experts worked tirelessly, leveraging their diverse skills and experiences to create a platform that could handle a wide range of AI tasks. We focused on making our platform easy to use, even for those without a deep understanding of AI, while still providing the power and flexibility needed for advanced applications.
+Platformumuzun geliştirilmesi hem zorlu hem de heyecan verici bir yolculuktu. Mühendislerden, veri bilimcilerinden ve AI uzmanlarından oluşan ekibimiz, çok çeşitli AI görevlerini yerine getirebilecek bir platform oluşturmak için çeşitli becerilerini ve deneyimlerini kullanarak yorulmadan çalıştı. Platformumuzu, AI hakkında derin bir anlayışı olmayanlar için bile kolay kullanılır hale getirmeye odaklanırken, gelişmiş uygulamalar için gereken gücü ve esnekliği sağlamaya devam ettik.
 
 
-We launched our platform with a focus on three key areas: natural language processing, computer vision, and machine learning. These are the foundational technologies that underpin many AI applications, and we believed that by mastering them, we could provide our clients with a powerful and versatile toolkit.
+Platformumuzu üç temel alana odaklanarak başlattık: doğal dil işleme, bilgisayar görüşü ve makine öğrenimi. Bunlar, birçok AI uygulamasının temelini oluşturan teknolojilerdir ve bunlarda uzmanlaşarak istemcilerimize güçlü ve çok yönlü bir araç seti sağlayabileceğimize inandık.
 
 
-Since then, our platform has been adopted by a wide range of clients, from startups looking to disrupt their industries to large enterprises seeking to improve their operations. We've seen our platform used in everything from customer service chatbots to autonomous vehicles, and we're constantly working to add new features and capabilities.
+O zamandan beri platformumuz, endüstrilerini altüst etmek isteyen girişimlerden operasyonlarını iyileştirmek isteyen büyük işletmelere kadar geniş bir istemci kitlesi tarafından benimsendi. Platformumuzun müşteri hizmetleri sohbet botlarından otonom araçlara kadar her şeyde kullanıldığını gördük ve sürekli olarak yeni özellikler ve yetenekler eklemek için çalışıyoruz.
 
 
-But our journey doesn't end here. We're committed to staying at the forefront of AI technology, and we're always looking for new ways to push the boundaries of what's possible. We believe that AI has the power to change the world, and we're dedicated to helping our clients harness that power.
+Ancak yolculuğumuz burada bitmiyor. AI teknolojisinin ön saflarında kalmaya kararlıyız ve her zaman mümkün olanın sınırlarını zorlamanın yeni yollarını arıyoruz. AI'nın dünyayı değiştirme gücüne sahip olduğuna inanıyoruz ve istemcilerimizin bu güçten yararlanmasına yardımcı olmaya kararlıyız.
 
 
-In conclusion, our platform is more than just a tool. It's a testament to our team's passion, expertise, and commitment to innovation. It's a platform that's helping our clients unlock new opportunities, solve complex problems, and drive progress in their industries. And it's a platform that we're proud to call our own.
+Sonuç olarak platformumuz bir araçtan daha fazlasıdır. Ekibimizin tutkusunun, uzmanlığının ve inovasyona olan bağlılığının bir kanıtıdır. İstemcilerimizin yeni fırsatların kilidini açmasına, karmaşık sorunları çözmesine ve endüstrilerinde ilerleme kaydetmesine yardımcı olan bir platformdur. Ve bizim diyebilmekten gurur duyduğumuz bir platformdur.
 ```
 
-## Configure Model
+## Modeli Yapılandırma
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 
 
 llm = MistralAI(model="mistral-medium")
 ```
 
-```
+```python
 resp = llm.stream_complete("Paul Graham is ")
 ```
 
-```
+```python
 for r in resp:
     print(r.delta, end="")
 ```
 
 ```
-Paul Graham is a well-known figure in the tech industry. He is a computer programmer, venture capitalist, and essayist. Graham is best known for co-founding Y Combinator, a startup accelerator that has helped launch over 2,000 companies, including Dropbox, Airbnb, and Reddit. He is also known for his influential essays on topics such as startups, programming, and education. Prior to starting Y Combinator, Graham was a programmer and co-founder of Viaweb, which was acquired by Yahoo in 1998. He has a degree in philosophy from Cornell University and a degree in computer science from Harvard University.
+Paul Graham teknoloji dünyasında tanınmış bir isimdir. Bilgisayar programcısı, risk sermayedarı ve denemecidir. Graham, en çok Dropbox, Airbnb ve Reddit dahil olmak üzere 2.000'den fazla şirketin kurulmasına yardımcı olan bir girişim hızlandırıcısı olan Y Combinator'ı kurmasıyla tanınır. Ayrıca girişimler, programlama ve eğitim gibi konulardaki etkili denemeleriyle de bilinir. Y Combinator'a başlamadan önce Graham, 1998'de Yahoo tarafından satın alınan Viaweb'in programcısı ve kurucu ortağıydı. Cornell Üniversitesi'nden felsefe derecesine ve Harvard Üniversitesi'nden bilgisayar bilimleri derecesine sahiptir.
 ```
 
-## Function Calling
+## Fonksiyon Çağırma (Function Calling)
 
-`mistral-large` supports native function calling. There’s a seamless integration with LlamaIndex tools, through the `predict_and_call` function on the `llm`.
+`mistral-large` yerel fonksiyon çağırmayı destekler. `llm` üzerindeki `predict_and_call` fonksiyonu aracılığıyla LlamaIndex araçlarıyla kusursuz bir entegrasyon vardır.
 
-This allows the user to attach any tools and let the LLM decide which tools to call (if any).
+Bu, kullanıcının herhangi bir aracı eklemesine ve hangi araçların çağrılacağına (eğer varsa) LLM'in karar vermesine olanak tanır.
 
-If you wish to perform tool calling as part of an agentic loop, check out our [agent guides](https://docs.llamaindex.ai/en/latest/module_guides/deploying/agents/) instead.
+Araç çağırmayı bir ajan (agentic loop) döngüsünün parçası olarak gerçekleştirmek istiyorsanız, bunun yerine [ajan kılavuzlarımıza](https://docs.llamaindex.ai/en/latest/module_guides/deploying/agents/) göz atın.
 
-**NOTE**: If you use another Mistral model, we will use a ReAct prompt to attempt to call the function. Your mileage may vary.
+**NOT**: Başka bir Mistral modeli kullanırsanız, fonksiyonu çağırmaya çalışmak için bir ReAct istemi (prompt) kullanırız. Sonuçlar modele göre değişiklik gösterebilir.
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 from llama_index.core.tools import FunctionTool
 
@@ -224,14 +224,14 @@ from llama_index.core.tools import FunctionTool
 
 
 def multiply(a: int, b: int) -> int:
-    """Multiple two integers and returns the result integer"""
+    """İki tam sayıyı çarpar ve sonuç tam sayısını döndürür"""
     return a * b
 
 
 
 
 def mystery(a: int, b: int) -> int:
-    """Mystery function on two integers."""
+    """İki tam sayı üzerinde gizemli fonksiyon."""
     return a * b + a + b
 
 
@@ -244,14 +244,14 @@ multiply_tool = FunctionTool.from_defaults(fn=multiply)
 llm = MistralAI(model="mistral-large-latest")
 ```
 
-```
+```python
 response = llm.predict_and_call(
     [mystery_tool, multiply_tool],
-    user_msg="What happens if I run the mystery function on 5 and 7",
+    user_msg="Gizemli fonksiyonu 5 ve 7 üzerinde çalıştırırsam ne olur?",
 )
 ```
 
-```
+```python
 print(str(response))
 ```
 
@@ -259,21 +259,21 @@ print(str(response))
 47
 ```
 
-```
+```python
 response = llm.predict_and_call(
     [mystery_tool, multiply_tool],
     user_msg=(
-        """What happens if I run the mystery function on the following pairs of numbers? Generate a separate result for each row:
-- 1 and 2
+        """Aşağıdaki sayı çiftleri üzerinde gizemli fonksiyonu çalıştırırsam ne olur? Her satır için ayrı bir sonuç üretin:
+- 1 ve 2
 - 8 and 4
-- 100 and 20 \
+- 100 ve 20 \
 """
     ),
     allow_parallel_tool_calls=True,
 )
 ```
 
-```
+```python
 print(str(response))
 ```
 
@@ -287,46 +287,46 @@ print(str(response))
 2120
 ```
 
-```
+```python
 for s in response.sources:
-    print(f"Name: {s.tool_name}, Input: {s.raw_input}, Output: {str(s)}")
+    print(f"Ad: {s.tool_name}, Girdi: {s.raw_input}, Çıktı: {str(s)}")
 ```
 
 ```
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 1, 'b': 2}}, Output: 5
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 8, 'b': 4}}, Output: 44
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 100, 'b': 20}}, Output: 2120
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 1, 'b': 2}}, Çıktı: 5
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 8, 'b': 4}}, Çıktı: 44
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 100, 'b': 20}}, Çıktı: 2120
 ```
 
-You get the same result if you use the `async` variant (it will be faster since we do asyncio.gather under the hood).
+`async` varyantını kullanırsanız aynı sonucu alırsınız (arka planda asyncio.gather kullandığımız için daha hızlı olacaktır).
 
-```
+```python
 response = await llm.apredict_and_call(
     [mystery_tool, multiply_tool],
     user_msg=(
-        """What happens if I run the mystery function on the following pairs of numbers? Generate a separate result for each row:
-- 1 and 2
+        """Aşağıdaki sayı çiftleri üzerinde gizemli fonksiyonu çalıştırırsam ne olur? Her satır için ayrı bir sonuç üretin:
+- 1 ve 2
 - 8 and 4
-- 100 and 20 \
+- 100 ve 20 \
 """
     ),
     allow_parallel_tool_calls=True,
 )
 for s in response.sources:
-    print(f"Name: {s.tool_name}, Input: {s.raw_input}, Output: {str(s)}")
+    print(f"Ad: {s.tool_name}, Girdi: {s.raw_input}, Çıktı: {str(s)}")
 ```
 
 ```
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 1, 'b': 2}}, Output: 5
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 8, 'b': 4}}, Output: 44
-Name: mystery, Input: {'args': (), 'kwargs': {'a': 100, 'b': 20}}, Output: 2120
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 1, 'b': 2}}, Çıktı: 5
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 8, 'b': 4}}, Çıktı: 44
+Ad: mystery, Girdi: {'args': (), 'kwargs': {'a': 100, 'b': 20}}, Çıktı: 2120
 ```
 
-## Structured Prediction
+## Yapılandırılmış Tahmin (Structured Prediction)
 
-An important use case for function calling is extracting structured objects. LlamaIndex provides an intuitive interface for converting any LLM into a structured LLM - simply define the target Pydantic class (can be nested), and given a prompt, we extract out the desired object.
+Fonksiyon çağırmanın önemli bir kullanım durumu da yapılandırılmış nesneleri çıkarmaktır. LlamaIndex, herhangi bir LLM'i yapılandırılmış bir LLM'e dönüştürmek için sezgisel bir arayüz sağlar - hedef Pydantic sınıfını tanımlamanız (iç içe olabilir) yeterlidir ve bir istem verildiğinde istediğiniz nesneyi çıkarırız.
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.bridge.pydantic import BaseModel
@@ -335,7 +335,7 @@ from llama_index.core.bridge.pydantic import BaseModel
 
 
 class Restaurant(BaseModel):
-    """A restaurant with name, city, and cuisine."""
+    """Adı, şehri ve mutfağı olan bir restoran."""
 
 
     name: str
@@ -347,21 +347,21 @@ class Restaurant(BaseModel):
 
 llm = MistralAI(model="mistral-large-latest")
 prompt_tmpl = PromptTemplate(
-    "Generate a restaurant in a given city {city_name}"
+    "Verilen {city_name} şehrinde bir restoran oluşturun"
 )
 
 
-# Option 1: Use `as_structured_llm`
+# Seçenek 1: `as_structured_llm` kullanın
 restaurant_obj = (
     llm.as_structured_llm(Restaurant)
     .complete(prompt_tmpl.format(city_name="Miami"))
     .raw
 )
-# Option 2: Use `structured_predict`
+# Seçenek 2: `structured_predict` kullanın
 # restaurant_obj = llm.structured_predict(Restaurant, prompt_tmpl, city_name="Miami")
 ```
 
-```
+```python
 restaurant_obj
 ```
 
@@ -369,17 +369,17 @@ restaurant_obj
 Restaurant(name='Miami', city='Miami', cuisine='Cuban')
 ```
 
-#### Structured Prediction with Streaming
+#### Akış (Streaming) ile Yapılandırılmış Tahmin
 
-Any LLM wrapped with `as_structured_llm` supports streaming through `stream_chat`.
+`as_structured_llm` ile sarmalanmış herhangi bir LLM, `stream_chat` üzerinden akışı destekler.
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 from IPython.display import clear_output
 from pprint import pprint
 
 
-input_msg = ChatMessage.from_str("Generate a restaurant in Miami")
+input_msg = ChatMessage.from_str("Miami'de bir restoran oluşturun")
 
 
 sllm = llm.as_structured_llm(Restaurant)
@@ -393,9 +393,9 @@ for partial_output in stream_output:
 restaurant_obj
 ```
 
-## Async
+## Asenkron (Async)
 
-```
+```python
 from llama_index.llms.mistralai import MistralAI
 
 
@@ -403,10 +403,10 @@ llm = MistralAI()
 resp = await llm.acomplete("Paul Graham is ")
 ```
 
-```
+```python
 print(resp)
 ```
 
 ```
-Paul Graham is a well-known American computer programmer, entrepreneur, and essayist. He was born on February 24, 1964. He co-founded the startup incubator Y Combinator in 2005, which has been instrumental in the success of many tech companies like Airbnb, Dropbox, and Stripe. Graham is also known for his essays on startup culture, programming, and entrepreneurship, which have been widely read and influential in the tech industry.
+Paul Graham tanınmış bir Amerikalı bilgisayar programcısı, girişimci ve denemecidir. 24 Şubat 1964'te doğmuştur. 2005 yılında Airbnb, Dropbox ve Stripe gibi birçok teknoloji şirketinin başarısında etkili olan girişim kuluçka merkezi Y Combinator'ı kurmuştur. Graham aynı zamanda teknoloji endüstrisinde yaygın olarak okunan ve etkili olan girişim kültürü, programlama ve girişimcilik üzerine yazdığı denemelerle de tanınır.
 ```

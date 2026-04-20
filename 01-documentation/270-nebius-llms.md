@@ -1,28 +1,28 @@
-# Nebius LLMs
+# Nebius LLM'leri
 
 ---
-title: Nebius LLMs
- | LlamaIndex OSS Documentation
+title: Nebius LLM'leri
+ | LlamaIndex OSS Belgeleri
 ---
 
-This notebook demonstrates how to use LLMs from [Nebius AI Studio](https://studio.nebius.ai/) with LlamaIndex. Nebius AI Studio implements all state-of-the-art LLMs available for commercial use.
+Bu not defteri, LlamaIndex ile [Nebius AI Studio](https://studio.nebius.ai/)'dan LLM'lerin nasıl kullanılacağını gösterir. Nebius AI Studio, ticari kullanım için mevcut olan tüm son teknoloji LLM'leri uygular.
 
-First, let’s install LlamaIndex and dependencies of Nebius AI Studio.
+Öncelikle LlamaIndex'i ve Nebius AI Studio bağımlılıklarını kuralım.
 
-```
+```bash
 %pip install llama-index-llms-nebius llama-index
 ```
 
-Upload your Nebius AI Studio key from system variables below or simply insert it. You can get it by registering for free at [Nebius AI Studio](https://auth.eu.nebius.com/ui/login) and issuing the key at [API Keys section](https://studio.nebius.ai/settings/api-keys).”
+Aşağıdaki sistem değişkenlerinden Nebius AI Studio anahtarınızı yükleyin veya doğrudan ekleyin. [Nebius AI Studio](https://auth.eu.nebius.com/ui/login) adresinden ücretsiz kaydolarak ve [API Anahtarları bölümünden](https://studio.nebius.ai/settings/api-keys) anahtarı oluşturarak alabilirsiniz.
 
-```
+```python
 import os
 
 
-NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")  # NEBIUS_API_KEY = ""
+NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")  # veya NEBIUS_API_KEY = "anahtarınız"
 ```
 
-```
+```python
 from llama_index.llms.nebius import NebiusLLM
 
 
@@ -31,32 +31,28 @@ llm = NebiusLLM(
 )
 ```
 
-```
-None of PyTorch, TensorFlow >= 2.0, or Flax have been found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
-```
+#### Bir istem (prompt) ile `complete` çağrısı
 
-#### Call `complete` with a prompt
-
-```
-response = llm.complete("Amsterdam is the capital of ")
+```python
+response = llm.complete("Amsterdam buranın başkentidir: ")
 print(response)
 ```
 
 ```
-The Netherlands! Amsterdam is indeed the capital and largest city of the Netherlands.
+Hollanda! Amsterdam gerçekten de Hollanda'nın başkenti ve en büyük şehridir.
 ```
 
-#### Call `chat` with a list of messages
+#### Bir mesaj listesiyle `chat` çağrısı
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
-    ChatMessage(role="system", content="You are a helpful AI assistant."),
+    ChatMessage(role="system", content="Yardımsever bir yapay zeka asistanısın."),
     ChatMessage(
         role="user",
-        content="Answer briefly: who is Wall-e?",
+        content="Kısaca cevapla: Wall-e kimdir?",
     ),
 ]
 response = llm.chat(messages)
@@ -64,34 +60,34 @@ print(response)
 ```
 
 ```
-assistant: WALL-E is a small waste-collecting robot and the main character in the 2008 Pixar animated film of the same name.
+assistant: WALL-E, aynı adı taşıyan 2008 yapımı Pixar animasyon filminin baş karakteri olan küçük bir atık toplama robotudur.
 ```
 
-### Streaming
+### Akış (Streaming)
 
-#### Using `stream_complete` endpoint
+#### `stream_complete` uç noktasını kullanma
 
-```
-response = llm.stream_complete("Amsterdam is the capital of ")
+```python
+response = llm.stream_complete("Amsterdam buranın başkentidir: ")
 for r in response:
     print(r.delta, end="")
 ```
 
 ```
-The Netherlands! Amsterdam is indeed the capital and largest city of the Netherlands.
+Hollanda! Amsterdam gerçekten de Hollanda'nın başkenti ve en büyük şehridir.
 ```
 
-#### Using `stream_chat` with a list of messages
+#### Mesaj listesiyle `stream_chat` kullanma
 
-```
+```python
 from llama_index.core.llms import ChatMessage
 
 
 messages = [
-    ChatMessage(role="system", content="You are a helpful AI assistant."),
+    ChatMessage(role="system", content="Yardımsever bir yapay zeka asistanısın."),
     ChatMessage(
         role="user",
-        content="Answer briefly: who is Wall-e?",
+        content="Kısaca cevapla: Wall-e kimdir?",
     ),
 ]
 response = llm.stream_chat(messages)
@@ -100,5 +96,5 @@ for r in response:
 ```
 
 ```
-WALL-E is a small waste-collecting robot and the main character in the 2008 Pixar animated film of the same name.
+WALL-E, aynı adı taşıyan 2008 yapımı Pixar animasyon filminin baş karakteri olan küçük bir atık toplama robotudur.
 ```
