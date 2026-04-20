@@ -5,7 +5,7 @@ title: Typesense Vector Store
  | LlamaIndex OSS Documentation
 ---
 
-#### Download Data
+#### Veri İndirme
 
 ```
 %pip install llama-index-embeddings-openai
@@ -17,7 +17,7 @@ title: Typesense Vector Store
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükleme, VectorStoreIndex oluşturma
 
 ```
 # import logging
@@ -64,17 +64,17 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
 ```
 from llama_index.core import QueryBundle
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 
-# By default, typesense vector store uses vector search. You need to provide the embedding yourself.
+# Varsayılan olarak, typesense vektör depolama, vektör araması kullanır. Embedding (gömme) işlemini kendiniz sağlamalısınız.
 query_str = "What did the author do growing up?"
 embed_model = OpenAIEmbedding()
-# You can also get the settings from the Settings object
+# Ayarları Settings nesnesinden de alabilirsiniz
 from llama_index.core import Settings
 
 
@@ -89,13 +89,13 @@ display(Markdown(f"<b>{response}</b>"))
 
 ****
 
-**The author grew up skipping a step in the evolution of computers, learning Italian, walking through Florence, painting people, working with technology companies, seeking signature styles at RISD, living in a rent-stabilized apartment, launching software, editing code (including Lisp expressions), writing essays, publishing them online, and receiving feedback from angry readers. He also experienced the exponential growth of commodity processors in the 1990s, which rolled up high-end, special-purpose hardware and software companies. He also learned how to make a little Italian go a long way by stringing together abstract concepts with a few simple verbs. He also experienced the tight coupling of money and coolness in the art world, and the fact that anything expensive comes to be seen as cool, and anything seen as cool will soon become equally expensive. He also experienced the challenge of launching software, as he had to recruit an initial set of users and make sure they had decent-looking stores before launching publicly. He also experienced the first instance of what is now a familiar experience, when he read the comments and found they were full of angry people. He also experienced the difference between putting something online and publishing it online. Finally, he wrote essays about topics he had stacked up, and wrote a more detailed version for others to read.**
+**Yazar, bilgisayarların evriminde bir adımı atlayarak büyüdü, İtalyanca öğrendi, Floransa'da yürüdü, insanları resmetti, teknoloji şirketleriyle çalıştı, RISD'de imza stilleri aradı, kirası sabitlenmiş bir dairede yaşadı, yazılım başlattı, kodu düzenledi (Lisp ifadeleri dahil), makaleler yazdı, bunları çevrimiçi yayınladı ve öfkeli okuyuculardan geri bildirim aldı. Ayrıca, 1990'larda üst düzey, özel amaçlı donanım ve yazılım şirketlerini bir araya getiren meta işlemcilerin üstel büyümesini deneyimledi. Ayrıca soyut kavramları birkaç basit fiille birleştirerek biraz İtalyancanın nasıl uzun bir yol kat etmesini sağlayacağını da öğrendi. Ayrıca sanat dünyasında para ve havalılığın sıkı sıkıya bağlı olduğunu ve pahalı olan her şeyin havalı olarak görülmeye başlandığını, havalı olarak görülen her şeyin de yakında aynı derecede pahalı olacağını deneyimledi. Ayrıca, halka açık olarak başlatmadan önce ilk kullanıcı grubunu işe alması ve iyi görünen mağazalara sahip olduklarından emin olması gerektiğinden yazılım başlatmanın zorluğunu da deneyimledi. Ayrıca yorumları okuduğunda ve öfkeli insanlarla dolu olduklarını anladığında, günümüzde artık tanıdık gelen bir deneyimin ilk örneğini yaşadı. Ayrıca internete bir şey koymak ile onu internette yayınlamak arasındaki farkı deneyimledi. Son olarak, biriktirdiği konular hakkında makaleler yazdı ve başkalarının okuması için daha ayrıntılı bir versiyon yazdı.**
 
 ```
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 
 
-# You can also use text search
+# Metin araması da kullanabilirsiniz
 
 
 query_bundle = QueryBundle(query_str=query_str)
@@ -107,4 +107,4 @@ display(Markdown(f"<b>{response}</b>"))
 
 ****
 
-**The author grew up during the Internet Bubble and was running a startup. They had to hire more people than they wanted to in order to seem more professional and were at the mercy of their investors until Yahoo bought them. They learned a lot about retail and startups, and had to do a lot of things that they weren’t necessarily good at in order to make their business successful.**
+**Yazar, İnternet Balonu sırasında büyüdü ve bir girişim yürütüyordu. Daha profesyonel görünmek için istediklerinden daha fazla insanı işe almak zorunda kaldılar ve Yahoo onları satın alana kadar yatırımcılarının insafına kaldılar. Perakende ve girişimler hakkında çok şey öğrendiler ve işlerini başarılı kılmak için mutlaka iyi olmadıkları birçok şeyi yapmak zorunda kaldılar.**

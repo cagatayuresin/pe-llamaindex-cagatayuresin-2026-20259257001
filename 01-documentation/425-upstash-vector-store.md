@@ -5,7 +5,7 @@ title: Upstash Vector Store
  | LlamaIndex OSS Documentation
 ---
 
-We’re going to look at how to use LlamaIndex to interface with Upstash Vector!
+LlamaIndex'i Upstash Vector ile etkileşim kurmak için nasıl kullanacağımıza bakacağız!
 
 ```
 ! pip install -q llama-index upstash-vector
@@ -20,12 +20,12 @@ import openai
 ```
 
 ```
-# Setup the OpenAI API
+# OpenAI API'sini ayarlama
 openai.api_key = "sk-..."
 ```
 
 ```
-# Download data
+# Veri indirme
 ! mkdir -p 'data/paul_graham/'
 ! wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
@@ -45,7 +45,7 @@ data/paul_graham/pa 100%[===================>]  73.28K  --.-KB/s    in 0.01s
 2024-02-03 20:04:25 (5.96 MB/s) - ‘data/paul_graham/paul_graham_essay.txt’ saved [75042/75042]
 ```
 
-Now, we can load the documents using the LlamaIndex SimpleDirectoryReader
+Şimdi, LlamaIndex SimpleDirectoryReader'ı kullanarak belgeleri yükleyebiliriz
 
 ```
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
@@ -58,7 +58,7 @@ print("# Documents:", len(documents))
 # Documents: 1
 ```
 
-To create an index on Upstash, visit <https://console.upstash.com/vector>, create an index with 1536 dimensions and `Cosine` distance metric. Copy the URL and token below
+Upstash üzerinde bir indeks oluşturmak için <https://console.upstash.com/vector> adresini ziyaret edin, 1536 boyutlu ve `Cosine` (Kosinüs) mesafe metriğine sahip bir indeks oluşturun. URL'yi ve token'ı aşağıya kopyalayın
 
 ```
 vector_store = UpstashVectorStore(url="https://...", token="...")
@@ -70,7 +70,7 @@ index = VectorStoreIndex.from_documents(
 )
 ```
 
-Now we’ve successfully created an index and populated it with vectors from the essay! The data will take a second to index and then it’ll be ready for querying.
+Şimdi başarıyla bir indeks oluşturduk ve onu makaleden gelen vektörlerle doldurduk! Verilerin indekslenmesi bir saniye sürecek ve ardından sorgulamaya hazır olacak.
 
 ```
 query_engine = index.as_query_engine()
@@ -86,24 +86,24 @@ print(textwrap.fill(str(res2), 100))
 ```
 
 ```
-The author learned that the study of philosophy in college did not live up to their expectations.
-They found that other fields took up most of the space of ideas, leaving little room for what they
-perceived as the ultimate truths that philosophy was supposed to explore. As a result, they decided
-to switch to studying AI.
+Yazar, üniversitede felsefe eğitiminin beklentilerini karşılamadığını öğrendi.
+Diğer alanların fikirlerin çoğunu kapladığını ve felsefenin keşfetmesi beklenen nihai gerçekler
+için çok az yer bıraktığını gördüler. Sonuç olarak, yapay zeka çalışmaya
+geçmeye karar verdiler.
 
 
 
 
-The author's opinion on startups is that they are in need of help and support, especially in the
-beginning stages. The author believes that founders of startups are often helpless and face various
-challenges, such as getting incorporated and understanding the intricacies of running a company. The
-author's investment firm, Y Combinator, aims to provide seed funding and comprehensive support to
-startups, offering them the guidance and resources they need to succeed.
+Yazarın girişimler (startups) hakkındaki görüşü, özellikle başlangıç aşamalarında yardıma ve
+desteğe ihtiyaç duydukları yönündedir. Yazar, girişim kurucularının genellikle çaresiz olduğuna
+ve şirketleşmek, bir şirketi yönetmenin inceliklerini anlamak gibi çeşitli zorluklarla karşılaştıklarına inanmaktadır.
+Yazarın yatırım şirketi Y Combinator, girişimlere tohum finansmanı ve
+kapsamlı destek sağlamayı, onlara başarılı olmaları için ihtiyaç duydukları rehberlik ve kaynakları sunmayı amaçlamaktadır.
 ```
 
-### Metadata Filtering
+### Meta Veri Filtreleme
 
-You can pass `MetadataFilters` with your `VectorStoreQuery` to filter the nodes returned from Upstash vector store.
+Upstash vektör deposundan döndürülen düğümleri (node) filtrelemek için `VectorStoreQuery`'nizle birlikte `MetadataFilters` geçirebilirsiniz.
 
 ```
 import os
@@ -141,7 +141,7 @@ retriever = index.as_retriever(filters=filters)
 retriever.retrieve("What is inception about?")
 ```
 
-We can also combine multiple `MetadataFilters` with `AND` or `OR` condition
+Birden fazla `MetadataFilters`'ı `AND` veya `OR` koşuluyla da birleştirebiliriz
 
 ```
 from llama_index.core.vector_stores import FilterOperator, FilterCondition

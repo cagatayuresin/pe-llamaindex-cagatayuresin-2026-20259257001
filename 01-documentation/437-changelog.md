@@ -1,7 +1,7 @@
-# ChangeLog
+# Değişiklik Günlüğü (ChangeLog)
 
 ---
-title: ChangeLog | LlamaIndex OSS Documentation
+title: Değişiklik Günlüğü | LlamaIndex OSS Documentation
 ---
 
 ## \[2026-03-16]

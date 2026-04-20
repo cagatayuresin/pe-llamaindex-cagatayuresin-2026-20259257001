@@ -1,23 +1,23 @@
-# Zep Vector Store
+# Zep Vektör Deposu
 
 ---
-title: Zep Vector Store
+title: Zep Vektör Deposu
  | LlamaIndex OSS Documentation
 ---
 
-## A long-term memory store for LLM applications
+## YMO (LLM) uygulamaları için uzun vadeli bellek deposu
 
 This notebook demonstrates how to use the Zep Vector Store with LlamaIndex.
 
-## About Zep
+## Zep Hakkında
 
 Zep makes it easy for developers to add relevant documents, chat history memory & rich user data to their LLM app’s prompts.
 
-## Note
+## Not
 
 Zep can automatically embed your documents. The LlamaIndex implementation of the Zep Vector Store utilizes LlamaIndex’s embedders to do so.
 
-## Getting Started
+## Başlarken
 
 **Quick Start Guide:** <https://docs.getzep.com/deployment/quickstart/> **GitHub:** <https://github.com/getzep/zep>
 
@@ -79,7 +79,7 @@ Download Data
 documents = SimpleDirectoryReader("../data/paul_graham/").load_data()
 ```
 
-## Create a Zep Vector Store and Index
+## Bir Zep Vektör Deposu ve İndeksi Oluşturma
 
 You can use an existing Zep Collection, or create a new one.
 
@@ -135,7 +135,7 @@ HTTP Request: POST http://localhost:8000/api/v1/collection/grahamfbf0c456a2ad46c
 The author worked on writing and programming outside of school before college. They wrote short stories and tried writing programs on an IBM 1401 computer using an early version of Fortran. They later got a microcomputer and started programming more extensively, writing simple games, a program to predict rocket heights, and a word processor. They initially planned to study philosophy in college but switched to AI. They also started publishing essays online and realized the potential of the web as a medium for publishing.
 ```
 
-## Querying with Metadata filters
+## Meta verileri filtreleriyle sorgulama
 
 ```
 from llama_index.core.schema import TextNode

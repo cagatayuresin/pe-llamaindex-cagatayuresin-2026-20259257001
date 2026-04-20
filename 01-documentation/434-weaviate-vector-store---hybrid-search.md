@@ -1,7 +1,7 @@
-# Weaviate Vector Store - Hybrid Search
+# Weaviate Vektör Deposu - Hibrit Arama
 
 ---
-title: Weaviate Vector Store - Hybrid Search
+title: Weaviate Vektör Deposu - Hibrit Arama
  | LlamaIndex OSS Documentation
 ---
 
@@ -24,7 +24,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-## Creating a Weaviate Client
+## Weaviate İstemcisi Oluşturma
 
 ```
 import os
@@ -61,21 +61,21 @@ from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from llama_index.core.response.notebook_utils import display_response
 ```
 
-## Download Data
+## Verileri İndirme
 
 ```
 !mkdir -p 'data/paul_graham/'
 !wget 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/examples/data/paul_graham/paul_graham_essay.txt' -O 'data/paul_graham/paul_graham_essay.txt'
 ```
 
-## Load documents
+## Belgeleri yükleme
 
 ```
 # load documents
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
-## Build the VectorStoreIndex with WeaviateVectorStore
+## WeaviateVectorStore ile VectorStoreIndex Oluşturma
 
 ```
 from llama_index.core import StorageContext
@@ -95,7 +95,7 @@ index = VectorStoreIndex.from_documents(
 # vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
 ```
 
-## Query Index with Default Vector Search
+## Varsayılan Vektör Araması ile İndeksi Sorgulama
 
 ```
 # set Logging to DEBUG for more detailed outputs
@@ -107,12 +107,12 @@ response = query_engine.query("What did the author do growing up?")
 display_response(response)
 ```
 
-## Query Index with Hybrid Search
+## Hibrit Arama ile İndeksi Sorgulama
 
 Use hybrid search with bm25 and vector.\
 `alpha` parameter determines weighting (alpha = 0 -> bm25, alpha=1 -> vector search).
 
-### By default, `alpha=0.75` is used (very similar to vector search)
+### Varsayılan olarak, `alpha=0.75` kullanılır (vektör aramasına çok benzer)
 
 ```
 # set Logging to DEBUG for more detailed outputs
@@ -128,7 +128,7 @@ response = query_engine.query(
 display_response(response)
 ```
 
-### Set `alpha=0.` to favor bm25
+### Bm25'i tercih etmek için `alpha=0.` ayarlayın
 
 ```
 # set Logging to DEBUG for more detailed outputs

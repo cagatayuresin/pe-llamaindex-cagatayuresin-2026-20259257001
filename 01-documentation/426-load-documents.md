@@ -1,7 +1,7 @@
-# load documents
+# Belgeleri Yükleme
 
 ---
-title: load documents
+title: Belgeleri Yükleme
  | LlamaIndex OSS Documentation
 ---
 
@@ -61,7 +61,7 @@ response = query_engine.query("What did the author do growing up?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author did not provide any information about their growing up.**
+**Yazar, yetişme dönemi hakkında herhangi bir bilgi vermedi.**
 
 ```
 query_engine = index.as_query_engine()
@@ -71,4 +71,4 @@ response = query_engine.query(
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-**The author wrote all of Y Combinator’s internal software in Arc while continuing to work on Y Combinator, but later stopped working on Arc and focused on writing essays and working on Y Combinator. In 2012, the author’s mother had a stroke, and the author realized that Y Combinator was taking up too much of their time and decided to hand it over to someone else. The author suggested this to Robert Morris, who offered unsolicited advice to the author to make sure Y Combinator wasn’t the last cool thing the author did. The author ultimately decided to hand over the leadership of Y Combinator to Sam Altman in 2013.**
+**Yazar, Y Combinator üzerinde çalışmaya devam ederken Y Combinator'ın tüm dahili yazılımlarını Arc'ta yazdı, ancak daha sonra Arc üzerinde çalışmayı bıraktı ve denemeler yazmaya ve Y Combinator üzerinde çalışmaya odaklandı. 2012 yılında yazarın annesi felç geçirdi ve yazar, Y Combinator'ın zamanının çok fazlasını aldığını fark ederek onu başka birine devretmeye karar verdi. Yazar bunu, Y Combinator'ın yazarın yaptığı son harika şey olmadığından emin olması için yazara talep edilmemiş bir tavsiyede bulunan Robert Morris'e önerdi. Yazar nihayetinde 2013 yılında Y Combinator'ın liderliğini Sam Altman'a devretmeye karar verdi.**

@@ -1,7 +1,7 @@
-# Vespa Vector Store demo
+# Vespa Vektör Deposu (Vector Store) demosu
 
 ---
-title: Vespa Vector Store demo
+title: Vespa Vektör Deposu demosu
  | LlamaIndex OSS Documentation
 ---
 
@@ -11,7 +11,7 @@ If you’re opening this Notebook on colab, you will probably need to install Ll
 %pip install llama-index-vector-stores-vespa llama-index pyvespa
 ```
 
-#### Setting up API key
+#### API anahtarını ayarlama
 
 ```
 import os
@@ -22,7 +22,7 @@ os.environ["OPENAI_API_KEY"] = "sk-..."
 openai.api_key = os.environ["OPENAI_API_KEY"]
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükleme, VectorStoreIndex oluşturma
 
 ```
 from llama_index.core import VectorStoreIndex
@@ -30,7 +30,7 @@ from llama_index.vector_stores.vespa import VespaVectorStore
 from IPython.display import Markdown, display
 ```
 
-## Defining some sample data
+## Bazı örnek verileri tanımlama
 
 Let’s insert some documents.
 
@@ -98,7 +98,7 @@ nodes = [
 ]
 ```
 
-### Initilizing the VespaVectorStore
+### VespaVectorStore'un Başlatılması
 
 To make it really simple to get started, we provide a template Vespa application that will be deployed upon initializing the vector store.
 
@@ -113,7 +113,7 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-### Deleting documents
+### Belgeleri silme
 
 ```
 node_to_delete = nodes[0].node_id
@@ -124,7 +124,7 @@ node_to_delete
 vector_store.delete(ref_doc_id=node_to_delete)
 ```
 
-## Querying
+## Sorgulama
 
 ```
 from llama_index.core.vector_stores.types import (
@@ -146,9 +146,9 @@ result = vector_store.query(query)
 result
 ```
 
-## As retriever
+## Getirici (retriever) olarak
 
-### Default query mode (text search)
+### Varsayılan sorgu modu (metin araması)
 
 ```
 retriever = index.as_retriever(vector_store_query_mode="default")
@@ -162,7 +162,7 @@ results = retriever.retrieve("Who wrote Harry Potter?")
 display(Markdown(f"**Retrieved nodes:**\n {results}"))
 ```
 
-### As query engine
+### Sorgu motoru olarak
 
 ```
 query_engine = index.as_query_engine()
@@ -181,7 +181,7 @@ display(Markdown(f"**Response:** {response}"))
 display(Markdown(f"**Sources:** {response.source_nodes}"))
 ```
 
-## Using metadata filters
+## Meta veri filtrelerini kullanma
 
 **NOTE**: This metadata filtering is done by llama-index, outside of vespa. For native and much more performant filtering, you should use Vespa’s own filtering capabilities.
 
@@ -213,11 +213,11 @@ result = retriever.retrieve("Harry Potter")
 display(Markdown(f"**Result:** {result}"))
 ```
 
-## Abstraction level of this integration
+## Bu entegrasyonun soyutlama düzeyi
 
 To make it really simple to get started, we provide a template Vespa application that will be deployed upon initializing the vector store. This removes some of the complexity of setting up Vespa for the first time, but for serious use cases, we strongly recommend that you read the [Vespa documentation](docs.vespa.ai) and tailor the application to your needs.
 
-### The template
+### Şablon
 
 The provided template Vespa application can be seen below:
 

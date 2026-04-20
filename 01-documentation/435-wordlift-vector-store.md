@@ -1,15 +1,15 @@
-# **WordLift** Vector Store
+# **WordLift** Vektör Deposu
 
 ---
-title: **WordLift** Vector Store
+title: **WordLift** Vektör Deposu
  | LlamaIndex OSS Documentation
 ---
 
-## Introduction
+## Giriş
 
 This script demonstrates how to crawl a product website, extract relevant information, build an SEO-friendly Knowledge Graph (a structured representation of PDPs and PLPs), and leverage it for improved search and user experience.
 
-### Key Features & Libraries:
+### Temel Özellikler ve Kütüphaneler:
 
 - Web scraping (Advertools)
 - Knowledge Graph creation for Product Detail Pages (PDPs) and Product Listing Pages (PLPs) - WordLift
@@ -29,7 +29,7 @@ Learn more about how it works here:
 
 
 
-# Setup
+# Kurulum
 
 ```
 !pip install advertools -q
@@ -98,7 +98,7 @@ WORDLIFT_KEY = os.getenv("WORDLIFT_KEY")
 OPENAI_KEY = os.getenv("OPENAI_KEY")
 ```
 
-# Crawl the Website w/ Advertools
+# Advertools ile Web Sitesini Tarama
 
 ```
 # Step 1: Define the website structure
@@ -232,7 +232,7 @@ def extract_page_data(df):
     return pd.DataFrame(extracted_data)
 ```
 
-# Build the KG w/ WordLift 🕸
+# WordLift ile Bilgi Grafiği (KG) Oluşturma 🕸
 
 ```
 # Step 5: Configure the WordLift client
@@ -477,7 +477,7 @@ async def build_knowledge_graph(df, dataset_uri, api_client):
             logger.error(f"Error: {str(e)}")
 ```
 
-# Run the show
+# Gösteriyi Başlat / Çalıştırma
 
 ```
 # ----------------------------
@@ -534,7 +534,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Let’s query products in the KG now using GraphQL
+## Şimdi GraphQL kullanarak KG'deki ürünleri sorgulayalım
 
 ```
 async def perform_graphql_query(api_client):
@@ -569,11 +569,11 @@ async with ApiClient(configuration) as api_client:
     logger.info("Knowledge graph building and GraphQL query completed.")
 ```
 
-# Leveraging the Knowledge Graph
+# Bilgi Grafiğini (Knowledge Graph) Değerlendirme
 
 Now that we have successfully created a Knowledge Graph for our e-commerce website, complete with product embeddings, we can take advantage of it to enhance user experience and functionality. The embeddings we’ve generated for each product allow us to perform semantic similarity searches and build more intelligent systems.
 
-## Adding Structured Data to your Web Pages
+## Web Sayfalarınıza Yapılandırılmış Veri Ekleme
 
 In this section, we will perform a simple test of WordLift’s data API. This API is used to inject structured data markup from the Knowledge Graph (KG) into your webpages. Structured data helps search engines better understand your content, potentially leading to rich snippets in search results and improved SEO.
 
@@ -619,7 +619,7 @@ json_ld = get_json_ld_from_url(url)
 json_ld
 ```
 
-## Generating Links of Similar Products using WordLift Neural Search
+## WordLift Neural Search Kullanarak Benzer Ürünlerin Bağlantılarını Oluşturma
 
 With our product embeddings in place, we can now leverage WordLift’s Neural Search capabilities to recommend similar products to users. This feature significantly enhances user engagement and can potentially boost sales by showcasing relevant products based on semantic similarity.
 
@@ -668,7 +668,7 @@ similar_urls = await get_top_k_similar_urls(
 print(json.dumps(similar_urls, indent=2))
 ```
 
-## Building a Chatbot for the E-commerce Website using LlamaIndex 🦙
+## LlamaIndex Kullanarak E-ticaret Web Sitesi için Chatbot Oluşturma 🦙
 
 The Knowledge Graph we’ve created serves as a perfect foundation for building an intelligent chatbot. LlamaIndex (formerly GPT Index) is a powerful data framework that allows us to ingest, structure, and access private or domain-specific data in Large Language Models (LLMs). With LlamaIndex, we can create a context-aware chatbot that understands our product catalog and can assist customers effectively.
 
@@ -682,7 +682,7 @@ This approach leads to more natural and helpful interactions with customers, enh
 
 In the following sections, we’ll walk through the process of setting up LlamaIndex with our Knowledge Graph data and creating a chatbot that can intelligently assist our e-commerce customers.
 
-### Installing `LlamaIndex` and `WordLiftVectorStore` 💪
+### `LlamaIndex` ve `WordLiftVectorStore` Kurulumu 💪
 
 ```
 %%capture
@@ -697,7 +697,7 @@ from llama_index.vector_stores.wordlift import WordliftVectorStore
 from llama_index.core import VectorStoreIndex
 ```
 
-### Setting NomicEmbeddings for our Query Engine
+### Sorgu Motorumuz için NomicEmbeddings'i Ayarlama
 
 Nomic has released v1.5 🪆🪆🪆 of their embedding model, which brings significant improvements to text embedding capabilities. Embeddings are numerical representations of text that capture semantic meaning, allowing our system to understand and compare the content of queries and documents.
 

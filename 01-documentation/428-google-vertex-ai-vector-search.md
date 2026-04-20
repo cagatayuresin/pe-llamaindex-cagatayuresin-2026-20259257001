@@ -5,7 +5,7 @@ title: Google Vertex AI Vector Search
  | LlamaIndex OSS Documentation
 ---
 
-This notebook shows how to use functionality related to the `Google Cloud Vertex AI Vector Search` vector database.
+Bu not defteri, `Google Cloud Vertex AI Vector Search` vektör veritabanı ile ilgili işlevselliklerin nasıl kullanılacağını gösterir.
 
 > [Google Vertex AI Vector Search](https://cloud.google.com/vertex-ai/docs/vector-search/overview), formerly known as Vertex AI Matching Engine, provides the industry’s leading high-scale low latency vector database. These vector databases are commonly referred to as vector similarity-matching or an approximate nearest neighbor (ANN) service.
 
@@ -14,7 +14,7 @@ This notebook shows how to use functionality related to the `Google Cloud Vertex
 > To see how to create an index refer to the section [Create Index and deploy it to an Endpoint](#create-index-and-deploy-it-to-an-endpoint)\
 > If you already have an index deployed , skip to [Create VectorStore from texts](#create-vector-store-from-texts)
 
-## Installation
+## Kurulum
 
 If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
 
@@ -22,7 +22,7 @@ If you’re opening this Notebook on colab, you will probably need to install Ll
 ! pip install llama-index llama-index-vector-stores-vertexaivectorsearch llama-index-llms-vertex
 ```
 
-## Create Index and deploy it to an Endpoint
+## İndeks Oluşturma ve bir Uç Noktaya (Endpoint) Dağıtma
 
 - This section demonstrates creating a new index and deploying it to an endpoint.
 
@@ -56,14 +56,14 @@ from google.cloud import aiplatform
 aiplatform.init(project=PROJECT_ID, location=REGION)
 ```
 
-### Create Cloud Storage bucket
+### Bulut Depolama klasörü (bucket) oluşturma
 
 ```
 # Create a bucket.
 ! gsutil mb -l $REGION -p $PROJECT_ID $GCS_BUCKET_URI
 ```
 
-### Create an empty Index
+### Boş bir İndeks oluşturma
 
 **Note :** While creating an index you should specify an “index\_update\_method” - `BATCH_UPDATE` or `STREAM_UPDATE`
 
@@ -107,7 +107,7 @@ else:
     )
 ```
 
-### Create an Endpoint
+### Bir Uç Nokta (Endpoint) oluşturma
 
 To use the index, you need to create an index endpoint. It works as a server instance accepting query requests for your index. An endpoint can be a [public endpoint](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-public) or a [private endpoint](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-vpc).
 
@@ -141,7 +141,7 @@ else:
     )
 ```
 
-### Deploy Index to the Endpoint
+### İndeksi Uç Noktaya Dağıtma
 
 With the index endpoint, deploy the index by specifying a unique deployed index ID.
 
@@ -179,7 +179,7 @@ else:
     )
 ```
 
-## Create Vector Store from texts
+## Metinlerden Vektör Deposu (Vector Store) oluşturma
 
 NOTE : If you have existing Vertex AI Vector Search Index and Endpoints, you can assign them using following code:
 
@@ -213,7 +213,7 @@ from llama_index.embeddings.vertex import VertexTextEmbedding
 from llama_index.vector_stores.vertexaivectorsearch import VertexAIVectorStore
 ```
 
-### Create a simple vector store from plain text without metadata filters
+### Meta veri filtreleri olmadan düz metinden basit bir vektör deposu oluşturma
 
 ```
 # setup storage
@@ -245,7 +245,7 @@ embed_model = VertexTextEmbedding(
 Settings.embed_model = embed_model
 ```
 
-### Add vectors and mapped text chunks to your vectore store
+### Vektörleri ve eşlenen metin parçalarını vektör deponuza ekleme
 
 ```
 # Input texts
@@ -267,7 +267,7 @@ nodes = [
 vector_store.add(nodes)
 ```
 
-### Running a similarity search
+### Bir benzerlik araması çalıştırma
 
 ```
 # define index from vector store
@@ -288,7 +288,7 @@ Score: 0.703 Text: eat pizza for
 Score: 0.626 Text: dinner.
 ```
 
-## Add documents with metadata attributes and use filters
+## Meta veri özniteliklerine sahip belgeler ekleme ve filtreler kullanma
 
 ```
 # Input text with metadata
@@ -346,7 +346,7 @@ for record in records:
 vector_store.add(nodes)
 ```
 
-### Running a similarity search with filters
+### Filtrelerle bir benzerlik araması çalıştırma
 
 ```
 # define index from vector store
@@ -422,7 +422,7 @@ Text: A denim jacket with a faded wash and distressed details. This wardrobe sta
    Metadata: {'price': 79.99, 'color': 'blue', 'season': ['fall', 'spring', 'summer']}
 ```
 
-## Parse, Index and Query PDFs using Vertex AI Vector Search and Gemini Pro
+## Vertex AI Vektör Arama ve Gemini Pro kullanarak PDF'leri Ayrıştırma, İndeksleme ve Sorgulama
 
 ```
 ! mkdir -p ./data/arxiv/
@@ -560,7 +560,7 @@ File Path: /home/jupyter/llama_index/docs/examples/vector_stores/data/arxiv/test
 
 ---
 
-## Clean Up
+## Temizlik
 
 Please delete Vertex AI Vector Search Index and Index Endpoint after running your experiments to avoid incurring additional charges. Please note that you will be charged as long as the endpoint is running.
 

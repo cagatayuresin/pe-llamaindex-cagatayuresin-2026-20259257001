@@ -9,7 +9,7 @@ This notebook demonstrates how to use **Vertex AI Vector Search v2.0** with Llam
 
 > [Vertex AI Vector Search v2.0](https://cloud.google.com/vertex-ai/docs/vector-search/overview) introduces a simplified **collection-based architecture** that eliminates the need for separate index creation and endpoint deployment.
 
-## v2.0 vs v1.0
+## v2.0 ve v1.0 Karşılaştırması
 
 | Feature       | v1.0                              | v2.0              |
 | ------------- | --------------------------------- | ----------------- |
@@ -20,7 +20,7 @@ This notebook demonstrates how to use **Vertex AI Vector Search v2.0** with Llam
 
 **Note**: For v1.0 usage, see [VertexAIVectorSearchDemo.ipynb](./VertexAIVectorSearchDemo.ipynb)
 
-## Install Dependencies
+## Bağımlılıkları Yükleme
 
 Install LlamaIndex with v2 support:
 
@@ -46,7 +46,7 @@ if "google.colab" in sys.modules:
     print("Authenticated")
 ```
 
-## Configuration
+## Yapılandırma
 
 Set your Google Cloud project details:
 
@@ -61,7 +61,7 @@ COLLECTION_ID = "llamaindex-demo-collection"  # @param {type:"string"}
 EMBEDDING_DIMENSION = 768
 ```
 
-## Create a v2 Collection
+## Bir v2 Koleksiyonu Oluşturma
 
 Unlike v1.0 which requires creating an index and deploying it to an endpoint, v2.0 only requires creating a collection.
 
@@ -144,7 +144,7 @@ except Exception as e:
         raise e
 ```
 
-## Set Up LlamaIndex Components
+## LlamaIndex Bileşenlerini Ayarlama
 
 ```
 # Imports
@@ -195,7 +195,7 @@ Settings.llm = llm
 print("Embedding model and LLM configured successfully!")
 ```
 
-## Create v2 Vector Store
+## v2 Vektör Deposu Oluşturma
 
 Creating a v2 vector store is simple - just specify `api_version="v2"` and your `collection_id`:
 
@@ -213,7 +213,7 @@ vector_store = VertexAIVectorStore(
 print(f"Vector store created with api_version={vector_store.api_version}")
 ```
 
-## Add Documents
+## Belgeler Ekleme
 
 ### Simple Text Nodes
 
@@ -301,7 +301,7 @@ product_ids = vector_store.add(product_nodes)
 print(f"Added {len(product_ids)} product nodes with metadata")
 ```
 
-## Query the Vector Store
+## Vektör Deposunu Sorgulama
 
 ### Simple Similarity Search
 
@@ -374,7 +374,7 @@ for result in results:
     print("-" * 60)
 ```
 
-## RAG Query with LLM
+## LLM ile RAG Sorgusu
 
 Use the vector store with an LLM for retrieval-augmented generation:
 
@@ -400,7 +400,7 @@ for node in response.source_nodes:
     print(f"  - {node.text[:60]}... (score: {node.score:.3f})")
 ```
 
-## v2-Only Features
+## Yalnızca v2 Özellikleri
 
 ### Delete Specific Nodes
 
@@ -421,7 +421,7 @@ v2 supports clearing all data from a collection - this is NOT available in v1:
 print("clear() - Clears all data from collection (v2 only!)")
 ```
 
-## Hybrid Search (v2 Only)
+## Hibrit Arama (sadece v2)
 
 v2 supports **hybrid search**, combining vector similarity with text-based search for improved retrieval quality. This is particularly useful when you want to leverage both semantic understanding (vectors) and exact keyword matching (text search).
 
@@ -655,7 +655,7 @@ for node in response.source_nodes:
 | `vertex_ranker_title_field`   | `str`       | `None`                             | Title field for VertexRanker          |
 | `vertex_ranker_content_field` | `str`       | `None`                             | Content field for VertexRanker        |
 
-## Clean Up
+## Temizlik
 
 Delete the collection when done to avoid charges:
 
@@ -678,7 +678,7 @@ if CLEANUP:
     print("Collection deleted.")
 ```
 
-## Summary
+## Özet
 
 This notebook demonstrated:
 

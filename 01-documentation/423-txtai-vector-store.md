@@ -5,7 +5,7 @@ title: txtai Vector Store
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Eğer bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-txtai
@@ -15,7 +15,7 @@ If you’re opening this Notebook on colab, you will probably need to install Ll
 !pip install llama-index
 ```
 
-#### Creating a Faiss Index
+#### txtai İndeksi Oluşturma
 
 ```
 import logging
@@ -34,7 +34,7 @@ import txtai
 txtai_index = txtai.ann.ANNFactory.create({"backend": "numpy"})
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükleme, VectorStoreIndex oluşturma
 
 ```
 from llama_index.core import (
@@ -47,7 +47,7 @@ from llama_index.vector_stores.txtai import TxtaiVectorStore
 from IPython.display import Markdown, display
 ```
 
-Download Data
+Veri İndirme
 
 ```
 !mkdir -p 'data/paul_graham/'
@@ -81,7 +81,7 @@ storage_context = StorageContext.from_defaults(
 index = load_index_from_storage(storage_context=storage_context)
 ```
 
-#### Query Index
+#### İndeksi Sorgulama
 
 ```
 # set Logging to DEBUG for more detailed outputs

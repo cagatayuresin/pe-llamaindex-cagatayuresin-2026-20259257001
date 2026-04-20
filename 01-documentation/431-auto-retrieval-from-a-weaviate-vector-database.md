@@ -1,7 +1,7 @@
-# Auto-Retrieval from a Weaviate Vector Database
+# Bir Weaviate Vektör Veritabanından Otomatik Getirme (Auto-Retrieval)
 
 ---
-title: Auto-Retrieval from a Weaviate Vector Database
+title: Bir Weaviate Vektör Veritabanından Otomatik Getirme
  | LlamaIndex OSS Documentation
 ---
 
@@ -11,7 +11,7 @@ The Weaviate vector database supports a set of [metadata filters](https://weavia
 
 This allows for more dynamic, expressive forms of retrieval beyond top-k semantic search. The relevant context for a given query may only require filtering on a metadata tag, or require a joint combination of filtering + semantic search within the filtered set, or just raw semantic search.
 
-## Setup
+## Kurulum
 
 We first define imports and define an empty Weaviate collection.
 
@@ -90,7 +90,7 @@ client = weaviate.connect_to_wcs(cluster_url=cluster_url,
 """
 ```
 
-## Defining Some Sample Data
+## Bazı Örnek Verilerin Tanımlanması
 
 We insert some sample nodes containing text chunks into the vector database. Note that each `TextNode` not only contains the text, but also metadata e.g. `category` and `country`. These metadata fields will get converted/stored as such in the underlying vector db.
 
@@ -158,7 +158,7 @@ nodes = [
 ]
 ```
 
-## Build Vector Index with Weaviate Vector Store
+## Weaviate Vektör Deposu ile Vektör İndeksi Oluşturma
 
 Here we load the data into the vector store. As mentioned above, both the text and metadata for each node will get converted into corresponding representations in Weaviate. We can now run semantic queries and also metadata filtering on this data from Weaviate.
 
@@ -179,7 +179,7 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 index = VectorStoreIndex(nodes, storage_context=storage_context)
 ```
 
-## Define `VectorIndexAutoRetriever`
+## `VectorIndexAutoRetriever` Tanımlama
 
 We define our core `VectorIndexAutoRetriever` module. The module takes in `VectorStoreInfo`, which contains a structured description of the vector store collection and the metadata filters it supports. This information will then be used in the auto-retrieval prompt where the LLM infers metadata filters.
 
@@ -218,7 +218,7 @@ retriever = VectorIndexAutoRetriever(
 )
 ```
 
-## Running over some sample data
+## Bazı örnek veriler üzerinde çalıştırma
 
 We try running over some sample data. Note how metadata filters are inferred - this helps with more precise retrieval!
 

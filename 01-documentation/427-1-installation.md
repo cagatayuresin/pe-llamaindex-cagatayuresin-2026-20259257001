@@ -1,7 +1,7 @@
-# 1. Installation
+# 1. Kurulum
 
 ---
-title: 1. Installation
+title: 1. Kurulum
  | LlamaIndex OSS Documentation
 ---
 
@@ -9,7 +9,7 @@ title: 1. Installation
 !pip install vecx-llamaindex
 ```
 
-# 2. Setting up VectorX and OpenAI credentials
+# 2. VectorX ve OpenAI kimlik bilgilerini ayarlama
 
 ```
 import os
@@ -17,28 +17,28 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from vecx.vectorx import VectorX
 
 
-# Set API keys
+# API anahtarlarını ayarla
 os.environ["OPENAI_API_KEY"] = "sk-proj..."
 vecx_api_token = "..."
 
 
-# Initialize VectorX client
+# VectorX istemcisini başlat
 vx = VectorX(token=vecx_api_token)
 ```
 
 ```
 encryption_key = vx.generate_key()
-# Make sure to save this key securely - you'll need it to access your encrypted vectors
+# Bu anahtarı güvenli bir şekilde sakladığınızdan emin olun - şifrelenmiş vektörlerinize erişmek için buna ihtiyacınız olacak
 print("Encryption key:", encryption_key)
 ```
 
-# 3. Creating Sample Documents
+# 3. Örnek Belgeler Oluşturma
 
 ```
 from llama_index.core import Document
 
 
-# Create sample documents with different categories and metadata
+# Farklı kategoriler ve meta verilerle örnek belgeler oluştur
 documents = [
     Document(
         text="Python is a high-level, interpreted programming language known for its readability and simplicity.",
@@ -108,7 +108,7 @@ index = vx.get_index("llamaIndex_testing", encryption_key)
 index.describe()
 ```
 
-# 4. Setting up VectorX with LlamaIndex
+# 4. LlamaIndex ile VectorX kurulumu
 
 ```
 from vecx_llamaindex import VectorXVectorStore
@@ -116,20 +116,20 @@ from llama_index.core import StorageContext
 import time
 
 
-# Create a unique index name with timestamp to avoid conflicts
+# Çakışmaları önlemek için zaman damgasıyla benzersiz bir indeks adı oluştur
 timestamp = int(time.time())
 index_name = f"llamaIndex_testing"
 
 
-# Set up the embedding model
+# Yerleştirme (embedding) modelini ayarla
 embed_model = OpenAIEmbedding()
 
 
-# Get the embedding dimension
+# Yerleştirme boyutunu al
 dimension = 1536  # OpenAI's default embedding dimension
 
 
-# Initialize the VectorX vector store
+# VectorX vektör deposunu başlat
 vector_store = VectorXVectorStore.from_params(
     api_token=vecx_api_token,
     encryption_key=encryption_key,
@@ -139,20 +139,20 @@ vector_store = VectorXVectorStore.from_params(
 )
 
 
-# Create storage context with our vector store
+# Vektör depomuzla depolama bağlamı oluştur
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
 print(f"Initialized VectorX vector store with index: {index_name}")
 ```
 
-# 5. Creating a Vector Index from Documents
+# 5. Belgelerden Vektör İndeksi Oluşturma
 
 ```
 from llama_index.core import VectorStoreIndex
 
 
-# Create a vector index
+# Bir vektör indeksi oluştur
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context, embed_model=embed_model
 )
@@ -163,7 +163,7 @@ print("Vector index created successfully")
 
 ```
 def reconnect_to_index(api_token, encryption_key, index_name):
-    # Initialize the vector store with existing index
+    # Mevcut dizinle vektör deposunu başlat
     vector_store = VectorXVectorStore.from_params(
         api_token=api_token,
         encryption_key=encryption_key,
@@ -171,11 +171,11 @@ def reconnect_to_index(api_token, encryption_key, index_name):
     )
 
 
-    # Create storage context
+    # Depolama bağlamı oluştur
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-    # Load the index
+    # İndeksi yükle
     index = VectorStoreIndex.from_vector_store(
         vector_store, embed_model=OpenAIEmbedding()
     )
@@ -185,12 +185,12 @@ def reconnect_to_index(api_token, encryption_key, index_name):
 ```
 
 ```
-# Create a query engine
+# Sorgu motoru oluştur
 index = reconnect_to_index(vecx_api_token, encryption_key, index_name)
 query_engine = index.as_query_engine()
 
 
-# Ask a question
+# Bir soru sor
 response = query_engine.query("Which is the tallest mountain in the world?")
 
 
@@ -199,7 +199,7 @@ print("Response:")
 print(response)
 ```
 
-# 6. Basic Retrieval with Query Engine
+# 6. Sorgu Motoru ile Temel Alma
 
 ```
 query_embedding = embed_model.get_text_embedding(
@@ -239,7 +239,7 @@ vec_index.upsert(
 )
 ```
 
-# 7. Using Metadata Filters
+# 7. Meta Veri Filtrelerini Kullanma
 
 ```
 from llama_index.core.vector_stores.types import (
@@ -249,18 +249,18 @@ from llama_index.core.vector_stores.types import (
 )
 
 
-# Create a filtered retriever to only search within AI-related documents
+# Sadece yapay zeka ile ilgili belgelerde arama yapmak için filtrelenmiş bir alıcı (retriever) oluştur
 ai_filter = MetadataFilter(
     key="category", value="ai", operator=FilterOperator.EQ
 )
 ai_filters = MetadataFilters(filters=[ai_filter])
 
 
-# Create a filtered query engine
+# Filtrelenmiş bir sorgu motoru oluştur
 filtered_query_engine = index.as_query_engine(filters=ai_filters)
 
 
-# Ask a general question but only using AI documents
+# Genel bir soru sor ama sadece yapay zeka belgelerini kullan
 response = filtered_query_engine.query("What is vector database?")
 
 
@@ -269,10 +269,10 @@ print("Response:")
 print(response)
 ```
 
-# 8. Advanced Filtering with Multiple Conditions
+# 8. Birden Çok Koşullu Gelişmiş Filtreleme
 
 ```
-# Create a more complex filter: database category AND intermediate difficulty
+# Daha karmaşık bir filtre oluştur: veritabanı kategorisi VE orta zorluk derecesi
 category_filter = MetadataFilter(
     key="category", value="ai", operator=FilterOperator.EQ
 )
@@ -284,11 +284,11 @@ difficulty_filter = MetadataFilter(
 complex_filters = MetadataFilters(filters=[category_filter, difficulty_filter])
 
 
-# Create a query engine with the complex filters
+# Sorgu motoru oluştur with the complex filters
 complex_filtered_engine = index.as_query_engine(filters=complex_filters)
 
 
-# Query with the complex filters
+# Karmaşık filtrelerle sorgulama yap
 response = complex_filtered_engine.query("what is ML")
 
 
@@ -299,21 +299,21 @@ print("Response:")
 print(response)
 ```
 
-# 9. Custom Retriever Setup
+# 9. Özel Alıcı (Retriever) Kurulumu
 
 ```
 from llama_index.core.retrievers import VectorIndexRetriever
 
 
-# Create a retriever with custom parameters
+# Özel parametrelerle bir alıcı oluştur
 retriever = VectorIndexRetriever(
     index=index,
-    similarity_top_k=3,  # Return top 3 most similar results
-    filters=ai_filters,  # Use our AI category filter from before
+    similarity_top_k=3,  # En benzer 3 sonucu döndür
+    filters=ai_filters,  # Önceki yapay zeka kategori filtremizi kullan
 )
 
 
-# Retrieve nodes for a query
+# Bir sorgu için düğümleri (nodes) al
 nodes = retriever.retrieve("What is deep learning?")
 
 
@@ -328,20 +328,20 @@ for i, node in enumerate(nodes):
     print(f"Score: {node.score:.4f}")
 ```
 
-# 10. Using a Custom Retriever with a Query Engine
+# 10. Bir Sorgu Motoruyla Özel Alıcı Kullanma
 
 ```
 from llama_index.core.query_engine import RetrieverQueryEngine
 
 
-# Create a query engine with our custom retriever
+# Sorgu motoru oluştur with our custom retriever
 custom_query_engine = RetrieverQueryEngine.from_args(
     retriever=retriever,
-    verbose=True,  # Enable verbose mode to see the retrieved nodes
+    verbose=True,  # Alınan düğümleri görmek için ayrıntı (verbose) modunu etkinleştir
 )
 
 
-# Query using the custom retriever query engine
+# Özel alıcı sorgu motorunu kullanarak sorgu yap
 response = custom_query_engine.query(
     "Explain the difference between machine learning and deep learning"
 )
@@ -351,18 +351,18 @@ print("\nFinal Response:")
 print(response)
 ```
 
-# 11. Direct VectorStore Querying
+# 11. Doğrudan VectorStore Sorgulama
 
 ```
 from llama_index.core.vector_stores.types import VectorStoreQuery
 
 
-# Generate an embedding for our query
+# Sorgumuz için bir yerleştirme oluştur
 query_text = "What are vector databases?"
 query_embedding = embed_model.get_text_embedding(query_text)
 
 
-# Create a VectorStoreQuery
+# Bir VectorStoreQuery oluştur
 vector_store_query = VectorStoreQuery(
     query_embedding=query_embedding,
     similarity_top_k=2,
@@ -376,7 +376,7 @@ vector_store_query = VectorStoreQuery(
 )
 
 
-# Execute the query directly on the vector store
+# Sorguyu doğrudan vektör deposunda yürüt
 query_result = vector_store.query(vector_store_query)
 
 
@@ -394,9 +394,9 @@ for i, (node, score) in enumerate(
 ```
 
 ```
-# To reconnect to an existing index in a future session, you would use:
+# Gelecekteki bir oturumda mevcut bir indekse yeniden bağlanmak için şunları kullanabilirsiniz:
 def reconnect_to_index(api_token, encryption_key, index_name):
-    # Initialize the vector store with existing index
+    # Mevcut dizinle vektör deposunu başlat
     vector_store = VectorXVectorStore.from_params(
         api_token=api_token,
         encryption_key=encryption_key,
@@ -404,11 +404,11 @@ def reconnect_to_index(api_token, encryption_key, index_name):
     )
 
 
-    # Create storage context
+    # Depolama bağlamı oluştur
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 
-    # Load the index
+    # İndeksi yükle
     index = VectorStoreIndex.from_vector_store(
         vector_store, embed_model=OpenAIEmbedding()
     )

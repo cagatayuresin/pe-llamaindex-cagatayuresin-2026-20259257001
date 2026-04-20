@@ -1,7 +1,7 @@
-# Weaviate Vector Store
+# Weaviate Vektör Deposu
 
 ---
-title: Weaviate Vector Store
+title: Weaviate Vektör Deposu
  | LlamaIndex OSS Documentation
 ---
 
@@ -15,7 +15,7 @@ If you’re opening this Notebook on colab, you will probably need to install Ll
 !pip install llama-index
 ```
 
-#### Creating a Weaviate Client
+#### Weaviate İstemcisi Oluşturma
 
 ```
 import os
@@ -55,7 +55,7 @@ client = weaviate.connect_to_wcs(
 # client = connect_to_local()
 ```
 
-#### Load documents, build the VectorStoreIndex
+#### Belgeleri yükleme, VectorStoreIndex oluşturma
 
 ```
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
@@ -94,7 +94,7 @@ index = VectorStoreIndex.from_documents(
 # vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
 ```
 
-#### Using a custom batch configuration
+#### Özel bir toplu işlem (batch) yapılandırması kullanma
 
 Llamaindex defaults to Weaviate’s dynamic batching, optimized for most common scenarios. However, in low-latency setups, this can overload the server or max out any GRPC Message limits in place. For more control and a better ingestion process, consider adjusting batch size by using the fixed size batch.
 
@@ -117,7 +117,7 @@ vector_store_fixed = WeaviateVectorStore(
 )
 ```
 
-#### Query Index
+#### Sorgu İndeksi
 
 ```
 # set Logging to DEBUG for more detailed outputs
@@ -129,7 +129,7 @@ response = query_engine.query("What did the author do growing up?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-## Loading the index
+## İndeksi yükleme
 
 Here, we use the same index name as when we created the initial index. This stops it from being auto-generated and allows us to easily connect back to it.
 
@@ -164,7 +164,7 @@ response = query_engine.query("What happened at interleaf?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-## Metadata Filtering
+## Meta Veri Filtreleme
 
 Let’s insert a dummy document, and try to filter so that only that document is returned.
 
@@ -194,7 +194,7 @@ response = query_engine.query("What is the name of the file?")
 display(Markdown(f"<b>{response}</b>"))
 ```
 
-# Deleting the index completely
+# İndeksi tamamen silme
 
 You can delete the index created by the vector store using the `delete_index` function
 
@@ -206,7 +206,7 @@ vector_store.delete_index()
 vector_store.delete_index()  # calling the function again does nothing
 ```
 
-# Connection Termination
+# Bağlantıyı Sonlandırma
 
 You must ensure your client connections are closed:
 
