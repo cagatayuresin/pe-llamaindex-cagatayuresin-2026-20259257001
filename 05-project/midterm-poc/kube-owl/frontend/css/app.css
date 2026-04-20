@@ -1,0 +1,936 @@
+/* ═══════════════════════════════════════════════════════════════
+   KubeOps Agent — Premium Dark Theme Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── CSS Variables ─── */
+:root {
+    /* Color Palette */
+    --bg-primary: #0f1117;
+    --bg-secondary: #161822;
+    --bg-tertiary: #1c1f2e;
+    --bg-card: #1e2235;
+    --bg-elevated: #252a3a;
+    --bg-hover: #2a3045;
+    --bg-active: #323850;
+
+    /* Accent Colors */
+    --accent-blue: #3b82f6;
+    --accent-blue-glow: rgba(59, 130, 246, 0.25);
+    --accent-purple: #8b5cf6;
+    --accent-purple-glow: rgba(139, 92, 246, 0.2);
+    --accent-green: #10b981;
+    --accent-green-glow: rgba(16, 185, 129, 0.2);
+    --accent-amber: #f59e0b;
+    --accent-amber-glow: rgba(245, 158, 11, 0.2);
+    --accent-red: #ef4444;
+    --accent-red-glow: rgba(239, 68, 68, 0.2);
+    --accent-cyan: #06b6d4;
+
+    /* Text Colors */
+    --text-primary: #e8eaed;
+    --text-secondary: #9aa0b4;
+    --text-tertiary: #6b7280;
+    --text-accent: #93c5fd;
+
+    /* Borders */
+    --border-color: rgba(255, 255, 255, 0.06);
+    --border-subtle: rgba(255, 255, 255, 0.04);
+    --border-active: rgba(59, 130, 246, 0.4);
+
+    /* Sizing */
+    --sidebar-width: 280px;
+    --header-height: 56px;
+    --input-height: 64px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+
+    /* Fonts */
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px var(--accent-blue-glow);
+}
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-main);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--bg-active);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
+
+/* ═══════════ HEADER ═══════════ */
+.kubeops-header {
+    background: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-color);
+    height: var(--header-height);
+    min-height: var(--header-height) !important;
+    padding: 0 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+}
+
+.kubeops-logo {
+    color: var(--text-primary) !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.kubeops-logo i {
+    font-size: 1.5rem;
+    color: var(--accent-blue);
+    filter: drop-shadow(0 0 8px var(--accent-blue-glow));
+}
+
+.kubeops-provider-select .select select {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+}
+
+.kubeops-provider-select .select select:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px var(--accent-blue-glow);
+}
+
+.kubeops-k8s-badge {
+    font-size: 0.75rem !important;
+    font-weight: 500;
+    border-radius: 20px !important;
+    padding: 0.35rem 0.75rem !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--bg-tertiary) !important;
+    color: var(--text-secondary) !important;
+}
+
+.kubeops-k8s-badge.is-mock {
+    background: var(--accent-amber-glow) !important;
+    border-color: var(--accent-amber) !important;
+    color: var(--accent-amber) !important;
+}
+
+.kubeops-k8s-badge.is-real {
+    background: var(--accent-green-glow) !important;
+    border-color: var(--accent-green) !important;
+    color: var(--accent-green) !important;
+}
+
+/* ═══════════ MAIN LAYOUT ═══════════ */
+.kubeops-main {
+    display: flex;
+    height: 100vh;
+    padding-top: var(--header-height);
+}
+
+/* ═══════════ SIDEBAR ═══════════ */
+.kubeops-sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.kubeops-sidebar-header {
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.kubeops-sidebar-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+}
+
+.kubeops-sidebar-title i {
+    color: var(--accent-blue);
+    font-size: 1rem;
+}
+
+/* Document List */
+.kubeops-doc-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.kubeops-doc-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-tertiary);
+}
+
+.kubeops-doc-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    opacity: 0.5;
+}
+
+.kubeops-doc-empty p {
+    font-size: 0.82rem;
+    margin: 0;
+}
+
+/* Document Item */
+.kubeops-doc-item {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 2px;
+    border-radius: var(--radius-sm);
+    cursor: default;
+    transition: background 0.15s ease;
+    gap: 0.5rem;
+}
+
+.kubeops-doc-item:hover {
+    background: var(--bg-hover);
+}
+
+.kubeops-doc-icon {
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
+.kubeops-doc-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.kubeops-doc-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kubeops-doc-meta {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+}
+
+.kubeops-doc-delete {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.kubeops-doc-item:hover .kubeops-doc-delete {
+    opacity: 1;
+}
+
+.kubeops-doc-delete:hover {
+    color: var(--accent-red);
+    background: var(--accent-red-glow);
+}
+
+/* Upload Area */
+.kubeops-upload-area {
+    padding: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.kubeops-upload-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-tertiary);
+}
+
+.kubeops-upload-dropzone:hover,
+.kubeops-upload-dropzone.dragover {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-glow);
+    color: var(--accent-blue);
+}
+
+.kubeops-upload-dropzone i {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.kubeops-upload-dropzone p {
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin: 0 0 0.2rem;
+}
+
+.kubeops-upload-hint {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+}
+
+.kubeops-upload-progress {
+    padding: 0.5rem 0;
+    text-align: center;
+}
+
+.kubeops-upload-progress .progress {
+    height: 4px;
+    margin-bottom: 0.35rem;
+    border-radius: 2px;
+    background-color: var(--bg-tertiary);
+}
+
+.kubeops-upload-progress .progress::-webkit-progress-bar {
+    background-color: var(--bg-tertiary);
+    border-radius: 2px;
+}
+
+.kubeops-upload-progress .progress::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 2px;
+}
+
+#upload-status {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* ═══════════ CHAT AREA ═══════════ */
+.kubeops-chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-primary);
+}
+
+.kubeops-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Welcome Screen */
+.kubeops-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    flex: 1;
+}
+
+.kubeops-welcome-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue-glow), var(--accent-purple-glow));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.kubeops-welcome-icon i {
+    font-size: 2.5rem;
+    color: var(--accent-blue);
+    filter: drop-shadow(0 0 12px var(--accent-blue-glow));
+}
+
+.kubeops-welcome h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.kubeops-welcome p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 2rem;
+    max-width: 400px;
+}
+
+.kubeops-welcome-suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.kubeops-suggestion {
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+}
+
+.kubeops-suggestion:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.kubeops-suggestion i {
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
+/* Chat Messages */
+.kubeops-message {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 85%;
+    animation: messageIn 0.3s ease;
+}
+
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kubeops-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.kubeops-message.agent {
+    align-self: flex-start;
+}
+
+.kubeops-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.kubeops-message.user .kubeops-message-avatar {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+}
+
+.kubeops-message.agent .kubeops-message-avatar {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--accent-blue);
+}
+
+.kubeops-message-content {
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.kubeops-message.user .kubeops-message-content {
+    background: linear-gradient(135deg, var(--accent-blue), hsl(230, 80%, 55%));
+    color: white;
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+.kubeops-message.agent .kubeops-message-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+/* Agent Steps (Collapsible) */
+.kubeops-steps-container {
+    margin-top: 0.75rem;
+}
+
+.kubeops-steps-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: 100%;
+}
+
+.kubeops-steps-toggle:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.kubeops-steps-toggle i.chevron {
+    transition: transform 0.2s ease;
+    margin-left: auto;
+}
+
+.kubeops-steps-toggle.open i.chevron {
+    transform: rotate(180deg);
+}
+
+.kubeops-steps-list {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    display: none;
+}
+
+.kubeops-steps-list.visible {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.kubeops-step {
+    padding: 0.5rem 0.6rem;
+    margin-bottom: 0.35rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.kubeops-step:last-child {
+    margin-bottom: 0;
+}
+
+.kubeops-step-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+}
+
+.kubeops-step.thought {
+    background: var(--accent-purple-glow);
+    border-left: 3px solid var(--accent-purple);
+}
+
+.kubeops-step.thought .kubeops-step-icon {
+    background: var(--accent-purple-glow);
+    color: var(--accent-purple);
+}
+
+.kubeops-step.action {
+    background: var(--accent-blue-glow);
+    border-left: 3px solid var(--accent-blue);
+}
+
+.kubeops-step.action .kubeops-step-icon {
+    background: var(--accent-blue-glow);
+    color: var(--accent-blue);
+}
+
+.kubeops-step.observation {
+    background: var(--accent-green-glow);
+    border-left: 3px solid var(--accent-green);
+}
+
+.kubeops-step.observation .kubeops-step-icon {
+    background: var(--accent-green-glow);
+    color: var(--accent-green);
+}
+
+.kubeops-step-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.kubeops-step-label {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 2px;
+    color: var(--text-secondary);
+}
+
+.kubeops-step-text {
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.kubeops-step pre {
+    background: var(--bg-primary);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    overflow-x: auto;
+    margin: 0.35rem 0 0;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+}
+
+/* Answer pre blocks */
+.kubeops-message-content pre {
+    background: var(--bg-primary);
+    padding: 0.65rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+}
+
+.kubeops-message-content code {
+    background: var(--bg-primary);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent-cyan);
+}
+
+/* Sources */
+.kubeops-sources {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.kubeops-sources-label {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.3rem;
+}
+
+.kubeops-source-tag {
+    display: inline-block;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-right: 0.3rem;
+    margin-bottom: 0.2rem;
+}
+
+/* Duration */
+.kubeops-duration {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    margin-top: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Loading animation */
+.kubeops-thinking {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    border-bottom-left-radius: var(--radius-sm);
+    animation: messageIn 0.3s ease;
+}
+
+.kubeops-thinking-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.kubeops-thinking-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    animation: dotPulse 1.4s infinite;
+}
+
+.kubeops-thinking-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.kubeops-thinking-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+    0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.kubeops-thinking-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+/* ═══════════ CHAT INPUT ═══════════ */
+.kubeops-chat-input-area {
+    padding: 0.75rem 1.5rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.kubeops-chat-input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kubeops-chat-input-wrapper:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px var(--accent-blue-glow);
+}
+
+.kubeops-chat-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    max-height: 120px;
+    padding: 0.25rem 0;
+}
+
+.kubeops-chat-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.kubeops-send-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), hsl(230, 80%, 55%));
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.kubeops-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-glow);
+}
+
+.kubeops-send-btn:active {
+    transform: scale(0.95);
+}
+
+.kubeops-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.kubeops-input-hint {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    margin-top: 0.4rem;
+    text-align: center;
+}
+
+.kubeops-input-hint kbd {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    font-family: var(--font-main);
+    font-size: 0.65rem;
+}
+
+/* ═══════════ NOTIFICATIONS ═══════════ */
+.kubeops-notifications {
+    position: fixed;
+    top: calc(var(--header-height) + 12px);
+    right: 12px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.kubeops-notification {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.82rem;
+    min-width: 280px;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: notifIn 0.3s ease;
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes notifIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.kubeops-notification.success {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+}
+
+.kubeops-notification.error {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+.kubeops-notification.info {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.kubeops-notification.warning {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-amber);
+    color: var(--accent-amber);
+}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 768px) {
+    .kubeops-sidebar {
+        display: none;
+    }
+
+    .kubeops-welcome-suggestions {
+        grid-template-columns: 1fr;
+    }
+
+    .kubeops-message {
+        max-width: 95%;
+    }
+}

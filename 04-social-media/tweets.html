@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LlamaIndex Ekosistemi — Tweet Derlemesi</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FAF9F6;
+            --bg-card: #FFFFFF;
+            --bg-accent: #F3F0EB;
+            --text-primary: #1A1A1A;
+            --text-secondary: #5C5C5C;
+            --text-tertiary: #8A8A8A;
+            --border: #E8E4DE;
+            --accent: #7C5CFC;
+            --accent-soft: #EDE8FF;
+            --tag-bg: #E8F5E9;
+            --tag-text: #2E7D32;
+            --link: #5B4CD0;
+            --quote-bg: #FFF8E1;
+            --quote-border: #FFD54F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-header {
+            padding: 5rem 2rem 3rem;
+            text-align: center;
+            background: linear-gradient(180deg, #EDE8FF 0%, var(--bg) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-header h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(2.2rem, 5vw, 3.6rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .page-header .subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin: 0.8rem auto 0;
+        }
+
+        .page-header .meta-line {
+            margin-top: 1.5rem;
+            font-size: 0.82rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 5rem;
+        }
+
+        .tweet-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem 2.2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .tweet-card:hover {
+            box-shadow: 0 8px 32px rgba(124, 92, 252, 0.08);
+        }
+
+        .tweet-number {
+            position: absolute;
+            top: -14px;
+            left: 24px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.04em;
+        }
+
+        .tweet-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .tweet-author .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .tweet-author .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tweet-author .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .tweet-author .handle {
+            font-size: 0.82rem;
+            color: var(--text-tertiary);
+        }
+
+        .tweet-date {
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            margin-left: auto;
+        }
+
+        .tweet-original {
+            font-size: 0.95rem;
+            line-height: 1.75;
+            color: var(--text-primary);
+            margin-bottom: 1.2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .tweet-original a {
+            color: var(--link);
+            text-decoration: none;
+        }
+
+        .tweet-original a:hover {
+            text-decoration: underline;
+        }
+
+        .tweet-translation {
+            background: var(--bg-accent);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+
+        .tweet-translation::before {
+            content: 'TR';
+            position: absolute;
+            top: -8px;
+            right: 12px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.06em;
+        }
+
+        .tweet-translation p {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .tweet-commentary {
+            background: var(--quote-bg);
+            border-left: 3px solid var(--quote-border);
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+        }
+
+        .tweet-commentary::before {
+            content: '💬 Yorum';
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #F9A825;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+
+        .tweet-commentary p {
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+        }
+
+        .media-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #E3F2FD;
+            color: #1565C0;
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 6px;
+            margin-top: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .quote-tweet {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            margin: 0.8rem 0;
+            background: var(--bg);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quote-tweet .qt-author {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.82rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .tweet-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 1rem;
+            font-size: 0.78rem;
+            color: var(--link);
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tweet-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .section-divider {
+            text-align: center;
+            margin: 3rem 0 1.5rem;
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.4rem;
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-tertiary);
+            font-size: 0.82rem;
+        }
+
+        .footer span {
+            color: var(--accent);
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 0.8rem 0;
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .tweet-card {
+                padding: 1.5rem 1.2rem;
+            }
+
+            .page-header {
+                padding: 3rem 1.2rem 2rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <h1>LlamaIndex <em>Ekosistemi</em></h1>
+        <p class="subtitle">Yapay zeka ajanları, RAG sistemleri ve belge işleme araçları hakkında dikkat çeken tweetler
+            — çevirileri ve yorumlarıyla birlikte.</p>
+        <p class="meta-line">Nisan 2026 · 7 Tweet · Derleme</p>
+    </header>
+
+    <main class="container">
+
+        <!-- Tweet 1 -->
+        <article class="tweet-card">
+            <span class="tweet-number">01</span>
+            <div class="tweet-author">
+                <div class="avatar">SG</div>
+                <div class="author-info">
+                    <span class="name">Shalini Goyal</span>
+                    <span class="handle">@goyalshaliniuk</span>
+                </div>
+                <span class="tweet-date">Şub 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>Building a GenAI app?</p>
+                <p>Don't just plug in a model – design it to scale, adapt, and evolve. Here's your blueprint for
+                    future-ready GenAI systems. 👇</p>
+                <p>1. Modular Architecture — Separate UI, orchestration, models, and storage. Use LangChain or
+                    LlamaIndex to build pipelines.</p>
+                <p>2. Context Engineering — Layer system prompts, memory, and retrieved knowledge.</p>
+                <p>3. Retrieval-Augmented Generation (RAG) — Connect vector DBs like Pinecone or Weaviate.</p>
+                <p>4. Low-Latency Design — Model distillation, quantization, and async I/O.</p>
+                <p>5. Agent-Based Systems — Use CrewAI, AutoGen, or LangGraph.</p>
+                <p>6. Tool & Plugin Integration</p>
+                <p>7. Streaming & Feedback</p>
+                <p>8. Memory Management</p>
+                <p>9. Smart Deployment — K8s or serverless.</p>
+                <p>10. Observability — LangSmith or WhyLabs.</p>
+            </div>
+
+            <div class="tag-row">
+                <span class="tag">#GenAI</span>
+                <span class="tag">#RAG</span>
+                <span class="tag">#LlamaIndex</span>
+                <span class="tag">#Architecture</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>Bir GenAI uygulaması mı geliştiriyorsun? Sadece bir model takıp bırakma — ölçeklenebilir,
+                    uyarlanabilir ve evrilebilir şekilde tasarla. İşte geleceğe hazır GenAI sistemleri için 10 maddelik
+                    yol haritası: Modüler mimari, bağlam mühendisliği, RAG, düşük gecikme, ajan tabanlı sistemler, araç
+                    entegrasyonu, streaming, bellek yönetimi, akıllı dağıtım ve gözlemlenebilirlik.</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>Bu tweet, bir GenAI uygulaması inşa ederken göz önünde bulundurulması gereken temel mimari ilkeleri
+                    özetliyor. Özellikle modüler mimari ve RAG vurgusu önemli — LlamaIndex ve LangChain gibi
+                    framework'lerin neden bu kadar popüler olduğunu net biçimde ortaya koyuyor. CrewAI ve K8s
+                    referansları da prodüksiyon odaklı bir bakış açısı sunuyor.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/goyalshaliniuk/status/2025820419391943136" target="_blank">↗
+                Tweet'i X'te görüntüle</a>
+        </article>
+
+        <!-- Tweet 2 -->
+        <article class="tweet-card">
+            <span class="tweet-number">02</span>
+            <div class="tweet-author">
+                <div class="avatar">PC</div>
+                <div class="author-info">
+                    <span class="name">PyCharm, a JetBrains IDE</span>
+                    <span class="handle">@pycharm</span>
+                </div>
+                <span class="tweet-date">26 Şub 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>How do you build #AI agents that work with real documents?</p>
+                <p>Tuana Çelik (@tuanacelik), Developer Relations Engineer at @llama_index, shows how to build
+                    document-centric agents at "Python Unplugged on PyTV":</p>
+                <p>"Orchestrating Document-Centric Agents With LlamaIndex"</p>
+                <p>March 4 · Save the date: jb.gg/py-tv</p>
+            </div>
+
+            <div class="media-badge">🎬 Video — Orchestrating Document-Centric Agents with LlamaIndex</div>
+
+            <div class="tag-row">
+                <span class="tag">#AI</span>
+                <span class="tag">#LlamaIndex</span>
+                <span class="tag">#PyTV</span>
+                <span class="tag">#DocumentAgents</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>Gerçek belgelerle çalışan yapay zeka ajanlarını nasıl oluşturursunuz? LlamaIndex'te Geliştirici
+                    İlişkileri Mühendisi olan Tuana Çelik, "PyTV'de Python Unplugged" etkinliğinde belge merkezli
+                    ajanların nasıl oluşturulacağını gösteriyor. "LlamaIndex ile Belge Odaklı Ajanları Yönetme" — 4
+                    Mart'ta, tarihi not edin!</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>JetBrains'in resmi PyCharm hesabından gelen bu paylaşım, LlamaIndex'in sektördeki konumunu göstermesi
+                    açısından dikkat çekici. Tuana Çelik'in sunumu "belge odaklı ajanlar" konseptine odaklanıyor — yani
+                    PDF, DOCX gibi gerçek dokümanları anlayıp üzerinde işlem yapabilen AI ajanları. RAG'ın ötesine
+                    geçen, agentic document processing yaklaşımı.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/pycharm/status/2027064473417040048" target="_blank">↗ Tweet'i X'te
+                görüntüle</a>
+        </article>
+
+        <!-- Tweet 3 -->
+        <article class="tweet-card">
+            <span class="tweet-number">03</span>
+            <div class="tweet-author">
+                <div class="avatar">TD</div>
+                <div class="author-info">
+                    <span class="name">Tom Dörr</span>
+                    <span class="handle">@tom_doerr</span>
+                </div>
+                <span class="tweet-date">13 Mar 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>Graph RAG knowledge base with TiDB Vector and LlamaIndex</p>
+                <p><a href="https://github.com/pingcap/autoflow" target="_blank">github.com/pingcap/autofl...</a></p>
+            </div>
+
+            <div class="media-badge">📦 GitHub Repo — AutoFlow (#2 Trending Repository of the Day)</div>
+
+            <div class="tag-row">
+                <span class="tag">#GraphRAG</span>
+                <span class="tag">#TiDB</span>
+                <span class="tag">#LlamaIndex</span>
+                <span class="tag">#AutoFlow</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>TiDB Vector ve LlamaIndex ile Graph RAG bilgi tabanı. AutoFlow, açık kaynak bir graph RAG (bilgi
+                    grafiği tabanlı RAG) aracı olup TiDB Vector, LlamaIndex ve DSPy üzerine inşa edilmiş bir bilgi
+                    tabanı oluşturma aracıdır. GitHub'da günün 2. trend deposu olmuş.</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>Klasik RAG yalnızca vektör benzerliğine dayanırken, Graph RAG bilgi parçaları arasındaki ilişkileri
+                    de modelleyerek çok daha zengin bir bağlam sunar. AutoFlow'un TiDB Vector + LlamaIndex + DSPy
+                    kombinasyonu, özellikle karmaşık kurumsal bilgi tabanları için güçlü bir çözüm sunuyor. GitHub'da
+                    trend olması topluluk ilgisinin ne kadar yüksek olduğunu gösteriyor.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/tom_doerr/status/2032443834005692611" target="_blank">↗ Tweet'i
+                X'te görüntüle</a>
+        </article>
+
+        <!-- Tweet 4 -->
+        <article class="tweet-card">
+            <span class="tweet-number">04</span>
+            <div class="tweet-author">
+                <div class="avatar">JR</div>
+                <div class="author-info">
+                    <span class="name">Jim Raptis</span>
+                    <span class="handle">@d__raptis</span>
+                </div>
+                <span class="tweet-date">15 Şub 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>A great scroll animation to explain your product usage clearly.</p>
+                <p>→ llamaindex.ai</p>
+            </div>
+
+            <div class="media-badge">🎬 Video — llamaindex.ai web sitesi scroll animasyonu</div>
+
+            <div class="tag-row">
+                <span class="tag">#UX</span>
+                <span class="tag">#WebDesign</span>
+                <span class="tag">#LlamaIndex</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>Ürününüzün kullanımını net bir şekilde açıklayan harika bir kaydırma animasyonu. → llamaindex.ai</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>Bu tweet teknik bir içerikten ziyade LlamaIndex'in web sitesi tasarımını öne çıkarıyor. 18.3K
+                    görüntülenme almış olması, iyi bir landing page animasyonunun ne kadar dikkat çekebildiğini
+                    kanıtlıyor. Bir developer tool için bile görsel sunumun ve UX'in ne kadar önemli olduğunun güzel bir
+                    örneği. Ürün pazarlamasında "show, don't tell" yaklaşımı.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/d__raptis/status/2022963404164784168" target="_blank">↗ Tweet'i
+                X'te görüntüle</a>
+        </article>
+
+        <!-- Tweet 5 -->
+        <article class="tweet-card">
+            <span class="tweet-number">05</span>
+            <div class="tweet-author">
+                <div class="avatar">LP</div>
+                <div class="author-info">
+                    <span class="name">Luci Pars</span>
+                    <span class="handle">@parsluci</span>
+                </div>
+                <span class="tweet-date">30 Mar 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>PDF'leri Yapay Zeka Ajanları İçin Yeniden Tanımlayan Araç: LiteParse Yayınlandı</p>
+                <p>LlamaIndex ekibi yapay zeka ajanları için çok önemli ve iyi bir araç yayınladı adı LiteParse. Bu açık
+                    kaynaklı tamamen ücretsiz ve model kullanmayan belge ayrıştırıcı PDF'lerden Word dosyalarına,
+                    Excel'den resimlere kadar 50'den fazla formatı destekliyor. En çarpıcı yanı sıradan bir bilgisayarda
+                    500 sayfayı sadece 2 saniyede işleyebilmesi ve GPU'ya hiç ihtiyaç duymaması.</p>
+                <p>Ayrıca multimodal modeller için ekran görüntüsü alma desteğiyle geliyor. CLI olarak kullanıyorsan npm
+                    ile bir komutla kurup lit parse dosya.pdf diye çalıştırıyorsun. Python bağımlılığı yok, TypeScript
+                    tabanlı ve ajan akışlarına doğrudan entegre edilebiliyor.</p>
+            </div>
+
+            <div class="quote-tweet">
+                <div class="qt-author">Jerry Liu @jerryjliu0 · 19 Mar</div>
+                <p>Introducing LiteParse – the best model-free document parsing tool for AI agents ⭐<br>
+                    ✅ It's completely open-source and free.<br>
+                    ✅ No GPU required, will process ~500 pages in 2 seconds on commodity...</p>
+            </div>
+
+            <div class="tag-row">
+                <span class="tag">#LiteParse</span>
+                <span class="tag">#DocumentParsing</span>
+                <span class="tag">#LlamaIndex</span>
+                <span class="tag">#OpenSource</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>(Bu tweet zaten Türkçe yazılmış.) LlamaIndex'in LiteParse aracı tanıtılıyor: Model kullanmadan, GPU
+                    gerektirmeden 500 sayfayı 2 saniyede işleyen açık kaynak belge ayrıştırıcı. 50+ format desteği,
+                    TypeScript tabanlı, npm ile tek komutla kurulum. PyPDF ve PyMuPDF'den daha başarılı sonuçlar
+                    veriyor.</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>LiteParse, LlamaIndex ekosisteminin en heyecan verici yeni araçlarından biri. Model-free olması (yani
+                    LLM/VLM gerektirmemesi) onu hızlı ve maliyet-etkin kılıyor. 500 sayfa / 2 saniye performansı,
+                    özellikle büyük belge setleriyle çalışan RAG pipeline'ları için büyük bir avantaj. TypeScript
+                    tabanlı olması ve npm ile kurulabilmesi de Node.js ekosistemiyle doğrudan entegrasyonu
+                    kolaylaştırıyor. Claude Code gibi araçlarla uyumlu olması da ayrı bir artı.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/parsluci/status/2038527812202631230" target="_blank">↗ Tweet'i
+                X'te görüntüle</a>
+        </article>
+
+        <!-- Tweet 6 -->
+        <article class="tweet-card">
+            <span class="tweet-number">06</span>
+            <div class="tweet-author">
+                <div class="avatar">WZ</div>
+                <div class="author-info">
+                    <span class="name">Wang Zuo</span>
+                    <span class="handle">@wang_zuo</span>
+                </div>
+                <span class="tweet-date">30 Mar 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>liteparse by llamaindex is a lightweight node library for parsing pdf. I discovered they actually use
+                    a typescript wrapper called pdfium to simplify pdf.js integration. This is worth highlighting, as
+                    working with the original pdf.js directly is hard.</p>
+            </div>
+
+            <div class="media-badge">📦 GitHub Repo — hyzyla/pdfium (167 Stars, 23 Forks)</div>
+
+            <div class="tag-row">
+                <span class="tag">#LiteParse</span>
+                <span class="tag">#pdfium</span>
+                <span class="tag">#TypeScript</span>
+                <span class="tag">#PDF</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>LlamaIndex tarafından geliştirilen LiteParse, PDF dosyalarını ayrıştırmak için kullanılan hafif bir
+                    Node kütüphanesidir. Aslında pdf.js entegrasyonunu kolaylaştırmak için pdfium adlı bir TypeScript
+                    sarmalayıcı kullandıklarını keşfettim. Bu, vurgulanmaya değer bir nokta çünkü orijinal pdf.js ile
+                    doğrudan çalışmak oldukça zor.</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>Wang Zuo'nun bu keşfi, açık kaynak ekosistemin güzelliğini gösteriyor — bir aracın iç yapısına
+                    bakarak başka değerli araçları keşfedebiliyorsunuz. pdfium sarmalayıcısı, pdf.js'in karmaşıklığını
+                    soyutlayarak TypeScript geliştiricilerine çok daha temiz bir API sunuyor. LiteParse'ın bu tercihi,
+                    teknik tasarım kararlarının ne kadar önemli olduğunu vurguluyor.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/wang_zuo/status/2038448501185769931" target="_blank">↗ Tweet'i
+                X'te görüntüle</a>
+        </article>
+
+        <!-- Tweet 7 -->
+        <article class="tweet-card">
+            <span class="tweet-number">07</span>
+            <div class="tweet-author">
+                <div class="avatar">LE</div>
+                <div class="author-info">
+                    <span class="name">Leonie</span>
+                    <span class="handle">@helloiamleonie</span>
+                </div>
+                <span class="tweet-date">Şub 2026</span>
+            </div>
+
+            <div class="tweet-original">
+                <p>the industry is moving in an interesting direction with semantic search alternatives to grep for
+                    coding agents.</p>
+                <p>there's mgrep by mixedbread<br>
+                    there's semtools by llamaindex<br>
+                    now there's (multi-vec) colgrep by lighton</p>
+                <p>very cool to see these advancements.</p>
+                <p>congrats to @antoine_chaffin, @raphaelsrty and the team!</p>
+            </div>
+
+            <div class="quote-tweet">
+                <div class="qt-author">Antoine Chaffin @antoine_chaffin · 12 Şub</div>
+                <p>Your coding agent is burning tokens on grep like it's 1973<br>
+                    Because semantic search means remote APIs & babysitting an index<br>
+                    Introducing ColGrep & LateOn-Code<br>
+                    SOTA code retrieval with lightweight models.<br>
+                    Wins 70% vs grep. 15.7% less tokens....</p>
+            </div>
+
+            <div class="media-badge">📊 Grafik — MTEB Code (v1) Benchmark: Average Score vs. Model Size</div>
+
+            <div class="tag-row">
+                <span class="tag">#SemanticSearch</span>
+                <span class="tag">#CodingAgents</span>
+                <span class="tag">#ColGrep</span>
+                <span class="tag">#LlamaIndex</span>
+            </div>
+
+            <div class="tweet-translation">
+                <p>Sektör, kodlama ajanları için grep'e semantik arama alternatifleri konusunda ilginç bir yöne doğru
+                    ilerliyor. mixedbread'den mgrep var, llamaindex'ten semtools var, şimdi de lighton'dan (multi-vec)
+                    colgrep geldi. Bu gelişmeleri görmek çok güzel. Tebrikler ekibe!</p>
+                <p><strong>Alıntılanan tweet:</strong> Kodlama ajanınız 1973'teki gibi grep üzerinde token yakıyor.
+                    Çünkü semantik arama uzak API'ler ve index bakımı demek. ColGrep & LateOn-Code'u tanıtıyoruz — hafif
+                    modellerle SOTA kod erişimi. grep'e karşı %70 kazanıyor, %15.7 daha az token kullanıyor.</p>
+            </div>
+
+            <div class="tweet-commentary">
+                <p>Bu tweet, AI kodlama ajanlarının evriminde kritik bir noktaya işaret ediyor: klasik grep (metin
+                    eşleştirme) yerine semantik anlam tabanlı kod arama. LlamaIndex'in semtools'u, mixedbread'in mgrep'i
+                    ve lighton'ın ColGrep'i bu alanda rekabet eden üç farklı yaklaşım sunuyor. ColGrep'in grep'e karşı
+                    %70 kazanma oranı ve %15.7 daha az token tüketimi, bu araçların coding agent'lar için ne kadar büyük
+                    bir fark yaratabileceğini gösteriyor. Özellikle büyük kod tabanlarında çalışan ajanlar için oyun
+                    değiştirici.</p>
+            </div>
+
+            <a class="tweet-link" href="https://x.com/helloiamleonie/status/" target="_blank">↗ Tweet'i X'te
+                görüntüle</a>
+        </article>
+
+    </main>
+
+    <footer class="footer">
+        <p>Bu derleme <span>LlamaIndex ekosistemi</span> etrafındaki gelişmeleri takip etmek amacıyla oluşturulmuştur.
+        </p>
+        <p style="margin-top: 0.5rem;">Nisan 2026 · Çağatay Üresin</p>
+    </footer>
+
+</body>
+
+</html>
