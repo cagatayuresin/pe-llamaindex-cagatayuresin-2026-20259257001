@@ -5,7 +5,7 @@ title: Weaviate Vektör Deposu Meta Veri Filtresi
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-weaviate
@@ -71,7 +71,7 @@ from IPython.display import Markdown, display
 
 ## Meta Veri Filtreleme
 
-Let’s insert a dummy document, and try to filter so that only that document is returned.
+Hadi sahte bir belge ekleyelim ve sadece o belgenin döndürülmesi için filtrelemeyi deneyelim.
 
 ```
 from llama_index.core.schema import TextNode

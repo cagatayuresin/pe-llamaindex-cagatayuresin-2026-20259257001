@@ -10136,7 +10136,7 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.16] - 2024-03-05
 
-### New Features
+### Yeni Özellikler
 
 - Anthropic support for new models (#11623, #11612)
 - Easier creation of chat prompts (#11583)
@@ -10144,7 +10144,7 @@ New format! Going to try out reporting changes per package.
 - Improve batch cohere embeddings through bedrock (#11572)
 - Added support for vertex AI embeddings (#11561)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Ensure order in async embeddings generation (#11562)
 - Fixed empty metadata for csv reader (#11563)
@@ -10155,14 +10155,14 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.15] - 2024-03-01
 
-### New Features
+### Yeni Özellikler
 
 - Added FeishuWikiReader (#11491)
 - Added videodb retriever integration (#11463)
 - Added async to opensearch vector store (#11513)
 - New LangFuse one-click callback handler (#11324)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed deadlock issue with async chat streaming (#11548)
 - Improved hidden file check in SimpleDirectoryReader (#11496)
@@ -10174,7 +10174,7 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.14] - 2024-02-28
 
-### New Features
+### Yeni Özellikler
 
 - Released llama-index-networks (#11413)
 - Jina reranker (#11291)
@@ -10184,7 +10184,7 @@ New format! Going to try out reporting changes per package.
 - Added Friendli LLM integration (#11384)
 - metadata only queries for chromadb (#11328)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed inheriting llm callback in synthesizers (#11404)
 - Catch delete error in milvus (#11315)
@@ -10203,14 +10203,14 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.13] - 2024-02-26
 
-### New Features
+### Yeni Özellikler
 
 - Added a llama-pack for KodaRetriever, for on-the-fly alpha tuning (#11311)
 - Added support for `mistral-large` (#11398)
 - Last token pooling mode for huggingface embeddings models like SFR-Embedding-Mistral (#11373)
 - Added fsspec support to SimpleDirectoryReader (#11303)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed an issue with context window + prompt helper (#11379)
 - Moved OpenSearch vector store to BasePydanticVectorStore (#11400)
@@ -10221,7 +10221,7 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.12] - 2024-02-22
 
-### New Features
+### Yeni Özellikler
 
 - Added `llama-index-postprocessor-colbert-rerank` package (#11057)
 - `MyMagicAI` LLM (#11263)
@@ -10229,7 +10229,7 @@ New format! Going to try out reporting changes per package.
 - Add retries to github reader (#10980)
 - Added FireworksAI embedding and LLM modules (#10959)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed string formatting in weaviate (#11294)
 - Fixed off-by-one error in semantic splitter (#11295)
@@ -10240,7 +10240,7 @@ New format! Going to try out reporting changes per package.
 
 ## \[0.10.11] - 2024-02-21
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed multi-modal LLM for async acomplete (#11064)
 - Fixed issue with llamaindex-cli imports (#11068)
@@ -10255,11 +10255,11 @@ I’m still a bit wonky with our publishing process — apologies. This is just 
 
 ## \[0.10.7] - 2024-02-19
 
-### New Features
+### Yeni Özellikler
 
 - Added Self-Discover llamapack (#10951)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed linting in CICD (#10945)
 - Fixed using remote graph stores (#10971)
@@ -10276,12 +10276,12 @@ At some point, each package will have a dedicated changelog.
 
 But for now, onto the “master” changelog.
 
-### New Features
+### Yeni Özellikler
 
 - Added `NomicHFEmbedding` (#10762)
 - Added `MinioReader` (#10744)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Various fixes for clickhouse vector store (#10799)
 - Fix index name in neo4j vector store (#10749)
@@ -10295,7 +10295,7 @@ But for now, onto the “master” changelog.
 
 ## \[0.10.3] - 2024-02-13
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed passing in LLM to `as_chat_engine` (#10605)
 - Fixed system prompt formatting for anthropic (#10603)
@@ -10309,13 +10309,13 @@ But for now, onto the “master” changelog.
 
 ## \[0.10.0, 0.10.1] - 2024-02-12
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Several changes are introduced. See the [full blog post](https://blog.llamaindex.ai/llamaindex-v0-10-838e735948f8) for complete details.
 
 ## \[0.9.48] - 2024-02-12
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Add back deprecated API for BedrockEmbdding (#10581)
 
@@ -10323,13 +10323,13 @@ But for now, onto the “master” changelog.
 
 Last patch before v0.10!
 
-### New Features
+### Yeni Özellikler
 
 - add conditional links to query pipeline (#10520)
 - refactor conditional links + add to cookbook (#10544)
 - agent + query pipeline cleanups (#10563)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Add sleep to fix lag in chat stream (#10339)
 - OllamaMultiModal kwargs (#10541)
@@ -10343,14 +10343,14 @@ Last patch before v0.10!
 
 ## \[0.9.46] - 2024-02-08
 
-### New Features
+### Yeni Özellikler
 
 - Update pooling strategy for embedding models (#10536)
 - Add Multimodal Video RAG example (#10530)
 - Add SECURITY.md (#10531)
 - Move agent module guide up one-level (#10519)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Deeplake fixes (#10529)
 - Add Cohere section for llamaindex (#10523)
@@ -10358,18 +10358,18 @@ Last patch before v0.10!
 
 ## \[0.9.45.post1] - 2024-02-07
 
-### New Features
+### Yeni Özellikler
 
 - Upgraded deeplake vector database to use BasePydanticVectorStore (#10504)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix MD parser for inconsistency tables (#10488)
 - Fix ImportError for pypdf in MetadataExtractionSEC.ipynb (#10491)
 
 ## \[0.9.45] - 2024-02-07
 
-### New Features
+### Yeni Özellikler
 
 - Refactor: add AgentRunner.from\_llm method (#10452)
 - Support custom prompt formatting for non-chat LLMS (#10466)
@@ -10377,7 +10377,7 @@ Last patch before v0.10!
 - Add persist and load method for Colbert Index (#10477)
 - Allow custom agent to take in user inputs (#10450)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - remove exporter from arize-phoenix global callback handler (#10465)
 - Fixing Dashscope qwen llm bug (#10471)
@@ -10387,7 +10387,7 @@ Last patch before v0.10!
 
 ## \[0.9.44] - 2024-02-05
 
-### New Features
+### Yeni Özellikler
 
 - ollama vision cookbook (#10438)
 - Support Gemini “transport” configuration (#10457)
@@ -10395,48 +10395,48 @@ Last patch before v0.10!
 
 ## \[0.9.43] - 2024-02-03
 
-### New Features
+### Yeni Özellikler
 
 - Add multi-modal ollama (#10434)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - update base class for astradb (#10435)
 
 ## \[0.9.42.post1] - 2024-02-02
 
-### New Features
+### Yeni Özellikler
 
 - Add Async support for Base nodes parser (#10418)
 
 ## \[0.9.42] - 2024-02-02
 
-### New Features
+### Yeni Özellikler
 
 - Add support for `gpt-3.5-turbo-0125` (#10412)
 - Added `create-llama` support to rag cli (#10405)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed minor bugs in lance-db vector store (#10404)
 - Fixed streaming bug in ollama (#10407)
 
 ## \[0.9.41] - 2024-02-01
 
-### New Features
+### Yeni Özellikler
 
 - Nomic Embedding (#10388)
 - Dashvector support sparse vector (#10386)
 - Table QA with MarkDownParser and Benchmarking (#10382)
 - Simple web page reader (#10395)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix full node content in KeywordExtractor (#10398)
 
 ## \[0.9.40] - 2024-01-30
 
-### New Features
+### Yeni Özellikler
 
 - Improve and fix bugs for MarkdownElementNodeParser (#10340)
 - Fixed and improve Perplexity support for new models (#10319)
@@ -10445,35 +10445,35 @@ Last patch before v0.10!
 
 ## \[0.9.39] - 2024-01-26
 
-### New Features
+### Yeni Özellikler
 
 - Support for new GPT Turbo Models (#10291)
 - Support Multiple docs for Sentence Transformer Fine tuning(#10297)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Marvin imports fixed (#9864)
 
 ## \[0.9.38] - 2024-01-25
 
-### New Features
+### Yeni Özellikler
 
 - Support for new OpenAI v3 embedding models (#10279)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Extra checks on sparse embeddings for qdrant (#10275)
 
 ## \[0.9.37] - 2024-01-24
 
-### New Features
+### Yeni Özellikler
 
 - Added a RAG CLI utility (#10193)
 - Added a textai vector store (#10240)
 - Added a Postgresql based docstore and index store (#10233)
 - specify tool spec in tool specs (#10263)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed serialization error in ollama chat (#10230)
 - Added missing fields to `SentenceTransformerRerank` (#10225)
@@ -10483,11 +10483,11 @@ Last patch before v0.10!
 
 ## \[0.9.36] - 2024-01-23
 
-### New Features
+### Yeni Özellikler
 
 - Added support for `SageMakerEmbedding` (#10207)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix duplicated `file_id` on openai assistant (#10223)
 - Fix circular dependencies for programs (#10222)
@@ -10496,7 +10496,7 @@ Last patch before v0.10!
 
 ## \[0.9.35] - 2024-01-22
 
-### New Features
+### Yeni Özellikler
 
 - `beautifulsoup4` dependency to new optional extra `html` (#10156)
 - make `BaseNode.hash` an `@property` (#10163)
@@ -10508,7 +10508,7 @@ Last patch before v0.10!
 - make react agent prompts more editable (#10154)
 - Add agent query pipeline (#10180)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update supabase vecs metadata filter function to support multiple fields (#10133)
 - Bugfix/code improvement for LanceDB integration (#10144)
@@ -10523,25 +10523,25 @@ Last patch before v0.10!
 
 ## \[0.9.34] - 2024-01-19
 
-### New Features
+### Yeni Özellikler
 
 - Added SageMakerEndpointLLM (#10140)
 - Added support for Qdrant filters (#10136)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update bedrock utils for Claude 2:1 (#10139)
 - BugFix: deadlocks using multiprocessing (#10125)
 
 ## \[0.9.33] - 2024-01-17
 
-### New Features
+### Yeni Özellikler
 
 - Added RankGPT as a postprocessor (#10054)
 - Ensure backwards compatibility with new Pinecone client version bifucation (#9995)
 - Recursive retriever all the things (#10019)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - BugFix: When using markdown element parser on a table containing comma (#9926)
 - extend auto-retrieval notebook (#10065)
@@ -10550,14 +10550,14 @@ Last patch before v0.10!
 
 ## \[0.9.32] - 2024-01-16
 
-### New Features
+### Yeni Özellikler
 
 - added query-time row retrieval + fix nits with query pipeline over structured data (#10061)
 - ReActive Agents w/ Context + updated stale link (#10058)
 
 ## \[0.9.31] - 2024-01-15
 
-### New Features
+### Yeni Özellikler
 
 - Added selectors and routers to query pipeline (#9979)
 - Added sparse-only search to qdrant vector store (#10041)
@@ -10565,7 +10565,7 @@ Last patch before v0.10!
 - Adding async support to firestore docstore (#9983)
 - Implement mongodb docstore `put_all` method (#10014)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Properly truncate sql results based on `max_string_length` (#10015)
 - Fixed `node.resolve_image()` for base64 strings (#10026)
@@ -10574,12 +10574,12 @@ Last patch before v0.10!
 
 ## \[0.9.30] - 2024-01-11
 
-### New Features
+### Yeni Özellikler
 
 - Implements a Node Parser using embeddings for Semantic Splitting (#9988)
 - Add Anyscale Embedding model support (#9470)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - nit: fix pandas get prompt (#10001)
 - Fix: Token counting bug (#9912)
@@ -10596,27 +10596,27 @@ Last patch before v0.10!
 
 ## \[0.9.29] - 2024-01-10
 
-### New Features
+### Yeni Özellikler
 
 - Added support for together.ai models (#9962)
 - Added support for batch redis/firestore kvstores, async firestore kvstore (#9827)
 - Parallelize `IngestionPipeline.run()` (#9920)
 - Added new query pipeline components: function, argpack, kwargpack (#9952)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Updated optional langchain imports to avoid warnings (#9964)
 - Raise an error if empty nodes are embedded (#9953)
 
 ## \[0.9.28] - 2024-01-09
 
-### New Features
+### Yeni Özellikler
 
 - Added support for Nvidia TenorRT LLM (#9842)
 - Allow `tool_choice` to be set during agent construction (#9924)
 - Added streaming support for `QueryPipeline` (#9919)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Set consistent doc-ids for llama-index readers (#9923, #9916)
 - Remove unneeded model inputs for HuggingFaceEmbedding (#9922)
@@ -10625,7 +10625,7 @@ Last patch before v0.10!
 
 ## \[0.9.27] - 2024-01-08
 
-### New Features
+### Yeni Özellikler
 
 - add query pipeline (#9908)
 - Feature: Azure Multi Modal (fixes: #9471) (#9843)
@@ -10634,7 +10634,7 @@ Last patch before v0.10!
 - Redis Chat Store support (#9880)
 - move more classes to core (#9871)
 
-### Bug Fixes / Nits / Smaller Features
+### Hata Düzeltmeleri / İyileştirmeler / Smaller Features
 
 - Propagate `tool_choice` flag to downstream APIs (#9901)
 - filter out negative indexes from faiss query (#9907)
@@ -10649,7 +10649,7 @@ Last patch before v0.10!
 
 ## \[0.9.26] - 2024-01-05
 
-### New Features
+### Yeni Özellikler
 
 - Added a `BaseChatStore` and `SimpleChatStore` abstraction for dedicated chat memory storage (#9863)
 - Enable custom `tree_sitter` parser to be passed into `CodeSplitter` (#9845)
@@ -10657,7 +10657,7 @@ Last patch before v0.10!
 - Added support for Nvidia Triton LLM (#9488)
 - Added `DeepEval` one-click observability (#9801)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Updated the guidance integration to work with the latest version (#9830)
 - Made text storage optional for doctores/ingestion pipeline (#9847)
@@ -10667,14 +10667,14 @@ Last patch before v0.10!
 
 ## \[0.9.25] - 2024-01-03
 
-### New Features
+### Yeni Özellikler
 
 - Added concurrancy limits for dataset generation (#9779)
 - New `deepeval` one-click observability handler (#9801)
 - Added jaguar vector store (#9754)
 - Add beta multimodal ReAct agent (#9807)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Changed default batch size for OpenAI embeddings to 100 (#9805)
 - Use batch size properly for qdrant upserts (#9814)
@@ -10685,13 +10685,13 @@ Last patch before v0.10!
 
 ## \[0.9.24] - 2023-12-30
 
-### New Features
+### Yeni Özellikler
 
 - Add reranker for BEIR evaluation (#9743)
 - Add Pathway integration. (#9719)
 - custom agents implementation + notebook (#9746)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix beam search for vllm: add missing parameter (#9741)
 - Fix alpha for hrbrid search (#9742)
@@ -10700,7 +10700,7 @@ Last patch before v0.10!
 
 ## \[0.9.23] - 2023-12-28
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - docs: fixes qdrant\_hybrid.ipynb typos (#9729)
 - make llm completion program more general (#9731)
@@ -10710,13 +10710,13 @@ Last patch before v0.10!
 
 ## \[0.9.22] - 2023-12-26
 
-### New Features
+### Yeni Özellikler
 
 - Added `.iter_data()` method to `SimpleDirectoryReader` (#9658)
 - Added async support to `Ollama` LLM (#9689)
 - Expanding pinecone filter support for `in` and `not in` (#9683)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improve BM25Retriever performance (#9675)
 - Improved qdrant hybrid search error handling (#9707)
@@ -10725,17 +10725,17 @@ Last patch before v0.10!
 
 ## \[0.9.21] - 2023-12-23
 
-### New Features
+### Yeni Özellikler
 
 - Added zilliz cloud as a managed index (#9605)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Bedrock client and LLM fixes (#9671, #9646)
 
 ## \[0.9.20] - 2023-12-21
 
-### New Features
+### Yeni Özellikler
 
 - Added `insert_batch_size` to limit number of embeddings held in memory when creating an index, defaults to 2048 (#9630)
 - Improve auto-retrieval (#9647)
@@ -10747,7 +10747,7 @@ Last patch before v0.10!
 - Add support for Google Gemini models via VertexAI (#9624)
 - support allowing additional metadata filters on autoretriever (#9662)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix pip install commands in LM Format Enforcer notebooks (#9648)
 - Fixing some more links and documentations (#9633)
@@ -10755,29 +10755,29 @@ Last patch before v0.10!
 
 ## \[0.9.19] - 2023-12-20
 
-### New Features
+### Yeni Özellikler
 
 - new llama datasets `LabelledEvaluatorDataset` & `LabelledPairwiseEvaluatorDataset` (#9531)
 
 ## \[0.9.18] - 2023-12-20
 
-### New Features
+### Yeni Özellikler
 
 - multi-doc auto-retrieval guide (#9631)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix(vllm): make Vllm’s ‘complete’ method behave the same as other LLM class (#9634)
 - FIx Doc links and other documentation issue (#9632)
 
 ## \[0.9.17] - 2023-12-19
 
-### New Features
+### Yeni Özellikler
 
 - \[example] adding user feedback (#9601)
 - FEATURE: Cohere ReRank Relevancy Metric for Retrieval Eval (#9495)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix Gemini Chat Mode (#9599)
 - Fixed `types-protobuf` from being a primary dependency (#9595)
@@ -10788,14 +10788,14 @@ Last patch before v0.10!
 
 ## \[0.9.16] - 2023-12-18
 
-### New Features
+### Yeni Özellikler
 
 - agent refactor: step-wise execution (#9584)
 - Add OpenRouter, with Mixtral demo (#9464)
 - Add hybrid search to neo4j vector store (#9530)
 - Add support for auth service accounts for Google Semantic Retriever (#9545)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed missing `default=None` for `LLM.system_prompt` (#9504)
 - Fix #9580 : Incorporate metadata properly (#9582)
@@ -10812,20 +10812,20 @@ Last patch before v0.10!
 
 ## \[0.9.15] - 2023-12-13
 
-### New Features
+### Yeni Özellikler
 
 - Added full support for Google Gemini text+vision models (#9452)
 - Added new Google Semantic Retriever (#9440)
 - added `from_existing()` method + async support to OpenAI assistants (#9367)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed huggingface LLM system prompt and messages to prompt (#9463)
 - Fixed ollama additional kwargs usage (#9455)
 
 ## \[0.9.14] - 2023-12-11
 
-### New Features
+### Yeni Özellikler
 
 - Add MistralAI LLM (#9444)
 - Add MistralAI Embeddings (#9441)
@@ -10834,7 +10834,7 @@ Last patch before v0.10!
 - feat: PgVectorStore support advanced metadata filtering (#9377)
 - Added `sql_only` parameter to SQL query engines to avoid executing SQL (#9422)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Feat/PgVector Support custom hnsw\.ef\_search and ivfflat.probes (#9420)
 - fix F1 score definition, update copyright year (#9424)
@@ -10845,31 +10845,31 @@ Last patch before v0.10!
 - Fixed `top_k` being multiplied by 10 in azure cosmos (#9438)
 - Fixed hybrid search for OpenSearch (#9430)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Updated the base `LLM` interface to match `LLMPredictor` (#9388)
 - Deprecated `LLMPredictor` (#9388)
 
 ## \[0.9.13] - 2023-12-06
 
-### New Features
+### Yeni Özellikler
 
 - Added batch prediction support for `LabelledRagDataset` (#9332)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed save and load for faiss vector store (#9330)
 
 ## \[0.9.12] - 2023-12-05
 
-### New Features
+### Yeni Özellikler
 
 - Added an option `reuse_client` to openai/azure to help with async timeouts. Set to `False` to see improvements (#9301)
 - Added support for `vLLM` llm (#9257)
 - Add support for python 3.12 (#9304)
 - Support for `claude-2.1` model name (#9275)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix embedding format for bedrock cohere embeddings (#9265)
 - Use `delete_kwargs` for filtering in weaviate vector store (#9300)
@@ -10877,7 +10877,7 @@ Last patch before v0.10!
 
 ## \[0.9.11] - 2023-12-03
 
-### New Features
+### Yeni Özellikler
 
 - Make `reference_contexts` optional in `LabelledRagDataset` (#9266)
 - Re-organize `download` module (#9253)
@@ -10885,37 +10885,37 @@ Last patch before v0.10!
 - Add docs for `LabelledRagDataset` (#9228)
 - Add submission template notebook and other doc updates for `LabelledRagDataset` (#9273)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Convert numpy to list for `InstructorEmbedding` (#9255)
 
 ## \[0.9.10] - 2023-11-30
 
-### New Features
+### Yeni Özellikler
 
 - Advanced Metadata filter for vector stores (#9216)
 - Amazon Bedrock Embeddings New models (#9222)
 - Added PromptLayer callback integration (#9190)
 - Reuse file ids for `OpenAIAssistant` (#9125)
 
-### Breaking Changes / Deprecations
+### Bozucu Değişiklikler / Kullanımdan Kaldırmalar/ Deprecations
 
 - Deprecate ExactMatchFilter (#9216)
 
 ## \[0.9.9] - 2023-11-29
 
-### New Features
+### Yeni Özellikler
 
 - Add new abstractions for `LlamaDataset`’s (#9165)
 - Add metadata filtering and MMR mode support for `AstraDBVectorStore` (#9193)
 - Allowing newest `scikit-learn` versions (#9213)
 
-### Breaking Changes / Deprecations
+### Bozucu Değişiklikler / Kullanımdan Kaldırmalar/ Deprecations
 
 - Added `LocalAI` demo and began deprecation cycle (#9151)
 - Deprecate `QueryResponseDataset` and `DatasetGenerator` of `evaluation` module (#9165)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix bug in `download_utils.py` with pointing to wrong repo (#9215)
 - Use `azure_deployment` kwarg in `AzureOpenAILLM` (#9174)
@@ -10923,13 +10923,13 @@ Last patch before v0.10!
 
 ## \[0.9.8] - 2023-11-26
 
-### New Features
+### Yeni Özellikler
 
 - Add `persist` and `persist_from_dir` methods to `ObjectIndex` that are able to support it (#9064)
 - Added async metadata extraction + pipeline support (#9121)
 - Added back support for start/end char idx in nodes (#9143)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix for some kwargs not being set properly in global service context (#9137)
 - Small fix for `memory.get()` when system/prefix messages are large (#9149)
@@ -10937,12 +10937,12 @@ Last patch before v0.10!
 
 ## \[0.9.7] - 2023-11-24
 
-### New Features
+### Yeni Özellikler
 
 - Add support for `PGVectoRsStore` (#9087)
 - Enforcing `requests>=2.31` for security, while unpinning `urllib3` (#9108)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Increased default memory token limit for context chat engine (#9123)
 - Added system prompt to `CondensePlusContextChatEngine` that gets prepended to the `context_prompt` (#9123)
@@ -10950,7 +10950,7 @@ Last patch before v0.10!
 
 ## \[0.9.6] - 2023-11-22
 
-### New Features
+### Yeni Özellikler
 
 - Added `default_headers` argument to openai LLMs (#9090)
 - Added support for `download_llama_pack()` and LlamaPack integrations
@@ -10962,18 +10962,18 @@ Last patch before v0.10!
 
 ## \[0.9.5] - 2023-11-21
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed bug with AzureOpenAI logic for inferring if stream chunk is a tool call (#9018)
 
-### New Features
+### Yeni Özellikler
 
 - `FastEmbed` embeddings provider (#9043)
 - More precise testing of `OpenAILike` (#9026)
 - Added callback manager to each retriever (#8871)
 - Ability to bypass `max_tokens` inference with `OpenAILike` (#9032)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed bug in formatting chat prompt templates when estimating chunk sizes (#9025)
 - Sandboxed Pandas execution, remediate CVE-2023-39662 (#8890)
@@ -10982,7 +10982,7 @@ Last patch before v0.10!
 
 ## \[0.9.4] - 2023-11-19
 
-### New Features
+### Yeni Özellikler
 
 - Added `CondensePlusContextChatEngine` (#8949)
 
@@ -10997,11 +10997,11 @@ Last patch before v0.10!
 
 ## \[0.9.3] - 2023-11-17
 
-### New Features
+### Yeni Özellikler
 
 - Add perplexity LLM integration (#8734)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix token counting for new openai client (#8981)
 - Fix small pydantic bug in postgres vector db (#8962)
@@ -11009,19 +11009,19 @@ Last patch before v0.10!
 
 ## \[0.9.2] - 2023-11-16
 
-### New Features
+### Yeni Özellikler
 
 - Added new notebook guide for Multi-Modal Rag Evaluation (#8945)
 - Added `MultiModalRelevancyEvaluator`, and `MultiModalFaithfulnessEvaluator` (#8945)
 
 ## \[0.9.1] - 2023-11-15
 
-### New Features
+### Yeni Özellikler
 
 - Added Cohere Reranker fine-tuning (#8859)
 - Support for custom httpx client in `AzureOpenAI` LLM (#8920)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed issue with `set_global_service_context` not propagating settings (#8940)
 - Fixed issue with building index with Google Palm embeddings (#8936)
@@ -11031,7 +11031,7 @@ Last patch before v0.10!
 
 ## \[0.9.0] - 2023-11-15
 
-### New Features / Breaking Changes / Deprecations
+### Yeni Özellikler / Breaking Changes / Deprecations
 
 - New `IngestionPipeline` concept for ingesting and transforming data
 - Data ingestion and transforms are now automatically cached
@@ -11044,27 +11044,27 @@ Last patch before v0.10!
 
 ## \[0.8.69.post1] - 2023-11-13
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Increase max weaivate delete size to max of 10,000 (#8887)
 - Final pickling remnant fix (#8902)
 
 ## \[0.8.69] - 2023-11-13
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed bug in loading pickled objects (#8880)
 - Fix `custom_path` vs `custom_dir` in `download_loader` (#8865)
 
 ## \[0.8.68] - 2023-11-11
 
-### New Features
+### Yeni Özellikler
 
 - openai assistant agent + advanced retrieval cookbook (#8863)
 - add retrieval API benchmark (#8850)
 - Add JinaEmbedding class (#8704)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improved default timeouts/retries for OpenAI (#8819)
 - Add back key validation for OpenAI (#8819)
@@ -11078,55 +11078,55 @@ Last patch before v0.10!
 
 ## \[0.8.67] - 2023-11-10
 
-### New Features
+### Yeni Özellikler
 
 - Advanced Multi Modal Retrieval Example and docs (#8822, #8823)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix retriever node postprocessors for `CitationQueryEngine` (#8818)
 - Fix `cannot pickle 'builtins.CoreBPE' object` in most scenarios (#8835)
 
 ## \[0.8.66] - 2023-11-09
 
-### New Features
+### Yeni Özellikler
 
 - Support parallel function calling with new OpenAI client in `OpenAIPydanticProgram` (#8793)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix bug in pydantic programs with new OpenAI client (#8793)
 - Fixed bug with un-listable fsspec objects (#8795)
 
 ## \[0.8.65] - 2023-11-08
 
-### New Features
+### Yeni Özellikler
 
 - `OpenAIAgent` parallel function calling (#8738)
 
-### New Features
+### Yeni Özellikler
 
 - Properly supporting Hugging Face recommended model (#8784)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed missing import for `embeddings.__all__` (#8779)
 
-### Breaking Changes / Deprecations
+### Bozucu Değişiklikler / Kullanımdan Kaldırmalar/ Deprecations
 
 - Use `tool_choice` over `function_call` and `tool` over `functions` in `OpenAI(LLM)` (#8738)
 - Deprecate `to_openai_function` in favor of `to_openai_tool` (#8738)
 
 ## \[0.8.64] - 2023-11-06
 
-### New Features
+### Yeni Özellikler
 
 - `OpenAIAgent` parallel function calling (#8738)
 - Add AI assistant agent (#8735)
 - OpenAI GPT4v Abstraction (#8719)
 - Add support for `Lantern` VectorStore (#8714)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix returning zero nodes in elastic search vector store (#8746)
 - Add try/except for `SimpleDirectoryReader` loop to avoid crashing on a single document (#8744)
@@ -11134,47 +11134,47 @@ Last patch before v0.10!
 
 ## \[0.8.63] - 2023-11-05
 
-### New Features
+### Yeni Özellikler
 
 - added native sync and async client support for the lasted `openai` client package (#8712)
 - added support for `AzureOpenAIEmbedding` (#8712)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed errors about “no host supplied” with `download_loader` (#8723)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - `OpenAIEmbedding` no longer supports azure, moved into the `AzureOpenAIEmbedding` class (#8712)
 
 ## \[0.8.62.post1] - 2023-11-05
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - add new devday models (#8713)
 - moved `max_docs` parameter from constructor to `lazy_load_data()` for `SimpleMongoReader` (#8686)
 
 ## \[0.8.61] - 2023-11-05
 
-### New Features
+### Yeni Özellikler
 
 - \[experimental] Hyperparameter tuner (#8687)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix typo error in CohereAIModelName class: cohere light models was missing v3 (#8684)
 - Update deeplake.py (#8683)
 
 ## \[0.8.60] - 2023-11-04
 
-### New Features
+### Yeni Özellikler
 
 - prompt optimization guide (#8659)
 - VoyageEmbedding (#8634)
 - Multilingual support for `YoutubeTranscriptReader` (#8673)
 - emotion prompt guide (#8674)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Adds mistral 7b instruct v0.1 to available anyscale models (#8652)
 - Make pgvector’s setup (extension, schema, and table creation) optional (#8656)
@@ -11192,14 +11192,14 @@ Last patch before v0.10!
 
 ## \[0.8.58] - 2023-11-02
 
-### New Features
+### Yeni Özellikler
 
 - Add `lm-format-enforcer` integration for structured output (#8601)
 - Google Vertex Support (#8626)
 
 ## \[0.8.57] - 2023-10-31
 
-### New Features
+### Yeni Özellikler
 
 - Add `VoyageAIEmbedding` integration (#8634)
 - Add fine-tuning evaluator notebooks (#8596)
@@ -11207,7 +11207,7 @@ Last patch before v0.10!
 - Add support for ChromaDB PersistentClient (#8582)
 - Add DataStax Astra DB support (#8609)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update dataType in Weaviate (#8608)
 - In Knowledge Graph Index with hybrid retriever\_mode,
@@ -11219,13 +11219,13 @@ Last patch before v0.10!
 
 ## \[0.8.56] - 2023-10-30
 
-### New Features
+### Yeni Özellikler
 
 - Add Amazon `BedrockEmbedding` (#8550)
 - Moves `HuggingFaceEmbedding` to center on `Pooling` enum for pooling (#8467)
 - Add IBM WatsonX LLM support (#8587)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - \[Bug] Patch Clarifai classes (#8529)
 - fix retries for bedrock llm (#8528)
@@ -11235,19 +11235,19 @@ Last patch before v0.10!
 
 ## \[0.8.55] - 2023-10-29
 
-### New Features
+### Yeni Özellikler
 
 - allow prompts to take in functions with `function_mappings` (#8548)
 - add advanced prompt + “prompt engineering for RAG” notebook (#8555)
 - Leverage Replicate API for serving LLaVa modal (#8539)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update pull request template with google colab support inclusion (#8525)
 
 ## \[0.8.54] - 2023-10-28
 
-### New Features
+### Yeni Özellikler
 
 - notebook showing how to fine-tune llama2 on structured outputs (#8540)
 
@@ -11256,7 +11256,7 @@ Last patch before v0.10!
 
 - Initialize MultiModal Retrieval using LlamaIndex (#8507)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Add missing import to `ChatEngine` usage pattern `.md` doc (#8518)
 - :bug: fixed async add (#8531)
@@ -11265,7 +11265,7 @@ Last patch before v0.10!
 
 ## \[0.8.53] - 2023-10-27
 
-### New Features
+### Yeni Özellikler
 
 - Docs refactor (#8500) An overhaul of the docs organization. Major changes
 
@@ -11276,24 +11276,24 @@ Last patch before v0.10!
 
 ## \[0.8.52] - 2023-10-26
 
-### New Features
+### Yeni Özellikler
 
 - Add longllmlingua (#8485)
 - Add google colab support for notebooks (#7560)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Adapt Cassandra VectorStore constructor DB connection through cassio.init (#8255)
 - Allow configuration of service context and storage context in managed index (#8487)
 
 ## \[0.8.51.post1] - 2023-10-25
 
-### New Features
+### Yeni Özellikler
 
 - Add Llava MultiModal QA examples for Tesla 10k RAG (#8271)
 - fix bug streaming on react chat agent not working as expected (#8459)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - patch: add selected result to response metadata for router query engines, fix bug (#8483)
 - add Jina AI embeddings notebook + huggingface embedding fix (#8478)
@@ -11303,13 +11303,13 @@ Last patch before v0.10!
 
 ## \[0.8.50] - 2023-10-24
 
-### New Features
+### Yeni Özellikler
 
 - Expose prompts in different modules (query engines, synthesizers, and more) (#8275)
 
 ## \[0.8.49] - 2023-10-23
 
-### New Features
+### Yeni Özellikler
 
 - New LLM integrations
 
@@ -11328,7 +11328,7 @@ Last patch before v0.10!
 
 - docs(FAQ): frequently asked questions (#8249)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix inconsistencies with `ReActAgent.stream_chat` (#8147)
 - Deprecate some functions for GuardrailsOutputParser (#8016)
@@ -11338,14 +11338,14 @@ Last patch before v0.10!
 
 ## \[0.8.48] - 2023-10-20
 
-### New Features
+### Yeni Özellikler
 
 - Add `DELETE` for MyScale vector store (#8159)
 - Add SQL Retriever (#8197)
 - add semantic kernel document format (#8226)
 - Improve MyScale Hybrid Search and Add `DELETE` for MyScale vector store (#8159)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed additional kwargs in ReActAgent.from\_tools() (#8206)
 - Fixed missing spaces in prompt templates (#8190)
@@ -11353,7 +11353,7 @@ Last patch before v0.10!
 
 ## \[0.8.47] - 2023-10-19
 
-### New Features
+### Yeni Özellikler
 
 - add response synthesis to text-to-SQL (#8196)
 - Added support for `LLMRailsEmbedding` (#8169)
@@ -11362,12 +11362,12 @@ Last patch before v0.10!
 
 ## \[0.8.46] - 2023-10-18
 
-### New Features
+### Yeni Özellikler
 
 - Add fine-tuning router support + embedding selector (#8174)
 - add more document converters (#8156)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Add normalization to huggingface embeddings (#8145)
 - Improve MyScale Hybrid Search (#8159)
@@ -11378,14 +11378,14 @@ Last patch before v0.10!
 
 ## \[0.8.45] - 2023-10-13
 
-### New Features
+### Yeni Özellikler
 
 - Added support for fine-tuning cross encoders (#7705)
 - Added `QueryFusionRetriever` for merging multiple retrievers + query augmentation (#8100)
 - Added `nb-clean` to `pre-commit` to minimize PR diffs (#8108)
 - Support for `TextEmbeddingInference` embeddings (#8122)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improved the `BM25Retriever` interface to accept `BaseNode` objects (#8096)
 - Fixed bug with `BM25Retriever` tokenizer not working as expected (#8096)
@@ -11394,7 +11394,7 @@ Last patch before v0.10!
 
 ## \[0.8.44] - 2023-10-12
 
-### New Features
+### Yeni Özellikler
 
 - add pgvector sql query engine (#8087)
 - Added HoneyHive one-click observability (#7944)
@@ -11402,23 +11402,23 @@ Last patch before v0.10!
 
 ## \[0.8.43.post1] - 2023-10-11
 
-### New Features
+### Yeni Özellikler
 
 - Moves `codespell` to `pre-commit` (#8040)
 - Added `prettier` for autoformatting extensions besides `.py` (#8072)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed forgotten f-str in `HuggingFaceLLM` (#8075)
 - Relaxed numpy/panadas reqs
 
 ## \[0.8.43] - 2023-10-10
 
-### New Features
+### Yeni Özellikler
 
 - Added support for `GradientEmbedding` embed models (#8050)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - added `messages_to_prompt` kwarg to `HuggingFaceLLM` (#8054)
 - improved selection and sql parsing for open-source models (#8054)
@@ -11427,7 +11427,7 @@ Last patch before v0.10!
 
 ## \[0.8.42] - 2023-10-10
 
-### New Features
+### Yeni Özellikler
 
 - `LocalAI` more intuitive module-level var names (#8028)
 - Enable `codespell` for markdown docs (#7972)
@@ -11435,7 +11435,7 @@ Last patch before v0.10!
 - Add: Async upserting for Qdrant vector store (#7968)
 - Add cohere llm (#8023)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Parse multi-line outputs in react agent answers (#8029)
 - Add properly named kwargs to keyword `as_retriever` calls (#8011)
@@ -11452,13 +11452,13 @@ Last patch before v0.10!
 
 ## \[0.8.41] - 2023-10-07
 
-### New Features
+### Yeni Özellikler
 
 - You.com retriever (#8024)
 - Pull fields from mongodb into metadata with `metadata_names` argument (#8001)
 - Simplified `LocalAI.__init__` preserving the same behaviors (#7982)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Use longest metadata string for metadata aware text splitting (#7987)
 - Handle lists of strings in mongodb reader (#8002)
@@ -11467,12 +11467,12 @@ Last patch before v0.10!
 
 ## \[0.8.40] - 2023-10-05
 
-### New Features
+### Yeni Özellikler
 
 - Added support for `Clarifai` LLM (#7967)
 - Add support for function fine-tuning (#7971)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Update document summary index (#7815)
 
@@ -11482,14 +11482,14 @@ Last patch before v0.10!
 
 ## \[0.8.39] - 2023-10-03
 
-### New Features
+### Yeni Özellikler
 
 - Added support for pydantic object outputs with query engines (#7893)
 - `ClarifaiEmbedding` class added for embedding support (#7940)
 - Markdown node parser, flat file reader and simple file node parser (#7863)
 - Added support for mongdb atlas `$vectorSearch` (#7866)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Adds support for using message metadata in discord reader (#7906)
 - Fix `LocalAI` chat capability without `max_tokens` (#7942)
@@ -11507,7 +11507,7 @@ Last patch before v0.10!
 
 ## \[0.8.38] - 2023-10-02
 
-### New Features
+### Yeni Özellikler
 
 - Updated `KeywordNodePostprocessor` to use spacy to support more languages (#7894)
 - `LocalAI` supporting global or per-query `/chat/completions` vs `/completions` (#7921)
@@ -11516,12 +11516,12 @@ Last patch before v0.10!
 
 ## \[0.8.37] - 2023-09-30
 
-### New Features
+### Yeni Özellikler
 
 - Supporting `LocalAI` LLMs (#7913)
 - Validations protecting against misconfigured chunk sizes (#7917)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Simplify NL SQL response to SQL parsing, with expanded NL SQL prompt (#7868)
 - Improve vector store retrieval speed for vectordb integrations (#7876)
@@ -11533,11 +11533,11 @@ Last patch before v0.10!
 
 ## \[0.8.36] - 2023-09-27
 
-### New Features
+### Yeni Özellikler
 
 - add “build RAG from scratch notebook” - OSS/local (#7864)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix elasticsearch hybrid scoring (#7852)
 - Replace `get_color_mapping` and `print_text` Langchain dependency with internal implementation (#7845)
@@ -11548,7 +11548,7 @@ Last patch before v0.10!
 
 ## \[0.8.35] - 2023-09-27
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix dropping textnodes in recursive retriever (#7840)
 - share callback\_manager between agent and its llm when callback\_manager is None (#7844)
@@ -11556,14 +11556,14 @@ Last patch before v0.10!
 
 ## \[0.8.34] - 2023-09-26
 
-### New Features
+### Yeni Özellikler
 
 - Added `Konko` LLM support (#7775)
 - Add before/after context sentence (#7821)
 - EverlyAI integration with LlamaIndex through OpenAI library (#7820)
 - add Arize Phoenix tracer to global handlers (#7835)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Normalize scores returned from ElasticSearch vector store (#7792)
 - Fixed `refresh_ref_docs()` bug with order of operations (#7664)
@@ -11578,38 +11578,38 @@ Last patch before v0.10!
 
 ## \[0.8.33] - 2023-09-25
 
-### New Features
+### Yeni Özellikler
 
 - add pairwise evaluator + benchmark auto-merging retriever (#7810)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Minor cleanup in embedding class (#7813)
 - Misc updates to `OpenAIEmbedding` (#7811)
 
 ## \[0.8.32] - 2023-09-24
 
-### New Features
+### Yeni Özellikler
 
 - Added native support for `HuggingFaceEmbedding`, `InstructorEmbedding`, and `OptimumEmbedding` (#7795)
 - Added metadata filtering and hybrid search to MyScale vector store (#7780)
 - Allowing custom text field name for Milvus (#7790)
 - Add support for `vector_store_query_mode` to `VectorIndexAutoRetriever` (#7797)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update `LanceDBVectorStore` to handle score and distance (#7754)
 - Pass LLM to `memory_cls` in `CondenseQuestionChatEngine` (#7785)
 
 ## \[0.8.31] - 2023-09-22
 
-### New Features
+### Yeni Özellikler
 
 - add pydantic metadata extractor (#7778)
 - Allow users to set the embedding dimensions in azure cognitive vector store (#7734)
 - Add semantic similarity evaluator (#7770)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - 📝docs: Update Chatbot Tutorial and Notebook (#7767)
 - Fixed response synthesizers with empty nodes (#7773)
@@ -11625,39 +11625,39 @@ Last patch before v0.10!
 
 ## \[0.8.30] - 2023-09-21
 
-### New Features
+### Yeni Özellikler
 
 - Add support for `gpt-3.5-turbo-instruct` (#7729)
 - Add support for `TimescaleVectorStore` (#7727)
 - Added `LongContextReorder` for lost-in-the-middle issues (#7719)
 - Add retrieval evals (#7738)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Added node post-processors to async context chat engine (#7731)
 - Added unique index name for postgres tsv column (#7741)
 
 ## \[0.8.29.post1] - 2023-09-18
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix langchain import error for embeddings (#7714)
 
 ## \[0.8.29] - 2023-09-18
 
-### New Features
+### Yeni Özellikler
 
 - Added metadata filtering to the base simple vector store (#7564)
 - add low-level router guide (#7708)
 - Add CustomQueryEngine class (#7703)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix context window metadata in lite-llm (#7696)
 
 ## \[0.8.28] - 2023-09-16
 
-### New Features
+### Yeni Özellikler
 
 - Add CorrectnessEvaluator (#7661)
 - Added support for `Ollama` LLMs (#7635)
@@ -11667,14 +11667,14 @@ Last patch before v0.10!
 - Added support for `LiteLLM` (#7600)
 - Added batch evaluation runner (#7692)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Avoid `NotImplementedError` for async langchain embeddings (#7668)
 - Imrpoved reliability of LLM selectors (#7678)
 - Fixed `query_wrapper_prompt` and `system_prompt` for output parsers and completion models (#7678)
 - Fixed node attribute inheritance in citation query engine (#7675)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Refactor and update `BaseEvaluator` interface to be more consistent (#7661)
 
@@ -11689,33 +11689,33 @@ Last patch before v0.10!
 
 ## \[0.8.27] - 2023-09-14
 
-### New Features
+### Yeni Özellikler
 
 - add low-level tutorial section (#7673)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - default delta should be a dict (#7665)
 - better query wrapper logic on LLMPredictor (#7667)
 
 ## \[0.8.26] - 2023-09-12
 
-### New Features
+### Yeni Özellikler
 
 - add non-linear embedding adapter (#7658)
 - Add “finetune + RAG” evaluation to knowledge fine-tuning notebook (#7643)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed chunk-overlap for sentence splitter (#7590)
 
 ## \[0.8.25] - 2023-09-12
 
-### New Features
+### Yeni Özellikler
 
 - Added `AGENT_STEP` callback event type (#7652)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Allowed `simple` mode to work with `as_chat_engine()` (#7637)
 - Fixed index error in azure streaming (#7646)
@@ -11728,7 +11728,7 @@ Last patch before v0.10!
 - guide: fine-tuning to memorize knowledge (#7626)
 - added ability to customize prompt template for eval modules (#7626)
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Properly detect `llama-cpp-python` version for loading the default GGML or GGUF `llama2-chat-13b` model (#7616)
 - Pass in `summary_template` properly with `RetrieverQueryEngine.from_args()` (#7621)
@@ -11736,7 +11736,7 @@ Last patch before v0.10!
 
 ## \[0.8.23] - 2023-09-09
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Make sure context and system prompt is included in prompt for first chat for llama2 (#7597)
 - Avoid negative chunk size error in refine process (#7607)
@@ -11744,7 +11744,7 @@ Last patch before v0.10!
 - Update Anyscale Endpoints integration with full streaming and async support (#7602)
 - Better support of passing credentials as LLM constructor args in `OpenAI`, `AzureOpenAI`, and `Anyscale` (#7602)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Update milvus vector store to support filters and dynamic schemas (#7286)
   - See the [updated notebook](https://docs.llamaindex.ai/en/stable/examples/vector_stores/MilvusIndexDemo.html) for usage
@@ -11752,18 +11752,18 @@ Last patch before v0.10!
 
 ## \[0.8.22] - 2023-09-07
 
-### New Features
+### Yeni Özellikler
 
 - Added support for ElasticSearch Vector Store (#7543)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed small `_index` bug in `ElasticSearchReader` (#7570)
 - Fixed bug with prompt helper settings in global service contexts (#7576)
 - Remove newlines from openai embeddings again (#7588)
 - Fixed small bug with setting `query_wrapper_prompt` in the service context (#7585)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Clean up vector store interface to use `BaseNode` instead of `NodeWithEmbedding`
 
@@ -11772,7 +11772,7 @@ Last patch before v0.10!
 
 ## \[0.8.21] - 2023-09-06
 
-### New Features
+### Yeni Özellikler
 
 - add embedding adapter fine-tuning engine + guide (#7565)
 - Added support for Azure Cognitive Search vector store (#7469)
@@ -11780,7 +11780,7 @@ Last patch before v0.10!
 - Added support for Espilla vector store (#7539)
 - Added support for AnyScale LLM (#7497)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Default to user-configurable top-k in `VectorIndexAutoRetriever` (#7556)
 - Catch validation errors for structured responses (#7523)
@@ -11788,7 +11788,7 @@ Last patch before v0.10!
 
 ## \[0.8.20] - 2023-09-04
 
-### New Features
+### Yeni Özellikler
 
 - Added Portkey LLM integration (#7508)
 - Support postgres/pgvector hybrid search (#7501)
@@ -11796,32 +11796,32 @@ Last patch before v0.10!
 
 ## \[0.8.19] - 2023-09-03
 
-### New Features
+### Yeni Özellikler
 
 - replace list index with summary index (#7478)
 - rename list index to summary index part 2 (#7531)
 
 ## \[0.8.18] - 2023-09-03
 
-### New Features
+### Yeni Özellikler
 
 - add agent finetuning guide (#7526)
 
 ## \[0.8.17] - 2023-09-02
 
-### New Features
+### Yeni Özellikler
 
 - Make (some) loaders serializable (#7498)
 - add node references to recursive retrieval (#7522)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Raise informative error when metadata is too large during splitting (#7513)
 - Allow langchain splitter in simple node parser (#7517)
 
 ## \[0.8.16] - 2023-09-01
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix link to Marvin notebook in docs (#7504)
 - Ensure metadata is not `None` in `SimpleWebPageReader` (#7499)
@@ -11830,13 +11830,13 @@ Last patch before v0.10!
 
 ## \[0.8.15] - 2023-08-31
 
-### New Features
+### Yeni Özellikler
 
 - Added support for `MarvinEntityExtractor` metadata extractor (#7438)
 - Added a url\_metadata callback to SimpleWebPageReader (#7445)
 - Expanded callback logging events (#7472)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Only convert newlines to spaces for text 001 embedding models in OpenAI (#7484)
 - Fix `KnowledgeGraphRagRetriever` for non-nebula indexes (#7488)
@@ -11845,12 +11845,12 @@ Last patch before v0.10!
 
 ## \[0.8.14] - 2023-08-30
 
-### New Features
+### Yeni Özellikler
 
 - feat: non-kg heterogeneous graph support in Graph RAG (#7459)
 - rag guide (#7480)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improve openai fine-tuned model parsing (#7474)
 - doing some code de-duplication (#7468)
@@ -11858,7 +11858,7 @@ Last patch before v0.10!
 
 ## \[0.8.13] - 2023-08-29
 
-### New Features
+### Yeni Özellikler
 
 - Add embedding finetuning (#7452)
 - Added support for RunGPT LLM (#7401)
@@ -11868,7 +11868,7 @@ Last patch before v0.10!
 
 ## \[0.8.12] - 2023-08-28
 
-### New Features
+### Yeni Özellikler
 
 - add openai finetuning class (#7442)
 - Service Context to/from dict (#7395)
@@ -11882,33 +11882,33 @@ Last patch before v0.10!
 
 ## \[0.8.11.post3] - 2023-08-27
 
-### New Features
+### Yeni Özellikler
 
 - AutoMergingRetriever (#7420)
 
 ## \[0.8.10.post1] - 2023-08-25
 
-### New Features
+### Yeni Özellikler
 
 - Added support for `MonsterLLM` using MonsterAPI (#7343)
 - Support comments fields in NebulaGraphStore and int type VID (#7402)
 - Added configurable endpoint for DynamoDB (#6777)
 - Add structured answer filtering for Refine response synthesizer (#7317)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Use `utf-8` for json file reader (#7390)
 - Fix entity extractor initialization (#7407)
 
 ## \[0.8.9] - 2023-08-24
 
-### New Features
+### Yeni Özellikler
 
 - Added support for FalkorDB/RedisGraph graph store (#7346)
 - Added directed sub-graph RAG (#7378)
 - Added support for `BM25Retriever` (#7342)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Added `max_tokens` to `Xinference` LLM (#7372)
 - Support cache dir creation in multithreaded apps (#7365)
@@ -11916,7 +11916,7 @@ Last patch before v0.10!
 - Remove duplicate subjects in knowledge graph retriever (#7378)
 - Added support for both pydantic v1 and v2 to allow other apps to move forward (#7394)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Refactor prompt template (#7319)
 
@@ -11929,34 +11929,34 @@ Last patch before v0.10!
 
 ## \[0.8.8] - 2023-08-23
 
-### New Features
+### Yeni Özellikler
 
 - `OpenAIFineTuningHandler` for collecting LLM inputs/outputs for OpenAI fine tuning (#7367)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Add support for `claude-instant-1.2` (#7369)
 
 ## \[0.8.7] - 2023-08-22
 
-### New Features
+### Yeni Özellikler
 
 - Support fine-tuned OpenAI models (#7364)
 - Added support for Cassandra vector store (#6784)
 - Support pydantic fields in tool functions (#7348)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix infinite looping with forced function call in `OpenAIAgent` (#7363)
 
 ## \[0.8.6] - 2023-08-22
 
-### New Features
+### Yeni Özellikler
 
 - auto vs. recursive retriever notebook (#7353)
 - Reader and Vector Store for BagelDB with example notebooks (#7311)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Use service context for intermediate index in retry source query engine (#7341)
 - temp fix for prompt helper + chat models (#7350)
@@ -11964,43 +11964,43 @@ Last patch before v0.10!
 
 ## \[0.8.5.post2] - 2023-08-20
 
-### New Features
+### Yeni Özellikler
 
 - Added FireStore docstore/index store support (#7305)
 - add recursive agent notebook (#7330)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix Azure pydantic error (#7329)
 - fix callback trace ids (make them a context var) (#7331)
 
 ## \[0.8.5.post1] - 2023-08-18
 
-### New Features
+### Yeni Özellikler
 
 - Awadb Vector Store (#7291)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix bug in OpenAI llm temperature type
 
 ## \[0.8.5] - 2023-08-18
 
-### New Features
+### Yeni Özellikler
 
 - Expose a system prompt/query wrapper prompt in the service context for open-source LLMs (#6647)
 - Changed default MyScale index format to `MSTG` (#7288)
 - Added tracing to chat engines/agents (#7304)
 - move LLM and embeddings to pydantic (#7289)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix sentence splitter bug (#7303)
 - Fix sentence splitter infinite loop (#7295)
 
 ## \[0.8.4] - 2023-08-17
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improve SQL Query parsing (#7283)
 - Fix loading embed\_model from global service context (#7284)
@@ -12008,34 +12008,34 @@ Last patch before v0.10!
 
 ## \[0.8.3] - 2023-08-16
 
-### New Features
+### Yeni Özellikler
 
 - Added Knowledge Graph RAG Retriever (#7204)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - accept `api_key` kwarg in OpenAI LLM class constructor (#7263)
 - Fix to create separate queue instances for separate instances of `StreamingAgentChatResponse` (#7264)
 
 ## \[0.8.2.post1] - 2023-08-14
 
-### New Features
+### Yeni Özellikler
 
 - Added support for Rockset as a vector store (#7111)
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Fixed bug in service context definition that could disable LLM (#7261)
 
 ## \[0.8.2] - 2023-08-14
 
-### New Features
+### Yeni Özellikler
 
 - Enable the LLM or embedding model to be disabled by setting to `None` in the service context (#7255)
 - Resolve nearly any huggingface embedding model using the `embed_model="local:<model_name>"` syntax (#7255)
 - Async tool-calling support (#7239)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Updated supabase kwargs for add and query (#7103)
 - Small tweak to default prompts to allow for more general purpose queries (#7254)
@@ -12043,7 +12043,7 @@ Last patch before v0.10!
 
 ## \[0.8.1] - 2023-08-13
 
-### New Features
+### Yeni Özellikler
 
 - feat: add node\_postprocessors to ContextChatEngine (#7232)
 - add ensemble query engine tutorial (#7247)
@@ -12054,7 +12054,7 @@ Last patch before v0.10!
 
 ## \[0.8.0] - 2023-08-11
 
-### New Features
+### Yeni Özellikler
 
 - Added “LLAMA\_INDEX\_CACHE\_DIR” to control cached files (#7233)
 - Default to pydantic selectors when possible (#7154, #7223)
@@ -12064,7 +12064,7 @@ Last patch before v0.10!
 - Added local fallback for embeddings to `BAAI/bge-small-en` (#7200)
 - Added `SentenceWindowNodeParser` + `MetadataReplacementPostProcessor` (#7211)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Change default LLM to gpt-3.5-turbo from text-davinci-003 (#7223)
 - Change prompts for compact/refine/tree\_summarize to work better with gpt-3.5-turbo (#7150, #7179, #7223)
@@ -12078,7 +12078,7 @@ Last patch before v0.10!
 
 ## \[0.7.24] - 2023-08-10
 
-### New Features
+### Yeni Özellikler
 
 - Default to pydantic selectors when possible (#7154, #7223)
 - Remove the need for langchain wrappers on `embed_model` in the service context (#7157)
@@ -12087,7 +12087,7 @@ Last patch before v0.10!
 - Added local fallback for embeddings to `BAAI/bge-small-en` (#7200)
 - Added `SentenceWindowNodeParser` + `MetadataReplacementPostProcessor` (#7211)
 
-### Breaking Changes
+### Bozucu Değişiklikler
 
 - Change default LLM to gpt-3.5-turbo from text-davinci-003 (#7223)
 - Change prompts for compact/refine/tree\_summarize to work better with gpt-3.5-turbo (#7150, #7179, #7223)
@@ -12098,7 +12098,7 @@ Last patch before v0.10!
 - docs: Improvements to Mendable Search (#7220)
 - Refactor openai agent (#7077)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Use `1 - cosine_distance` for pgvector/postgres vector db (#7217)
 - fix metadata formatting and extraction (#7216)
@@ -12107,20 +12107,20 @@ Last patch before v0.10!
 
 ## \[0.7.23] - 2023-08-10
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed metadata formatting with custom tempalates and inheritance (#7216)
 
 ## \[0.7.23] - 2023-08-10
 
-### New Features
+### Yeni Özellikler
 
 - Add “one click observability” page to docs (#7183)
 - Added Xorbits inference for local deployments (#7151)
 - Added Zep vector store integration (#7203)
 - feat/zep vectorstore (#7203)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update the default `EntityExtractor` model (#7209)
 - Make `ChatMemoryBuffer` pickleable (#7205)
@@ -12128,54 +12128,54 @@ Last patch before v0.10!
 
 ## \[0.7.22] - 2023-08-08
 
-### New Features
+### Yeni Özellikler
 
 - add ensemble retriever notebook (#7190)
 - DOCS: added local llama2 notebook (#7146)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix for `AttributeError: 'OpenAIAgent' object has no attribute 'callback_manager'` by calling super constructor within `BaseOpenAIAgent`
 - Remove backticks from nebula queries (#7192)
 
 ## \[0.7.21] - 2023-08-07
 
-### New Features
+### Yeni Özellikler
 
 - Added an `EntityExtractor` for metadata extraction (#7163)
 
 ## \[0.7.20] - 2023-08-06
 
-### New Features
+### Yeni Özellikler
 
 - add router module docs (#7171)
 - add retriever router (#7166)
 
-### New Features
+### Yeni Özellikler
 
 - Added a `RouterRetriever` for routing queries to specific retrievers (#7166)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix for issue where having multiple concurrent streamed responses from `OpenAIAgent` would result in interleaving of tokens across each response stream. (#7164)
 - fix llms callbacks issue (args\[0] error) (#7165)
 
 ## \[0.7.19] - 2023-08-04
 
-### New Features
+### Yeni Özellikler
 
 - Added metadata filtering to weaviate (#7130)
 - Added token counting (and all callbacks) to agents and streaming (#7122)
 
 ## \[0.7.18] - 2023-08-03
 
-### New Features
+### Yeni Özellikler
 
 - Added `to/from_string` and `to/from_dict` methods to memory objects (#7128)
 - Include columns comments from db tables in table info for SQL queries (#7124)
 - Add Neo4j support (#7122)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Added `Azure AD` validation support to the `AzureOpenAI` class (#7127)
 - add `flush=True` when printing agent/chat engine response stream (#7129)
@@ -12185,7 +12185,7 @@ Last patch before v0.10!
 
 ## \[0.7.17] - 2023-08-02
 
-### New Features
+### Yeni Özellikler
 
 - Update `ReActAgent` to support memory modules (minor breaking change since the constructor takes `memory` instead of `chat_history`, but the main `from_tools` method remains backward compatible.) (#7116)
 - Update `ReActAgent` to support streaming (#7119)
@@ -12194,13 +12194,13 @@ Last patch before v0.10!
 
 ## \[0.7.16] - 2023-07-30
 
-### New Features
+### Yeni Özellikler
 
 - Chat source nodes (#7078)
 
 ## \[0.7.15] - 2023-07-29
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - anthropic api key customization (#7082)
 - Fix broken link to API reference in Contributor Docs (#7080)
@@ -12209,7 +12209,7 @@ Last patch before v0.10!
 
 ## \[0.7.14] - 2023-07-28
 
-### New Features
+### Yeni Özellikler
 
 - Added HotpotQADistractor benchmark evaluator (#7034)
 - Add metadata filter and delete support for LanceDB (#7048)
@@ -12217,7 +12217,7 @@ Last patch before v0.10!
 - Added support for `KuzuGraphStore` (#6970)
 - Added `kg_triplet_extract_fn` to customize how KGs are built (#7068)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix string formatting in context chat engine (#7050)
 - Fixed tracing for async events (#7052)
@@ -12228,18 +12228,18 @@ Last patch before v0.10!
 
 ## \[0.7.13] - 2023-07-26
 
-### New Features
+### Yeni Özellikler
 
 - Support function calling api for AzureOpenAI (#7041)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - tune prompt to get rid of KeyError in SubQ engine (#7039)
 - Fix validation of Azure OpenAI keys (#7042)
 
 ## \[0.7.12] - 2023-07-25
 
-### New Features
+### Yeni Özellikler
 
 - Added `kwargs` to `ComposableGraph` for the underlying query engines (#6990)
 - Validate openai key on init (#6940)
@@ -12248,36 +12248,36 @@ Last patch before v0.10!
 - Added `.source_nodes` attribute to chat engine and agent responses (#7029)
 - Added `OpenInferenceCallback` for storing generation data in OpenInference format (#6998)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix achat memory initialization for data agents (#7000)
 - Add `print_response_stream()` to agengt/chat engine response class (#7018)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix achat memory initialization for data agents (#7000)
 - Add `print_response_stream()` to agengt/chat engine response class (#7018)
 
 ## \[v0.7.11.post1] - 2023-07-20
 
-### New Features
+### Yeni Özellikler
 
 - Default to pydantic question generation when possible for sub-question query engine (#6979)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix returned order of messages in large chat memory (#6979)
 
 ## \[v0.7.11] - 2023-07-19
 
-### New Features
+### Yeni Özellikler
 
 - Added a `SentenceTransformerRerank` node post-processor for fast local re-ranking (#6934)
 - Add numpy support for evaluating queries in pandas query engine (#6935)
 - Add metadata filtering support for Postgres Vector Storage integration (#6968)
 - Proper llama2 support for agents and query engines (#6969)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Added `model_name` to LLMMetadata (#6911)
 - Fallback to retriever service context in query engines (#6911)
@@ -12285,34 +12285,34 @@ Last patch before v0.10!
 
 ## \[v0.7.10.post1] - 2023-07-18
 
-### New Features
+### Yeni Özellikler
 
 - Add support for Replicate LLM (vicuna & llama 2!)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix streaming for condense chat engine (#6958)
 
 ## \[v0.7.10] - 2023-07-17
 
-### New Features
+### Yeni Özellikler
 
 - Add support for chroma v0.4.0 (#6937)
 - Log embedding vectors to callback manager (#6962)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - add more robust embedding timeouts (#6779)
 - improved connection session management on postgres vector store (#6843)
 
 ## \[v0.7.9] - 2023-07-15
 
-### New Features
+### Yeni Özellikler
 
 - specify `embed_model="local"` to use default local embbeddings in the service context (#6806)
 - Add async `acall` endpoint to `BasePydanticProgram` (defaults to sync version). Implement for `OpenAIPydanticProgram`
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fix null metadata for searching existing vector dbs (#6912)
 - add module guide docs for `SimpleDirectoryReader` (#6916)
@@ -12320,12 +12320,12 @@ Last patch before v0.10!
 
 ## \[v0.7.8] - 2023-07-13
 
-### New Features
+### Yeni Özellikler
 
 - Added embedding speed benchmark (#6876)
 - Added BEIR retrieval benchmark (#6825)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - remove toctrees from deprecated\_terms (#6895)
 - Relax typing dependencies (#6879)
@@ -12335,24 +12335,24 @@ Last patch before v0.10!
 
 ## \[v0.7.7] - 2023-07-13
 
-### New Features
+### Yeni Özellikler
 
 - Improved milvus consistency support and output fields support (#6452)
 - Added support for knowledge graph querying w/ cypyer+nebula (#6642)
 - Added `Document.example()` to create documents for fast prototyping (#6739)
 - Replace react chat engine to use native reactive agent (#6870)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - chore: added a help message to makefile (#6861)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed support for using SQLTableSchema context\_str attribute (#6891)
 
 ## \[v0.7.6] - 2023-07-12
 
-### New Features
+### Yeni Özellikler
 
 - Added sources to agent/chat engine responses (#6854)
 - Added basic chat buffer memory to agents / chat engines (#6857)
@@ -12361,12 +12361,12 @@ Last patch before v0.10!
 - add agent docs (#6866)
 - add react agent (#6865)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Replace react chat engine with native react agent (#6870)
 - Set default chat mode to “best”: use openai agent when possible, otherwise use react agent (#6870)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fixed support for legacy vector store metadata (#6867)
 - fix chroma notebook in docs (#6872)
@@ -12374,11 +12374,11 @@ Last patch before v0.10!
 
 ## \[v0.7.5] - 2023-07-11
 
-### New Features
+### Yeni Özellikler
 
 - Add `Anthropic` LLM implementation (#6855)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix indexing error in `SentenceEmbeddingOptimizer` (#6850)
 - fix doc for custom embedding model (#6851)
@@ -12391,24 +12391,24 @@ Last patch before v0.10!
 
 ## \[v0.7.4] - 2023-07-08
 
-### New Features
+### Yeni Özellikler
 
 - `MetadataExtractor` - Documnent Metadata Augmentation via LLM-based feature extractors (#6764)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - fixed passing in query bundle to node postprocessors (#6780)
 - fixed error in callback manager with nested traces (#6791)
 
 ## \[v0.7.3] - 2023-07-07
 
-### New Features
+### Yeni Özellikler
 
 - Sub question query engine returns source nodes of sub questions in the callback manager (#6745)
 - trulens integration (#6741)
 - Add sources to subquestion engine (#6745)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Added/Fixed streaming support to simple and condense chat engines (#6717)
 - fixed `response_mode="no_text"` response synthesizer (#6755)
@@ -12420,13 +12420,13 @@ Last patch before v0.10!
 
 ## \[v0.7.2] - 2023-07-06
 
-### New Features
+### Yeni Özellikler
 
 - Support Azure OpenAI (#6718)
 - Support prefix messages (e.g. system prompt) in chat engine and OpenAI agent (#6723)
 - Added `CBEventType.SUB_QUESTIONS` event type for tracking sub question queries/responses (#6716)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix HF LLM output error (#6737)
 - Add system message support for langchain message templates (#6743)
@@ -12438,22 +12438,22 @@ Last patch before v0.10!
 
 ## \[v0.7.1] - 2023-07-05
 
-### New Features
+### Yeni Özellikler
 
 - Streaming support for OpenAI agents (#6694)
 - add recursive retriever + notebook example (#6682)
 
 ## \[v0.7.0] - 2023-07-04
 
-### New Features
+### Yeni Özellikler
 
 - Index creation progress bars (#6583)
 
-### Bug Fixes/ Nits
+### Hata Düzeltmeleri/ Nits
 
 - Improved chat refine template (#6645)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Change `BaseOpenAIAgent` to use `llama_index.llms.OpenAI`. Adjust `chat_history` to use `List[ChatMessage]]` as type.
 
@@ -12477,7 +12477,7 @@ Last patch before v0.10!
 
 ## \[v0.6.38] - 2023-07-02
 
-### New Features
+### Yeni Özellikler
 
 - add optional tqdm progress during index creation (#6583)
 - Added async support for “compact” and “refine” response modes (#6590)
@@ -12486,7 +12486,7 @@ Last patch before v0.10!
 - Introduce `llama_index.llms` module, with new `LLM` interface, and `OpenAI`, `HuggingFaceLLM`, `LangChainLLM` implementations. (#6615)
 - Evaporate pydantic program (#6666)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Improve metadata/node storage and retrieval for RedisVectorStore (#6678)
 - Fixed node vs. document filtering in vector stores (#6677)
@@ -12497,19 +12497,19 @@ Last patch before v0.10!
 
 ## \[v0.6.37] - 2023-06-30
 
-### New Features
+### Yeni Özellikler
 
 - add context augmented openai agent (#6655)
 
 ## \[v0.6.36] - 2023-06-29
 
-### New Features
+### Yeni Özellikler
 
 - Redis support for index stores and docstores (#6575)
 - DuckDB + SQL query engine notebook (#6628)
 - add notebook showcasing deplot data loader (#6638)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - More robust JSON parsing from LLM for `SelectionOutputParser` (#6610)
 - bring our loaders back in line with llama-hub (#6630)
@@ -12527,7 +12527,7 @@ Last patch before v0.10!
 
 - refactor structured output + pydantic programs (#6604)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix serialization for OpenSearch vector stores (#6612)
 - patch docs relationships (#6606)
@@ -12542,13 +12542,13 @@ Last patch before v0.10!
 
 - Patch imports for Document obj for backwards compatibility (#6597)
 
-### New Features
+### Yeni Özellikler
 
 - New `TextNode`/`Document` object classes based on pydantic (#6586)
 - `TextNode`/`Document` objects support metadata customization (metadata templates, exclude metadata from LLM or embeddings) (#6586)
 - Nodes no longer require flat metadata dictionaries, unless the vector store you use requires it (#6586)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - use `NLTK_DATA` env var to control NLTK download location (#6579)
 - \[discord] save author as metadata in group\_conversations.py (#6592)
@@ -12556,7 +12556,7 @@ Last patch before v0.10!
 - negate euclidean distance (#6564)
 - add df output parser notebook link to docs (#6581)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - `Node` has been renamed to `TextNode` and is imported from `llama_index.schema` (#6586)
 - `TextNode` and `Document` must be instantiated with kwargs: `Document(text=text)` (#6586)
@@ -12566,24 +12566,24 @@ Last patch before v0.10!
 
 ## \[v0.6.33] - 2023-06-25
 
-### New Features
+### Yeni Özellikler
 
 - Add typesense vector store (#6561)
 - add df output parser (#6576)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Track langchain dependency via bridge module. (#6573)
 
 ## \[v0.6.32] - 2023-06-23
 
-### New Features
+### Yeni Özellikler
 
 - add object index (#6548)
 - add SQL Schema Node Mapping + SQLTableRetrieverQueryEngine + obj index fixes (#6569)
 - sql refactor (NLSQLTableQueryEngine) (#6529)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Update vector\_stores.md (#6562)
 - Minor `BaseResponseBuilder` interface cleanup (#6557)
@@ -12591,7 +12591,7 @@ Last patch before v0.10!
 
 ## \[v0.6.31] - 2023-06-22
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - properly convert weaviate distance to score (#6545)
 - refactor tree summarize and fix bug to not truncate context (#6550)
@@ -12599,7 +12599,7 @@ Last patch before v0.10!
 
 ## \[v0.6.30] - 2023-06-21
 
-### New Features
+### Yeni Özellikler
 
 - multi-selector support in router query engine (#6518)
 - pydantic selector support in router query engine using OpenAI function calling API (#6518)
@@ -12607,25 +12607,25 @@ Last patch before v0.10!
 - metadata filtering support in `QdrantVectorStore` (#6476)
 - add `PGVectorStore` to support postgres with pgvector (#6190)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - better error handling in the mbox reader (#6248)
 - Fix blank similarity score when using weaviate (#6512)
 - fix for sorted nodes in `PrevNextNodePostprocessor` (#6048)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Refactor PandasQueryEngine to take in df directly, deprecate PandasIndex (#6527)
 
 ## \[v0.6.29] - 2023-06-20
 
-### New Features
+### Yeni Özellikler
 
 - query planning tool with OpenAI Function API (#6520)
 - docs: example of kg+vector index (#6497)
 - Set context window sizes for Cohere and AI21(J2 model) (#6485)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - add default input size for Cohere and AI21 (#6485)
 - docs: replace comma with colon in dict object (#6439)
@@ -12635,12 +12635,12 @@ Last patch before v0.10!
 
 ## \[v0.6.28] - 2023-06-19
 
-### New Features
+### Yeni Özellikler
 
 - New OpenAI Agent + Query Engine Cookbook (#6496)
 - allow recursive data extraction (pydantic program) (#6503)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - update mongo interface (#6501)
 - fixes that we forgot to include for openai pydantic program (#6503) (#6504)
@@ -12648,18 +12648,18 @@ Last patch before v0.10!
 
 ## \[v0.6.27] - 2023-06-16
 
-### New Features
+### Yeni Özellikler
 
 - Add node doc\_id filtering to weaviate (#6467)
 - New `TokenCountingCallback` to customize and track embedding, prompt, and completion token usage (#6440)
 - OpenAI Retrieval Function Agent (#6491)
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Deprecated current token tracking (llm predictor and embed model will no longer track tokens in the future, please use the `TokenCountingCallback` (#6440)
 - Add maximal marginal relevance to the Simple Vector Store, which can be enabled as a query mode (#6446)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - `as_chat_engine` properly inherits the current service context (#6470)
 - Use namespace when deleting from pinecone (#6475)
@@ -12670,24 +12670,24 @@ Last patch before v0.10!
 
 ## \[v0.6.26] - 2023-06-14
 
-### New Features
+### Yeni Özellikler
 
 - Add OpenAIAgent and tutorial notebook for “build your own agent” (#6461)
 - Add OpenAIPydanticProgram (#6462)
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Fix citation engine import (#6456)
 
 ## \[v0.6.25] - 2023-06-13
 
-### New Features
+### Yeni Özellikler
 
 - Added FLARE query engine (#6419).
 
 ## \[v0.6.24] - 2023-06-12
 
-### New Features
+### Yeni Özellikler
 
 - Added better support for vector store with existing data (e.g. allow configurable text key) for Pinecone and Weaviate. (#6393)
 - Support batched upsert for Pineone (#6393)
@@ -12695,7 +12695,7 @@ Last patch before v0.10!
 
 ## \[v0.6.23] - 2023-06-11
 
-### Bug Fixes / Nits
+### Hata Düzeltmeleri / İyileştirmeler
 
 - Remove hardcoded chunk size for citation query engine (#6408)
 - Mongo demo improvements (#6406)
@@ -12704,7 +12704,7 @@ Last patch before v0.10!
 
 ## \[v0.6.22] - 2023-06-10
 
-### New Features
+### Yeni Özellikler
 
 - Added `SQLJoinQueryEngine` (generalization of `SQLAutoVectorQueryEngine`) (#6265)
 - Added support for graph stores under the hood, and initial support for Nebula KG. More docs coming soon! (#2581)
@@ -12712,18 +12712,18 @@ Last patch before v0.10!
 - Added support for MongoDB Vector stores to enable Atlas knnbeta search (#6379)
 - Added new CitationQueryEngine for inline citations of sources in response text (#6239)
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Fixed bug with `delete_ref_doc` not removing all metadata from the docstore (#6192)
 - FIxed bug with loading existing QDrantVectorStore (#6230)
 
-### Miscellaneous
+### Çeşitli
 
 - Added changelog officially to github repo (#6191)
 
 ## \[v0.6.21] - 2023-06-06
 
-### New Features
+### Yeni Özellikler
 
 - SimpleDirectoryReader has new `filename_as_id` flag to automatically set the doc\_id (useful for `refresh_ref_docs()`)
 - DocArray vector store integration
@@ -12731,12 +12731,12 @@ Last patch before v0.10!
 - Weights and Biases callback handler for tracing and versioning indexes
 - Can initialize indexes directly from a vector store: `index = VectorStoreIndex.from_vector_store(vector_store=vector_store)`
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Fixed multimodal notebook
 - Updated/fixed the SQL tutorial in the docs
 
-### Miscellaneous
+### Çeşitli
 
 - Minor docs updates
 - Added github pull-requset templates
@@ -12744,37 +12744,37 @@ Last patch before v0.10!
 
 ## \[v0.6.20] - 2023-06-04
 
-### New Features
+### Yeni Özellikler
 
 - Added new JSONQueryEngine that uses JSON schema to deliver more accurate JSON query answers
 - Metadata support for redis vector-store
 - Added Supabase vector store integration
 
-### Bug Fixes
+### Hata Düzeltmeleri
 
 - Fixed typo in text-to-sql prompt
 
-### Breaking/Deprecated API Changes
+### Değişen/Kullanımdan Kaldırılan API Değişiklikleri
 
 - Removed GPT prefix from indexes (old imports/names are still supported though)
 
-### Miscellaneous
+### Çeşitli
 
 - Major docs updates, brought important modules to the top level
 
 ## \[v0.6.19] - 2023-06-02
 
-### New Features
+### Yeni Özellikler
 
 - Added agent tool abstraction for llama-hub data loaders
 
-### Miscellaneous
+### Çeşitli
 
 - Minor doc updates
 
 ## \[v0.6.18] - 2023-06-02
 
-### Miscellaneous
+### Çeşitli
 
 - Added `Discover LlamaIndex` video series to the tutorials docs section
 - Minor docs updates

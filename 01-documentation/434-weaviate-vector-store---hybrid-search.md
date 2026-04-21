@@ -5,7 +5,7 @@ title: Weaviate Vektör Deposu - Hibrit Arama
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-weaviate
@@ -40,7 +40,7 @@ import weaviate
 ```
 
 ```
-# Connect to cloud instance
+# Bulut örneğine bağlanma
 cluster_url = ""
 api_key = ""
 
@@ -51,7 +51,7 @@ client = weaviate.connect_to_wcs(
 )
 
 
-# Connect to local instance
+# Yerel örneğe bağlanma
 # client = weaviate.connect_to_local()
 ```
 
@@ -71,7 +71,7 @@ from llama_index.core.response.notebook_utils import display_response
 ## Belgeleri yükleme
 
 ```
-# load documents
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham/").load_data()
 ```
 
@@ -90,9 +90,9 @@ index = VectorStoreIndex.from_documents(
 )
 
 
-# NOTE: you may also choose to define a index_name manually.
-# index_name = "test_prefix"
-# vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
+# NOT: Dilerseniz manuel olarak bir index_name de tanımlayabilirsiniz.
+ # index_name = "test_prefix"
+ # vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
 ```
 
 ## Varsayılan Vektör Araması ile İndeksi Sorgulama
@@ -109,13 +109,13 @@ display_response(response)
 
 ## Hibrit Arama ile İndeksi Sorgulama
 
-Use hybrid search with bm25 and vector.\
-`alpha` parameter determines weighting (alpha = 0 -> bm25, alpha=1 -> vector search).
+bm25 ve vektör ile hibrit aramayı kullanın.
+ `alpha` parametresi ağırlıklandırmayı belirler (alpha = 0 -> bm25, alpha=1 -> vektör araması).
 
 ### Varsayılan olarak, `alpha=0.75` kullanılır (vektör aramasına çok benzer)
 
 ```
-# set Logging to DEBUG for more detailed outputs
+# daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid", similarity_top_k=2
 )
@@ -131,7 +131,7 @@ display_response(response)
 ### Bm25'i tercih etmek için `alpha=0.` ayarlayın
 
 ```
-# set Logging to DEBUG for more detailed outputs
+# daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine(
     vector_store_query_mode="hybrid", similarity_top_k=2, alpha=0.0
 )

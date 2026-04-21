@@ -5,7 +5,7 @@ title: Weaviate Vektör Deposu
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-weaviate
@@ -63,7 +63,7 @@ from llama_index.vector_stores.weaviate import WeaviateVectorStore
 from IPython.display import Markdown, display
 ```
 
-Download Data
+Veriyi İndir
 
 ```
 !mkdir -p 'data/paul_graham/'
@@ -71,7 +71,7 @@ Download Data
 ```
 
 ```
-# load documents
+# belgeleri yükle
 documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 ```
 
@@ -79,7 +79,7 @@ documents = SimpleDirectoryReader("./data/paul_graham").load_data()
 from llama_index.core import StorageContext
 
 
-# If you want to load the index later, be sure to give it a name!
+# İndeksi daha sonra yüklemek istiyorsanız, ona bir isim verdiğinizden emin olun!
 vector_store = WeaviateVectorStore(
     weaviate_client=client, index_name="LlamaIndex"
 )
@@ -89,16 +89,16 @@ index = VectorStoreIndex.from_documents(
 )
 
 
-# NOTE: you may also choose to define a index_name manually.
-# index_name = "test_prefix"
-# vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
+# NOT: Dilerseniz manuel olarak bir index_name de tanımlayabilirsiniz.
+ # index_name = "test_prefix"
+ # vector_store = WeaviateVectorStore(weaviate_client=client, index_name=index_name)
 ```
 
 #### Özel bir toplu işlem (batch) yapılandırması kullanma
 
-Llamaindex defaults to Weaviate’s dynamic batching, optimized for most common scenarios. However, in low-latency setups, this can overload the server or max out any GRPC Message limits in place. For more control and a better ingestion process, consider adjusting batch size by using the fixed size batch.
-
-Here is how you can fine tune WeaviateVectorStore and define a custom batch:
+LlamaIndex, çoğu yaygın senaryo için optimize edilmiş olan Weaviate'in dinamik toplu işleme (dynamic batching) özelliğini varsayılan olarak kullanır. Ancak, düşük gecikmeli kurulumlarda bu durum sunucuyu aşırı yükleyebilir veya mevcut GRPC Mesaj limitlerini zorlayabilir. Daha fazla kontrol ve daha iyi bir veri alımı (ingestion) süreci için, sabit boyutlu toplu işlemi (fixed size batch) kullanarak toplu işlem boyutunu ayarlamayı düşünebilirsiniz.
+ 
+ İşte WeaviateVectorStore'da nasıl ince ayar yapabileceğiniz ve özel bir toplu işlem (batch) tanımlayabileceğiniz:
 
 ```
 from weaviate.classes.config import ConsistencyLevel
@@ -112,7 +112,7 @@ custom_batch = client.batch.fixed_size(
 vector_store_fixed = WeaviateVectorStore(
     weaviate_client=client,
     index_name="LlamaIndex",
-    # we pass our custom batch as a client_kwargs
+    # özel toplu işlemimizi (custom batch) client_kwargs olarak geçiriyoruz
     client_kwargs={"custom_batch": custom_batch},
 )
 ```
@@ -120,7 +120,7 @@ vector_store_fixed = WeaviateVectorStore(
 #### Sorgu İndeksi
 
 ```
-# set Logging to DEBUG for more detailed outputs
+# daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = index.as_query_engine()
 response = query_engine.query("What did the author do growing up?")
 ```
@@ -131,7 +131,7 @@ display(Markdown(f"<b>{response}</b>"))
 
 ## İndeksi yükleme
 
-Here, we use the same index name as when we created the initial index. This stops it from being auto-generated and allows us to easily connect back to it.
+Burada, başlangıç indeksini oluştururken kullandığımız indeks adının aynısını kullanıyoruz. Bu, indeksin otomatik olarak oluşturulmasını engeller ve ona kolayca yeniden bağlanmamızı sağlar.
 
 ```
 cluster_url = ""
@@ -158,7 +158,7 @@ loaded_index = VectorStoreIndex.from_vector_store(vector_store)
 ```
 
 ```
-# set Logging to DEBUG for more detailed outputs
+# daha detaylı çıktılar için Logging'i DEBUG olarak ayarlayın
 query_engine = loaded_index.as_query_engine()
 response = query_engine.query("What happened at interleaf?")
 display(Markdown(f"<b>{response}</b>"))
@@ -166,7 +166,7 @@ display(Markdown(f"<b>{response}</b>"))
 
 ## Meta Veri Filtreleme
 
-Let’s insert a dummy document, and try to filter so that only that document is returned.
+Hadi sahte bir belge ekleyelim ve sadece o belgenin döndürülmesi için filtrelemeyi deneyelim.
 
 ```
 from llama_index.core import Document
@@ -196,19 +196,19 @@ display(Markdown(f"<b>{response}</b>"))
 
 # İndeksi tamamen silme
 
-You can delete the index created by the vector store using the `delete_index` function
+Vektör deposu tarafından oluşturulan indeksi `delete_index` fonksiyonunu kullanarak silebilirsiniz.
 
 ```
 vector_store.delete_index()
 ```
 
 ```
-vector_store.delete_index()  # calling the function again does nothing
+vector_store.delete_index()  # fonksiyonu tekrar çağırmak hiçbir şey yapmaz
 ```
 
 # Bağlantıyı Sonlandırma
 
-You must ensure your client connections are closed:
+İstemci bağlantılarınızın kapatıldığından emin olmalısınız:
 
 ```
 client.close()

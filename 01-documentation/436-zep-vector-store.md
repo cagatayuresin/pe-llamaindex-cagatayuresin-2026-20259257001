@@ -7,21 +7,21 @@ title: Zep Vektör Deposu
 
 ## YMO (LLM) uygulamaları için uzun vadeli bellek deposu
 
-This notebook demonstrates how to use the Zep Vector Store with LlamaIndex.
+Bu not defteri, Zep Vektör Deposunun LlamaIndex ile nasıl kullanılacağını göstermektedir.
 
 ## Zep Hakkında
 
-Zep makes it easy for developers to add relevant documents, chat history memory & rich user data to their LLM app’s prompts.
+Zep, geliştiricilerin YMO (LLM) uygulamalarının istemlerine (prompt) ilgili dökümanları, sohbet geçmişi belleğini ve zengin kullanıcı verilerini eklemesini kolaylaştırır.
 
 ## Not
 
-Zep can automatically embed your documents. The LlamaIndex implementation of the Zep Vector Store utilizes LlamaIndex’s embedders to do so.
+Zep dökümanlarınızı otomatik olarak yerleştirebilir (embed). Zep Vektör Deposunun LlamaIndex uygulaması bunu yapmak için LlamaIndex'in yerleştiricilerini (embedders) kullanır.
 
 ## Başlarken
 
 **Quick Start Guide:** <https://docs.getzep.com/deployment/quickstart/> **GitHub:** <https://github.com/getzep/zep>
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-zep
@@ -67,7 +67,7 @@ INFO:numexpr.utils:NumExpr defaulting to 8 threads.
 NumExpr defaulting to 8 threads.
 ```
 
-Download Data
+Veriyi İndir
 
 ```
 !mkdir -p 'data/paul_graham/'
@@ -75,13 +75,13 @@ Download Data
 ```
 
 ```
-# load documents
+# belgeleri yükle
 documents = SimpleDirectoryReader("../data/paul_graham/").load_data()
 ```
 
 ## Bir Zep Vektör Deposu ve İndeksi Oluşturma
 
-You can use an existing Zep Collection, or create a new one.
+Mevcut bir Zep Koleksiyonunu kullanabilir veya yeni bir tane oluşturabilirsiniz.
 
 ```
 from llama_index.core import StorageContext

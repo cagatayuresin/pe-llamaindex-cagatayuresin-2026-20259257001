@@ -150,7 +150,14 @@ cython_debug/
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+Icon?
 Thumbs.db
+ehthumbs.db
+DerivedData/
 
 # IDEs
 .vscode/

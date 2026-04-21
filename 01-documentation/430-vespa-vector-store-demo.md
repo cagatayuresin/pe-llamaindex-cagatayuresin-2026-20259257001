@@ -5,7 +5,7 @@ title: Vespa Vektör Deposu demosu
  | LlamaIndex OSS Documentation
 ---
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-vespa llama-index pyvespa
@@ -32,7 +32,7 @@ from IPython.display import Markdown, display
 
 ## Bazı örnek verileri tanımlama
 
-Let’s insert some documents.
+Hadi biraz belge ekleyelim.
 
 ```
 from llama_index.core.schema import TextNode
@@ -100,9 +100,9 @@ nodes = [
 
 ### VespaVectorStore'un Başlatılması
 
-To make it really simple to get started, we provide a template Vespa application that will be deployed upon initializing the vector store.
-
-This is a huge abstraction and there are endless opportunities to tailor and customize the Vespa application to your needs. But for now, let’s keep it simple and initialize with the default template.
+Başlamayı gerçekten kolaylaştırmak için, vektör deposu başlatıldığında dağıtılacak (deploy edilecek) bir şablon Vespa uygulaması sunuyoruz.
+ 
+ Bu büyük bir soyutlamadır ve Vespa uygulamasını ihtiyaçlarınıza göre uyarlamak ve özelleştirmek için sonsuz fırsat vardır. Ancak şimdilik işleri basit tutalım ve varsayılan şablonla başlatalım.
 
 ```
 from llama_index.core import StorageContext
@@ -183,9 +183,9 @@ display(Markdown(f"**Sources:** {response.source_nodes}"))
 
 ## Meta veri filtrelerini kullanma
 
-**NOTE**: This metadata filtering is done by llama-index, outside of vespa. For native and much more performant filtering, you should use Vespa’s own filtering capabilities.
-
-See [Vespa’s documentation](https://docs.vespa.ai/en/reference/query-language-reference.html) for more information.
+**NOT**: Bu meta veri filtreleme işlemi, Vespa'nın dışında llama-index tarafından gerçekleştirilir. Yerel ve çok daha yüksek performanslı filtreleme için Vespa'nın kendi filtreleme yeteneklerini kullanmalısınız.
+ 
+ Daha fazla bilgi için [Vespa dökümantasyonuna](https://docs.vespa.ai/en/reference/query-language-reference.html) bakın.
 
 ```
 from llama_index.core.vector_stores import (
@@ -196,7 +196,7 @@ from llama_index.core.vector_stores import (
 )
 
 
-# Let's define a filter that will only allow nodes that has the theme "Fiction" OR is published after 1997
+# Sadece teması "Fiction" OLAN VEYA 1997'den sonra yayınlanan düğümlere izin verecek bir filtre tanımlayalım.
 
 
 filters = MetadataFilters(
@@ -215,11 +215,11 @@ display(Markdown(f"**Result:** {result}"))
 
 ## Bu entegrasyonun soyutlama düzeyi
 
-To make it really simple to get started, we provide a template Vespa application that will be deployed upon initializing the vector store. This removes some of the complexity of setting up Vespa for the first time, but for serious use cases, we strongly recommend that you read the [Vespa documentation](docs.vespa.ai) and tailor the application to your needs.
+Başlamayı gerçekten kolaylaştırmak için, vektör deposu başlatıldığında dağıtılacak bir şablon Vespa uygulaması sunuyoruz. Bu, Vespa'yı ilk kez kurmanın bazı karmaşıklıklarını ortadan kaldırır; ancak ciddi kullanım durumları için [Vespa dökümantasyonunu](docs.vespa.ai) okumanızı ve uygulamayı ihtiyaçlarınıza göre uyarlamanızı şiddetle tavsiye ederiz.
 
 ### Şablon
 
-The provided template Vespa application can be seen below:
+Sunulan şablon Vespa uygulaması aşağıda görülebilir:
 
 ```
 from vespa.package import (
@@ -316,8 +316,8 @@ hybrid_template = ApplicationPackage(
 )
 ```
 
-Note that the fields `id`, `metadata`, `text`, and `embedding` are required for the integration to work. The schema name must also be `doc`, and the rank profiles must be named `bm25`, `semantic`, and `fusion`.
-
-Other than that you are free to modify as you see fit by switching out embedding models, adding more fields, or changing the ranking expressions.
-
-For more details, check out this Pyvespa example notebook on [hybrid search](https://pyvespa.readthedocs.io/en/latest/getting-started-pyvespa.html).
+Entegrasyonun çalışması için `id`, `metadata`, `text` ve `embedding` alanlarının gerekli olduğunu unutmayın. Şema adı `doc` olmalı ve sıralama profilleri (rank profiles) `bm25`, `semantic` ve `fusion` olarak adlandırılmalıdır.
+ 
+ Bunun dışında, yerleştirme (embedding) modellerini değiştirerek, daha fazla alan ekleyerek veya sıralama ifadelerini değiştirerek uygun gördüğünüz şekilde düzenleme yapmakta özgürsünüz.
+ 
+ Daha fazla ayrıntı için, [hibrit arama](https://pyvespa.readthedocs.io/en/latest/getting-started-pyvespa.html) hakkındaki bu Pyvespa örnek not defterine göz atın.

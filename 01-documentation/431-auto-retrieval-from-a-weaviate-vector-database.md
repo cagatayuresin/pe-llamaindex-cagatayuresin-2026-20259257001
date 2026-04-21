@@ -5,17 +5,17 @@ title: Bir Weaviate Vektör Veritabanından Otomatik Getirme
  | LlamaIndex OSS Documentation
 ---
 
-This guide shows how to perform **auto-retrieval** in LlamaIndex with [Weaviate](https://weaviate.io/).
+Bu kılavuz, LlamaIndex'te [Weaviate](https://weaviate.io/) ile **otomatik getirme** (auto-retrieval) işleminin nasıl gerçekleştirileceğini gösterir.
 
-The Weaviate vector database supports a set of [metadata filters](https://weaviate.io/developers/weaviate/search/filters) in addition to a query string for semantic search. Given a natural language query, we first use a Large Language Model (LLM) to infer a set of metadata filters as well as the right query string to pass to the vector database (either can also be blank). This overall query bundle is then executed against the vector database.
-
-This allows for more dynamic, expressive forms of retrieval beyond top-k semantic search. The relevant context for a given query may only require filtering on a metadata tag, or require a joint combination of filtering + semantic search within the filtered set, or just raw semantic search.
+Weaviate vektör veritabanı, anlamsal arama için kullanılan bir sorgu dizisine ek olarak bir dizi [meta veri filtresini](https://weaviate.io/developers/weaviate/search/filters) destekler. Doğal dildeki bir sorgu verildiğinde, önce bir Büyük Dil Modeli (LLM) kullanarak vektör veritabanına iletilecek doğru sorgu dizisinin yanı sıra metin verisi filtrelerini çıkarırız (ikisinden biri boş da olabilir). Bu genel sorgu paketi daha sonra vektör veritabanında çalıştırılır.
+ 
+ Bu, en iyi-k (top-k) anlamsal aramanın ötesinde daha dinamik ve ifade gücü yüksek getirme biçimlerine olanak tanır. Belirli bir sorgu için ilgili bağlam sadece bir meta veri etiketi üzerinde filtreleme gerektirebilir veya filtrelenmiş küme içinde filtreleme + anlamsal aramanın ortak bir kombinasyonunu ya da sadece ham anlamsal aramayı gerektirebilir.
 
 ## Kurulum
 
-We first define imports and define an empty Weaviate collection.
-
-If you’re opening this Notebook on Colab, you will probably need to install LlamaIndex 🦙.
+Önce içe aktarmaları tanımlıyoruz ve boş bir Weaviate koleksiyonu oluşturuyoruz.
+ 
+ Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 %pip install llama-index-vector-stores-weaviate
@@ -34,7 +34,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 ```
 
-We will be using GPT-4 for its reasoning capabilities to infer the metadata filters. Depending on your use case, `"gpt-3.5-turbo"` can work as well.
+Meta veri filtrelerini çıkarmak için akıl yürütme yeteneklerinden dolayı GPT-4 kullanacağız. Kullanım durumunuza bağlı olarak `"gpt-3.5-turbo"` da işe yarayabilir.
 
 ```
 # set up OpenAI
@@ -57,9 +57,9 @@ Settings.llm = OpenAI(model="gpt-4")
 Settings.embed_model = OpenAIEmbedding()
 ```
 
-This Notebook uses Weaviate in [Embedded mode](https://weaviate.io/developers/weaviate/installation/embedded), which is supported on Linux and macOS.
-
-If you prefer to try out Weaviate’s fully managed service, [Weaviate Cloud Services (WCS)](https://weaviate.io/developers/weaviate/installation/weaviate-cloud-services), you can enable the code in the comments.
+Bu Not Defteri, Linux ve macOS üzerinde desteklenen [Gömülü (Embedded) modda](https://weaviate.io/developers/weaviate/installation/embedded) Weaviate kullanır.
+ 
+ Weaviate'in tamamen yönetilen hizmeti olan [Weaviate Cloud Services (WCS)](https://weaviate.io/developers/weaviate/installation/weaviate-cloud-services)'i denemek isterseniz, yorum satırlarındaki kodu etkinleştirebilirsiniz.
 
 ```
 import weaviate
@@ -92,7 +92,7 @@ client = weaviate.connect_to_wcs(cluster_url=cluster_url,
 
 ## Bazı Örnek Verilerin Tanımlanması
 
-We insert some sample nodes containing text chunks into the vector database. Note that each `TextNode` not only contains the text, but also metadata e.g. `category` and `country`. These metadata fields will get converted/stored as such in the underlying vector db.
+Vektör veritabanına metin parçaları içeren bazı örnek düğümler ekliyoruz. Her bir `TextNode`'un sadece metni değil, aynı zamanda `category` ve `country` gibi meta verileri de içerdiğine dikkat edin. Bu meta veri alanları, alttaki vektör veritabanında bu şekilde dönüştürülecek ve saklanacaktır.
 
 ```
 from llama_index.core.schema import TextNode
@@ -160,7 +160,7 @@ nodes = [
 
 ## Weaviate Vektör Deposu ile Vektör İndeksi Oluşturma
 
-Here we load the data into the vector store. As mentioned above, both the text and metadata for each node will get converted into corresponding representations in Weaviate. We can now run semantic queries and also metadata filtering on this data from Weaviate.
+Burada verileri vektör deposuna yüklüyoruz. Yukarıda belirtildiği gibi, her bir düğüm için hem metin hem de meta veriler Weaviate'teki karşılık gelen temsillere dönüştürülecektir. Artık bu veriler üzerinde Weaviate'ten anlamsal sorgular ve meta veri filtreleme çalıştırabiliriz.
 
 ```
 from llama_index.core import VectorStoreIndex, StorageContext
@@ -181,7 +181,7 @@ index = VectorStoreIndex(nodes, storage_context=storage_context)
 
 ## `VectorIndexAutoRetriever` Tanımlama
 
-We define our core `VectorIndexAutoRetriever` module. The module takes in `VectorStoreInfo`, which contains a structured description of the vector store collection and the metadata filters it supports. This information will then be used in the auto-retrieval prompt where the LLM infers metadata filters.
+Temel `VectorIndexAutoRetriever` modülümüzü tanımlıyoruz. Modül, vektör deposu koleksiyonunun yapılandırılmış bir açıklamasını ve desteklediği meta veri filtrelerini içeren `VectorStoreInfo` alır. Bu bilgi daha sonra LLM'in meta veri filtrelerini çıkardığı otomatik getirme isteminde (prompt) kullanılacaktır.
 
 ```
 from llama_index.core.retrievers import VectorIndexAutoRetriever
@@ -220,7 +220,7 @@ retriever = VectorIndexAutoRetriever(
 
 ## Bazı örnek veriler üzerinde çalıştırma
 
-We try running over some sample data. Note how metadata filters are inferred - this helps with more precise retrieval!
+Bazı örnek veriler üzerinde çalıştırmayı deniyoruz. Meta veri filtrelerinin nasıl çıkarıldığına dikkat edin - bu daha kesin bir getirmeye yardımcı olur!
 
 ```
 response = retriever.retrieve("Tell me about celebrities from United States")

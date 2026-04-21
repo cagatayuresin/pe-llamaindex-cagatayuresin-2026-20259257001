@@ -7,7 +7,7 @@ title: **WordLift** Vektör Deposu
 
 ## Giriş
 
-This script demonstrates how to crawl a product website, extract relevant information, build an SEO-friendly Knowledge Graph (a structured representation of PDPs and PLPs), and leverage it for improved search and user experience.
+Bu komut dosyası, bir ürün web sitesinin nasıl taranacağını, ilgili bilgilerin nasıl çıkarılacağını, SEO dostu bir Bilgi Grafiği (Knowledge Graph - PDP'lerin ve PLP'lerin yapılandırılmış bir temsili) oluşturulacağını ve bunu geliştirilmiş arama ve kullanıcı deneyimi için nasıl kullanılacağını göstermektedir.
 
 ### Temel Özellikler ve Kütüphaneler:
 
@@ -16,9 +16,9 @@ This script demonstrates how to crawl a product website, extract relevant inform
 - Product recommendations (WordLift Neural Search)
 - Shopping assistant creation (WordLift + LlamaIndex 🦙)
 
-This approach enhances SEO performance and user engagement for e-commerce sites.
+Bu yaklaşım, e-ticaret siteleri için SEO performansını ve kullanıcı etkileşimini artırır.
 
-Learn more about how it works here:
+Nasıl çalıştığı hakkında daha fazlasını buradan öğrenin:
 
 - <https://www.youtube.com/watch?v=CH-ir1MTAwQ>
 - <https://wordlift.io/academy-entries/mastering-serp-analysis-knowledge-graphs>
@@ -38,7 +38,7 @@ Learn more about how it works here:
 ```
 
 ```
-# Standard library imports
+# Standart kütüphane içe aktarmaları
 import json
 import logging
 import os
@@ -48,18 +48,18 @@ import requests
 from typing import List, Optional
 
 
-# Third-party imports
+# Üçüncü taraf içe aktarmalar
 import advertools as adv
 import pandas as pd
 import nest_asyncio
 
 
-# RDFLib imports
+# RDFLib içe aktarmaları
 from rdflib import Graph, Literal, RDF, URIRef
 from rdflib.namespace import SDO, Namespace, DefinedNamespace
 
 
-# WordLift client imports
+# WordLift istemci içe aktarmaları
 import wordlift_client
 from wordlift_client import Configuration, ApiClient
 from wordlift_client.rest import ApiException
@@ -80,16 +80,16 @@ from wordlift_client.api.vector_search_queries_api import (
 
 
 
-# Asynchronous programming
+# Asenkron programlama
 import asyncio
 
 
-# Set up logging
+# Günlük kaydını (logging) ayarlama
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# Apply nest_asyncio
+# nest_asyncio uygula
 nest_asyncio.apply()
 ```
 
@@ -101,24 +101,23 @@ OPENAI_KEY = os.getenv("OPENAI_KEY")
 # Advertools ile Web Sitesini Tarama
 
 ```
-# Step 1: Define the website structure
+# Adım 1: Web sitesi yapısını tanımlayın
 # -----------------------------------
 
 
-# We're working with two types of pages:
-# 1. Product Listing Pages (PLP): https://product-finder.wordlift.io/product-category/bags/
-# 2. Product Detail Pages (PDP): https://product-finder.wordlift.io/product/1980s-marco-polo-crossbody-bag-in-black/
+# İki tür sayfa ile çalışıyoruz:
+ # 1. Ürün Listeleme Sayfaları (PLP): https://product-finder.wordlift.io/product-category/bags/
+ # 2. Ürün Detay Sayfaları (PDP): https://product-finder.wordlift.io/product/1980s-marco-polo-crossbody-bag-in-black/
+ 
+ # Ürün açıklaması bu XPath'te bulunabilir:
+ # /html/body/div[1]/div/div/div/div/div[1]/div/div[3]/div/div[2]/div[2]/div[1]/p/text()
+ # Fiyat burada:
+ # /html/body/div[1]/div/div/div/div/div[1]/div/div[3]/div/div[2]/p/span/bdi/text()
+ # Kategori burada:
+ # //span[contains(@class, 'breadcrumb')]/a/text()
 
 
-# The product description can be found at this XPath:
-# /html/body/div[1]/div/div/div/div/div[1]/div/div[3]/div/div[2]/div[2]/div[1]/p/text()
-# The price is here:
-# /html/body/div[1]/div/div/div/div/div[1]/div/div[3]/div/div[2]/p/span/bdi/text()
-# The category is here:
-# //span[contains(@class, 'breadcrumb')]/a/text()
-
-
-# Step 2: Set up the crawl
+# Adım 2: Taramayı ayarlayın
 # ------------------------
 
 
@@ -148,7 +147,7 @@ def crawl_website(url, output_file, num_pages=10):
 
 
 
-# Step 3: Analyze URL patterns
+# Adım 3: URL kalıplarını analiz edin
 # ----------------------------
 
 
@@ -168,7 +167,7 @@ def analyze_url_patterns(df):
 
 
 
-# Step 4: Extract page data
+# Adım 4: Sayfa verilerini çıkarın
 # ----------------------------
 
 
@@ -212,7 +211,7 @@ def extract_page_data(df):
                 }
             )
         elif row["page_type"] == "PLP":
-            # Parse the category from the H1 content
+            # H1 içeriğinden kategoriyi ayıkla (parse et)
             h1_content = (
                 row.get("h1", [""])[0]
                 if isinstance(row.get("h1"), list)
@@ -235,11 +234,11 @@ def extract_page_data(df):
 # WordLift ile Bilgi Grafiği (KG) Oluşturma 🕸
 
 ```
-# Step 5: Configure the WordLift client
+# Adım 5: WordLift istemcisini yapılandırın
 # ----------------------------
 
 
-# Create a configuration object for the WordLift API client using your WordLift key.
+# WordLift anahtarınızı kullanarak WordLift API istemcisi için bir yapılandırma nesnesi oluşturun.
 configuration = Configuration(host="https://api.wordlift.io")
 configuration.api_key["ApiKey"] = WORDLIFT_KEY
 configuration.api_key_prefix["ApiKey"] = "Key"
@@ -252,7 +251,7 @@ BASE_URI = "http://data.wordlift.io/[dataset_id]/"
 ```
 
 ```
-# Step 6: Build the KG and the embeddings
+# Adım 6: Bilgi Grafiği'ni (KG) ve yerleştirmeleri (embeddings) oluşturun
 # ----------------------------
 
 
@@ -261,7 +260,7 @@ BASE_URI = "http://data.wordlift.io/[dataset_id]/"
 async def cleanup_knowledge_graph(api_client):
     dataset_api = wordlift_client.DatasetApi(api_client)
     try:
-        # Delete all
+        # Hepsini sil
         await dataset_api.delete_all_entities()
     except Exception as e:
         print(
@@ -302,18 +301,18 @@ def create_entity_uri(url):
 
 
     if "product" in path_parts:
-        # It's a product page or product offer
+        # Bu bir ürün sayfası veya ürün teklifidir
         product_id = path_parts[-1]  # Get the last part of the path
         if fragment == "offer":
             return f"{BASE_URI}offer_{product_id}"
         else:
             return f"{BASE_URI}product_{product_id}"
     elif "product-category" in path_parts:
-        # It's a product listing page (PLP)
+        # Bu bir ürün listeleme sayfasıdır (PLP)
         category = path_parts[-1]  # Get the last part of the path
         return f"{BASE_URI}plp_{category}"
     else:
-        # For any other type of page
+        # Diğer her türlü sayfa için
         safe_path = "".join(c if c.isalnum() else "_" for c in path)
         if fragment == "offer":
             return f"{BASE_URI}offer_{safe_path}"
@@ -329,7 +328,7 @@ def clean_price(price_str):
     if isinstance(price_str, (int, float)):
         return float(price_str)
     try:
-        # Remove any non-numeric characters except for the decimal point
+        # Ondalık nokta dışındaki sayısal olmayan karakterleri kaldırın
         cleaned_price = "".join(
             char for char in str(price_str) if char.isdigit() or char == "."
         )
@@ -481,11 +480,11 @@ async def build_knowledge_graph(df, dataset_uri, api_client):
 
 ```
 # ----------------------------
-# Main Execution
+# Ana Yürütme (Main Execution)
 # ----------------------------
 
 
-# Global configuration variables
+# Global yapılandırma değişkenleri
 CRAWL_URL = "https://product-finder.wordlift.io/"
 OUTPUT_FILE = "crawl_results.jl"
 
@@ -493,24 +492,24 @@ OUTPUT_FILE = "crawl_results.jl"
 
 
 async def main():
-    # Step 1: Crawl the website
+    # Adım 1: Web sitesini tara
     crawl_website(CRAWL_URL, OUTPUT_FILE)
 
 
-    # Step 2: Load the crawled data
+    # Adım 2: Taranan verileri yükle
     df = pd.read_json(OUTPUT_FILE, lines=True)
 
 
-    # Step 3: Analyze URL patterns
+    # Adım 3: URL kalıplarını analiz et
     df = analyze_url_patterns(df)
 
 
-    # Step 4: Extract page data
+    # Adım 4: Sayfa verilerini çıkar
     pages_df = extract_page_data(df)
 
 
     async with ApiClient(configuration) as api_client:
-        # Clean up the existing knowledge graph
+        # Mevcut bilgi grafiğini temizle
         try:
             await cleanup_knowledge_graph(api_client)
             logger.info(f"Knowledge Graph Cleaned Up")
@@ -521,7 +520,7 @@ async def main():
             return  # Exit if cleanup fails
 
 
-        # Build the new knowledge graph
+        # Yeni bilgi grafiğini oluşturun
         await build_knowledge_graph(pages_df, CRAWL_URL, api_client)
 
 
@@ -564,40 +563,40 @@ async def perform_graphql_query(api_client):
 
 
 async with ApiClient(configuration) as api_client:
-    # Step 6: Perform GraphQL query
+    # Adım 6: GraphQL sorgusunu gerçekleştirin
     await perform_graphql_query(api_client)
     logger.info("Knowledge graph building and GraphQL query completed.")
 ```
 
 # Bilgi Grafiğini (Knowledge Graph) Değerlendirme
 
-Now that we have successfully created a Knowledge Graph for our e-commerce website, complete with product embeddings, we can take advantage of it to enhance user experience and functionality. The embeddings we’ve generated for each product allow us to perform semantic similarity searches and build more intelligent systems.
+E-ticaret web sitemiz için ürün yerleştirmeleriyle tamamlanmış bir Bilgi Grafiği'ni (Knowledge Graph) başarıyla oluşturduğumuza göre, kullanıcı deneyimini ve işlevselliği artırmak için bundan yararlanabiliriz. Her bir ürün için oluşturduğumuz yerleştirmeler, anlamsal benzerlik aramaları yapmamıza ve daha akıllı sistemler kurmamıza olanak tanır.
 
 ## Web Sayfalarınıza Yapılandırılmış Veri Ekleme
 
-In this section, we will perform a simple test of WordLift’s data API. This API is used to inject structured data markup from the Knowledge Graph (KG) into your webpages. Structured data helps search engines better understand your content, potentially leading to rich snippets in search results and improved SEO.
-
-For this notebook, we’re using a pre-configured KG on a demo e-commerce website. We’ll be referencing a fictitious URL: `https://data-science-with-python-for-seo.wordlift.dev`.
-
-When calling WordLift’s data API, we simply pass a URL and receive the corresponding JSON-LD (JavaScript Object Notation for Linked Data). This structured data typically includes information such as product details, pricing, and availability for e-commerce sites.
-
-The `get_json_ld_from_url()` function below demonstrates this process. It takes a URL as input and returns the structured data in JSON-LD format, ready to be injected into your webpage.
+Bu bölümde, WordLift'in veri API'si üzerinde basit bir test gerçekleştireceğiz. Bu API, Bilgi Grafiği'nden (KG) gelen yapılandırılmış veri işaretlemesini web sayfalarınıza eklemek için kullanılır. Yapılandırılmış veriler, arama motorlarının içeriğinizi daha iyi anlamasına yardımcı olur, bu da potansiyel olarak arama sonuçlarında zengin snippet'lere ve gelişmiş SEO'ya yol açar.
+ 
+ Bu not defteri için, bir demo e-ticaret web sitesinde önceden yapılandırılmış bir KG kullanıyoruz. Fiktif bir URL'yi referans alacağız: `https://data-science-with-python-for-seo.wordlift.dev`.
+ 
+ WordLift'in veri API'sini çağırırken, sadece bir URL iletiriz ve karşılık gelen JSON-LD (JavaScript Object Notation for Linked Data) çıktısını alırız. Bu yapılandırılmış veriler tipik olarak e-ticaret siteleri için ürün ayrıntıları, fiyatlandırma ve stok durumu gibi bilgileri içerir.
+ 
+ Aşağıdaki `get_json_ld_from_url()` işlevi bu süreci göstermektedir. Girdi olarak bir URL alır ve yapılandırılmış veriyi web sayfanıza eklenmeye hazır JSON-LD formatında döndürür.
 
 ```
 def get_json_ld_from_url(url):
-    # Construct the API URL by prefixing with 'https://api.wordlift.io/data/https/'
+    # 'https://api.wordlift.io/data/https/' öneki ile API URL'sini oluşturun
     api_url = "https://api.wordlift.io/data/https/" + url.replace(
         "https://", ""
     )
 
 
-    # Make the GET request to the API
+    # API'ye GET isteği gönderin
     response = requests.get(api_url)
 
 
-    # Check if the request was successful
+    # İsteğin başarılı olup olmadığını kontrol edin
     if response.status_code == 200:
-        # Parse the JSON-LD from the response
+        # Yanıttan JSON-LD verisini ayrıştırın
         json_ld = response.json()
         return json_ld
     else:
@@ -608,12 +607,12 @@ def get_json_ld_from_url(url):
 
 
 def pretty_print_json(json_obj):
-    # Pretty print the JSON object
+    # JSON nesnesini güzelce yazdırın (pretty print)
     print(json.dumps(json_obj, indent=4))
 ```
 
 ```
-# Let's run a test
+# Hadi bir test çalıştıralım
 url = "https://data-science-with-python-for-seo.wordlift.dev/product/100-pure-deluxe-travel-pack-duo-2/"
 json_ld = get_json_ld_from_url(url)
 json_ld
@@ -621,15 +620,15 @@ json_ld
 
 ## WordLift Neural Search Kullanarak Benzer Ürünlerin Bağlantılarını Oluşturma
 
-With our product embeddings in place, we can now leverage WordLift’s Neural Search capabilities to recommend similar products to users. This feature significantly enhances user engagement and can potentially boost sales by showcasing relevant products based on semantic similarity.
-
-Unlike traditional keyword matching, semantic similarity considers the context and meaning of product descriptions. This approach allows for more nuanced and accurate recommendations, even when products don’t share exact keywords.
-
-The `get_top_k_similar_urls` function we’ve defined earlier implements this functionality. It takes a product URL and returns a list of semantically similar products, ranked by their similarity scores.
-
-For example, if a user is viewing a red cotton t-shirt, this feature might recommend other cotton t-shirts in different colors, or similar style tops made from different materials. This creates a more intuitive and engaging shopping experience for the user.
-
-By implementing this Neural Search feature, we’re able to create a more personalized and efficient shopping experience, potentially leading to increased user satisfaction and higher conversion rates.
+Ürün yerleştirmelerimiz hazır olduğunda, kullanıcılara benzer ürünler önermek için artık WordLift'in Nöral Arama (Neural Search) yeteneklerinden yararlanabiliriz. Bu özellik, kullanıcı etkileşimini önemli ölçüde artırır ve anlamsal benzerliğe dayalı ilgili ürünleri göstererek satışları potansiyel olarak yükseltebilir.
+ 
+ Geleneksel anahtar kelime eşleştirmesinin aksine, anlamsal benzerlik ürün açıklamalarının bağlamını ve anlamını dikkate alır. Bu yaklaşım, ürünler tam olarak aynı anahtar kelimeleri paylaşmasa bile daha incelikli ve doğru önerilere olanak tanır.
+ 
+ Daha önce tanımladığımız `get_top_k_similar_urls` işlevi bu işlevselliği uygular. Bir ürün URL'si alır ve benzerlik puanlarına göre sıralanmış anlamsal olarak benzer ürünlerin bir listesini döndürür.
+ 
+ Örneğin, bir kullanıcı kırmızı bir pamuklu tişört görüntülüyorsa, bu özellik farklı renklerdeki diğer pamuklu tişörtleri veya farklı malzemelerden yapılmış benzer stillerdeki üstleri önerebilir. Bu, kullanıcı için daha sezgisel ve ilgi çekici bir alışveriş deneyimi oluşturur.
+ 
+ Bu Nöral Arama özelliğini uygulayarak, daha kişiselleştirilmiş ve verimli bir alışveriş deneyimi yaratabiliyoruz, bu da potansiyel olarak artan kullanıcı memnuniyetine ve daha yüksek dönüşüm oranlarına yol açar.
 
 ```
 async def get_top_k_similar_urls(configuration, query_url: str, top_k: int):
@@ -670,17 +669,17 @@ print(json.dumps(similar_urls, indent=2))
 
 ## LlamaIndex Kullanarak E-ticaret Web Sitesi için Chatbot Oluşturma 🦙
 
-The Knowledge Graph we’ve created serves as a perfect foundation for building an intelligent chatbot. LlamaIndex (formerly GPT Index) is a powerful data framework that allows us to ingest, structure, and access private or domain-specific data in Large Language Models (LLMs). With LlamaIndex, we can create a context-aware chatbot that understands our product catalog and can assist customers effectively.
-
-By leveraging LlamaIndex in conjunction with our Knowledge Graph, we can develop a chatbot that responds to direct queries. This chatbot will have an understanding of the product catalog, enabling it to:
-
-1. Answer questions about product specifications, availability, and pricing
-2. Make personalized product recommendations based on customer preferences
-3. Provide comparisons between similar products
-
-This approach leads to more natural and helpful interactions with customers, enhancing their shopping experience. The chatbot can draw upon the structured data in our Knowledge Graph, using LlamaIndex to efficiently retrieve and present relevant information through the LLM.
-
-In the following sections, we’ll walk through the process of setting up LlamaIndex with our Knowledge Graph data and creating a chatbot that can intelligently assist our e-commerce customers.
+Oluşturduğumuz Bilgi Grafiği, akıllı bir chatbot oluşturmak için mükemmel bir temel görevi görür. LlamaIndex (eski adıyla GPT Index), Büyük Dil Modellerinde (LLM'ler) özel veya alan özgü verileri almamıza, yapılandırmamıza ve bunlara erişmemize olanak tanıyan güçlü bir veri çerçevesidir. LlamaIndex ile, ürün kataloğumuzu anlayan ve müşterilere etkili bir şekilde yardımcı olabilen, bağlam duyarlı bir chatbot oluşturabiliriz.
+ 
+ Bilgi Grafiğimizle birlikte LlamaIndex'ten yararlanarak, doğrudan sorgulara yanıt veren bir chatbot geliştirebiliriz. Bu chatbot, ürün kataloğu hakkında bir anlayışa sahip olacak ve aşağıdakileri yapabilecektir:
+ 
+ 1. Ürün özellikleri, stok durumu ve fiyatlandırma hakkındaki soruları yanıtlamak
+ 2. Müşteri tercihlerine göre kişiselleştirilmiş ürün önerileri yapmak
+ 3. Benzer ürünler arasında karşılaştırmalar sağlamak
+ 
+ Bu yaklaşım, müşterilerle daha doğal ve yardımcı etkileşimlere yol açarak alışveriş deneyimlerini geliştirir. Chatbot, Bilgi Grafiğimizdeki yapılandırılmış verilerden yararlanabilir ve LLM aracılığıyla ilgili bilgileri verimli bir şekilde getirmek ve sunmak için LlamaIndex'i kullanabilir.
+ 
+ İzleyen bölümlerde, Bilgi Grafiği verilerimizle LlamaIndex'i kurma ve e-ticaret müşterilerimize akıllıca yardımcı olabilecek bir chatbot oluşturma sürecini inceleyeceğiz.
 
 ### `LlamaIndex` ve `WordLiftVectorStore` Kurulumu 💪
 
@@ -692,26 +691,26 @@ In the following sections, we’ll walk through the process of setting up LlamaI
 ```
 
 ```
-# import the necessary modules
+# gerekli modülleri içe aktarın
 from llama_index.vector_stores.wordlift import WordliftVectorStore
 from llama_index.core import VectorStoreIndex
 ```
 
 ### Sorgu Motorumuz için NomicEmbeddings'i Ayarlama
 
-Nomic has released v1.5 🪆🪆🪆 of their embedding model, which brings significant improvements to text embedding capabilities. Embeddings are numerical representations of text that capture semantic meaning, allowing our system to understand and compare the content of queries and documents.
+Nomic, metin yerleştirme (text embedding) yeteneklerine önemli iyileştirmeler getiren yerleştirme modellerinin v1.5 🪆🪆🪆 sürümünü yayınladı. Yerleştirmeler, metnin anlamsal anlamını yakalayan sayısal temsillerdir ve sistemimizin sorguların ve belgelerin içeriğini anlamasına ve karşılaştırmasına olanak tanır.
+ 
+ **Nomic v1.5**'in temel özellikleri şunları içerir:
+ 
+ - 64 ile 768 boyut arasında değişen değişken boyutlu yerleştirmeler
+ - İç içe geçmiş temsillere izin veren Matryoshka öğrenimi
+ - 8192 token'lık genişletilmiş bir bağlam boyutu
+ 
+ WordLift'te bu gelişmiş özellikler nedeniyle NomicEmbeddings kullanıyoruz ve şimdi LlamaIndex'i kullanıcı sorgularını kodlarken de bunu kullanacak şekilde yapılandırıyoruz. Tüm yapımızdaki yerleştirme modellerindeki bu tutarlılık, Bilgi Grafiğimiz ile sorgu anlama süreci arasında daha iyi bir uyum sağlar.
+ 
+ NomicEmbeddings hakkında daha fazla bilgi [burada](https://www.nomic.ai/blog/posts/nomic-embed-matryoshka) bulunabilir.
 
-Key features of **Nomic v1.5** include:
-
-- Variable-sized embeddings with dimensions between 64 and 768
-- Matryoshka learning, which allows for nested representations
-- An expanded context size of 8192 tokens
-
-We use NomicEmbeddings in WordLift due to these advanced features, and now we’re configuring LlamaIndex to use it as well when encoding user queries. This consistency in embedding models across our stack ensures better alignment between our Knowledge Graph and the query understanding process.
-
-More information on NomicEmbeddings can be found [here](https://www.nomic.ai/blog/posts/nomic-embed-matryoshka).
-
-Go here to [get your free key](https://atlas.nomic.ai/).
+Ücretsiz anahtarınızı almak için [buraya gidin](https://atlas.nomic.ai/).
 
 ```
 from llama_index.embeddings.nomic import NomicEmbedding
@@ -731,27 +730,27 @@ embedding = embed_model.get_text_embedding("Hey Ho SEO!")
 len(embedding)
 ```
 
-We will use OpenAI as default LLM for generating response. We could of course use any other available LLM.
+Yanıt oluşturmak için varsayılan LLM olarak OpenAI kullanacağız. Elbette mevcut diğer herhangi bir LLM'i de kullanabilirdik.
 
 ```
-# Set the environment variable
+# Çevre değişkenini (environment variable) ayarla
 os.environ["OPENAI_API_KEY"] = OPENAI_KEY
 ```
 
-Let’s setup now WordliftVectorStore using data from our Knowledge Graph.
+Şimdi Bilgi Grafiğimizden gelen verileri kullanarak WordliftVectorStore'u kuralım.
 
 ```
-# Let's configure WordliftVectorStore using our WL Key
+# WL Anahtarımızı kullanarak WordliftVectorStore'u yapılandıralım
 vector_store = WordliftVectorStore(key=API_KEY)
 
 
-# Create an index from the vector store
+# Vektör deposundan bir indeks oluşturun
 index = VectorStoreIndex.from_vector_store(
     vector_store, embed_model=embed_model
 )
 
 
-# Create a query engine
+# Bir sorgu motoru oluşturun
 query_engine = index.as_query_engine()
 ```
 
@@ -764,15 +763,15 @@ print(result1)
 ```
 
 ```
-# Function to handle queries
+# Sorguları işlemek için işlev (function)
 def query_engine(query):
-    # Create an index from the vector store
+    # Vektör deposundan bir indeks oluşturun
     index = VectorStoreIndex.from_vector_store(
         vector_store, embed_model=embed_model
     )
 
 
-    # Create a query engine
+    # Bir sorgu motoru oluşturun
     query_engine = index.as_query_engine()
     response = query_engine.query(query)
     return response
@@ -780,7 +779,7 @@ def query_engine(query):
 
 
 
-# Interactive query loop
+# Etkileşimli sorgu döngüsü
 while True:
     user_query = input("Enter your query (or 'quit' to exit): ")
     if user_query.lower() == "quit":

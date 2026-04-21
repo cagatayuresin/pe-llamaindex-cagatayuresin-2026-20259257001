@@ -7,16 +7,16 @@ title: Google Vertex AI Vector Search
 
 Bu not defteri, `Google Cloud Vertex AI Vector Search` vektör veritabanı ile ilgili işlevselliklerin nasıl kullanılacağını gösterir.
 
-> [Google Vertex AI Vector Search](https://cloud.google.com/vertex-ai/docs/vector-search/overview), formerly known as Vertex AI Matching Engine, provides the industry’s leading high-scale low latency vector database. These vector databases are commonly referred to as vector similarity-matching or an approximate nearest neighbor (ANN) service.
-
-**Note**: LlamaIndex expects Vertex AI Vector Search endpoint and deployed index is already created. An empty index creation time take upto a minute and deploying an index to the endpoint can take upto 30 min.
-
-> To see how to create an index refer to the section [Create Index and deploy it to an Endpoint](#create-index-and-deploy-it-to-an-endpoint)\
-> If you already have an index deployed , skip to [Create VectorStore from texts](#create-vector-store-from-texts)
+> [Google Vertex AI Vektör Araması](https://cloud.google.com/vertex-ai/docs/vector-search/overview) (eski adıyla Vertex AI Matching Engine), sektörün önde gelen yüksek ölçekli ve düşük gecikmeli vektör veritabanını sağlar. Bu vektör veritabanları genellikle vektör benzerliği eşleştirme veya yaklaşık en yakın komşu (approximate nearest neighbor - ANN) hizmeti olarak adlandırılır.
+ 
+ **Not**: LlamaIndex, Vertex AI Vektör Araması uç noktasının (endpoint) ve dağıtılmış indekse (deployed index) zaten sahip olduğunuzu varsayar. Boş bir indeks oluşturma süresi bir dakikayı bulabilir ve bir indeksin uç noktaya dağıtılması yaklaşık 30 dakika sürebilir.
+ 
+ > İndeks oluşturma adımları için [İndeks Oluşturma ve bir Uç Noktaya (Endpoint) Dağıtma](#indeks-oluşturma-ve-bir-uç-noktaya-endpoint-dağıtma) bölümüne bakın.
+ > Halihazırda dağıtılmış bir indeksiniz varsa, doğrudan [Metinlerden Vektör Deposu (Vector Store) oluşturma](#metinlerden-vektör-deposu-vector-store-oluşturma) bölümüne geçebilirsiniz.
 
 ## Kurulum
 
-If you’re opening this Notebook on colab, you will probably need to install LlamaIndex 🦙.
+Bu Not Defterini Colab üzerinde açıyorsanız, muhtemelen LlamaIndex'i 🦙 kurmanız gerekecektir.
 
 ```
 ! pip install llama-index llama-index-vector-stores-vertexaivectorsearch llama-index-llms-vertex
@@ -24,7 +24,7 @@ If you’re opening this Notebook on colab, you will probably need to install Ll
 
 ## İndeks Oluşturma ve bir Uç Noktaya (Endpoint) Dağıtma
 
-- This section demonstrates creating a new index and deploying it to an endpoint.
+- Bu bölüm, yeni bir indeks oluşturmayı ve bunu bir uç noktaya (endpoint) dağıtmayı gösterir.
 
 ```
 # TODO : Set values as per your requirements
@@ -65,15 +65,15 @@ aiplatform.init(project=PROJECT_ID, location=REGION)
 
 ### Boş bir İndeks oluşturma
 
-**Note :** While creating an index you should specify an “index\_update\_method” - `BATCH_UPDATE` or `STREAM_UPDATE`
+**Not:** Bir indeks oluştururken bir "indeks\_güncelleme\_yöntemi" (index\_update\_method) belirtmelisiniz - `BATCH_UPDATE` veya `STREAM_UPDATE`
 
-> A batch index is for when you want to update your index in a batch, with data which has been stored over a set amount of time, like systems which are processed weekly or monthly.
->
-> A streaming index is when you want index data to be updated as new data is added to your datastore, for instance, if you have a bookstore and want to show new inventory online as soon as possible.
->
-> Which type you choose is important, since setup and requirements are different.
+> Toplu (batch) indeks, haftalık veya aylık olarak işlenen sistemler gibi, belirli bir süre boyunca depolanan verilerle indeksinizi toplu olarak güncellemek istediğiniz durumlar içindir.
+ >
+ > Akışlı (streaming) indeks, veri deponuza yeni veriler eklendikçe indeks verilerinin güncellenmesini istediğiniz durumlarda kullanılır; örneğin, bir kitapçınız varsa ve yeni envanteri mümkün olan en kısa sürede çevrimiçi olarak göstermek istiyorsanız.
+ >
+ > Kurulum ve gereksinimler farklı olduğu için hangi tipi seçeceğiniz önemlidir.
 
-Refer [Official Documentation](https://cloud.google.com/vertex-ai/docs/vector-search/create-manage-index) and [API reference](https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.MatchingEngineIndex#google_cloud_aiplatform_MatchingEngineIndex_create_tree_ah_index) for more details on configuring indexes
+İndeksleri yapılandırma hakkında daha fazla ayrıntı için [Resmi Dökümantasyon](https://cloud.google.com/vertex-ai/docs/vector-search/create-manage-index) ve [API referansı](https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.MatchingEngineIndex#google_cloud_aiplatform_MatchingEngineIndex_create_tree_ah_index) bölümlerine bakın.
 
 ```
 # NOTE : This operation can take upto 30 seconds
@@ -109,9 +109,9 @@ else:
 
 ### Bir Uç Nokta (Endpoint) oluşturma
 
-To use the index, you need to create an index endpoint. It works as a server instance accepting query requests for your index. An endpoint can be a [public endpoint](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-public) or a [private endpoint](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-vpc).
+İndeksi kullanmak için bir indeks uç noktası (endpoint) oluşturmanız gerekir. Bu, indeksiniz için sorgu isteklerini kabul eden bir sunucu örneği olarak çalışır. Uç nokta, bir [genel uç nokta (public endpoint)](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-public) veya bir [özel uç nokta (private endpoint)](https://cloud.google.com/vertex-ai/docs/vector-search/deploy-index-vpc) olabilir.
 
-Let’s create a public endpoint.
+Şimdi bir genel uç nokta oluşturalım.
 
 ```
 endpoint_names = [
@@ -143,7 +143,7 @@ else:
 
 ### İndeksi Uç Noktaya Dağıtma
 
-With the index endpoint, deploy the index by specifying a unique deployed index ID.
+İndeks uç noktasıyla, benzersiz bir dağıtılmış indeks kimliği (deployed index ID) belirterek indeksi dağıtın.
 
 **NOTE : This operation can take upto 30 minutes.**
 
@@ -181,7 +181,7 @@ else:
 
 ## Metinlerden Vektör Deposu (Vector Store) oluşturma
 
-NOTE : If you have existing Vertex AI Vector Search Index and Endpoints, you can assign them using following code:
+NOT: Mevcut bir Vertex AI Vektör Araması İndeksiniz ve Uç Noktanız varsa, aşağıdaki kodu kullanarak bunları atayabilirsiniz:
 
 ```
 # TODO : replace 1234567890123456789 with your actual index ID
@@ -230,7 +230,7 @@ vector_store = VertexAIVectorStore(
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 ```
 
-### Use [Vertex AI Embeddings](https://github.com/run-llama/llama_index/tree/main/llama-index-integrations/embeddings/llama-index-embeddings-vertex) as the embeddings model
+Yerleştirme (embedding) modeli olarak [Vertex AI Embeddings](https://github.com/run-llama/llama_index/tree/main/llama-index-integrations/embeddings/llama-index-embeddings-vertex) kullanın:
 
 ```
 # configure embedding model
@@ -562,9 +562,9 @@ File Path: /home/jupyter/llama_index/docs/examples/vector_stores/data/arxiv/test
 
 ## Temizlik
 
-Please delete Vertex AI Vector Search Index and Index Endpoint after running your experiments to avoid incurring additional charges. Please note that you will be charged as long as the endpoint is running.
-
-**⚠️ NOTE: Enabling \`CLEANUP\_RESOURCES\` flag deletes Vector Search Index, Index Endpoint and Cloud Storage bucket. Please run it with caution.**
+Ek ücret ödememek için deneylerinizi çalıştırdıktan sonra lütfen Vertex AI Vektör Araması İndeksini ve İndeks Uç Noktasını silin. Uç nokta çalıştığı sürece faturalandırılacağınızı lütfen unutmayın.
+ 
+ **⚠️ NOT: \`CLEANUP\_RESOURCES\` bayrağının etkinleştirilmesi Vektör Arama İndeksini, İndeks Uç Noktasını ve Cloud Storage bucket'ını siler. Lütfen dikkatli çalıştırın.**
 
 ```
 CLEANUP_RESOURCES = False
